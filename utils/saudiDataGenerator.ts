@@ -2,25 +2,109 @@
  * Saudi Fake Data Generator Utilities
  * 
  * This file contains utility functions for generating fake data for Saudi and non-Saudi individuals.
- * All generated IDs are safe test IDs that do not match real government IDs.
+ * All generated IDs follow the Saudi ID format with Luhn algorithm checksum validation.
  */
 
-// Generate a random Saudi National ID (10 digits, starting with 9)
-export function generateSaudiNID(): string {
-  let id = '9'; // Start with 9 to ensure it's a test ID
+/**
+ * Calculate Luhn algorithm checksum for a 9-digit array
+ * @param digits Array of 9 digits
+ * @returns The checksum digit (0-9)
+ */
+function calculateLuhnChecksum(digits: number[]): number {
+  let sum = 0;
+  
   for (let i = 0; i < 9; i++) {
-    id += Math.floor(Math.random() * 10);
+    if (i % 2 === 0) {
+      // Double every even-indexed digit (0, 2, 4, 6, 8)
+      let product = digits[i] * 2;
+      if (product > 9) {
+        sum += product - 9; // Subtract 9 if product is greater than 9
+      } else {
+        sum += product;
+      }
+    } else {
+      // Add odd-indexed digits as-is
+      sum += digits[i];
+    }
   }
-  return id;
+  
+  let checksum = 10 - (sum % 10);
+  if (checksum === 10) checksum = 0;
+  
+  return checksum;
 }
 
-// Generate a random Iqama ID (10 digits, starting with 8)
-export function generateIqamaID(): string {
-  let id = '8'; // Start with 8 to ensure it's a test ID
-  for (let i = 0; i < 9; i++) {
-    id += Math.floor(Math.random() * 10);
+/**
+ * Validate a 10-digit ID using the Luhn algorithm
+ * @param id The 10-digit ID string
+ * @returns True if the checksum is valid
+ */
+export function validateLuhnChecksum(id: string): boolean {
+  if (id.length !== 10 || !/^\d{10}$/.test(id)) {
+    return false;
   }
-  return id;
+  
+  const digits = id.split('').map(Number);
+  const providedChecksum = digits[9];
+  const calculatedChecksum = calculateLuhnChecksum(digits.slice(0, 9));
+  
+  return providedChecksum === calculatedChecksum;
+}
+
+// Generate a random Saudi National ID (10 digits, starting with 1, with Luhn checksum)
+export function generateSaudiNID(): string {
+  const firstDigit = 1; // Saudi NID must start with 1
+  const first9Digits: number[] = [firstDigit];
+  
+  // Generate 8 random digits (positions 1-8)
+  for (let i = 1; i < 9; i++) {
+    first9Digits.push(Math.floor(Math.random() * 10));
+  }
+  
+  // Calculate and append the Luhn checksum
+  const checksum = calculateLuhnChecksum(first9Digits);
+  
+  return first9Digits.join('') + checksum;
+}
+
+// Generate a random Iqama ID (10 digits, starting with 2, with Luhn checksum)
+export function generateIqamaID(): string {
+  const firstDigit = 2; // Iqama ID must start with 2
+  const first9Digits: number[] = [firstDigit];
+  
+  // Generate 8 random digits (positions 1-8)
+  for (let i = 1; i < 9; i++) {
+    first9Digits.push(Math.floor(Math.random() * 10));
+  }
+  
+  // Calculate and append the Luhn checksum
+  const checksum = calculateLuhnChecksum(first9Digits);
+  
+  return first9Digits.join('') + checksum;
+}
+
+/**
+ * Validate a Saudi National ID
+ * @param id The 10-digit Saudi NID string
+ * @returns True if the ID is valid (starts with 1 and has valid checksum)
+ */
+export function validateSaudiNID(id: string): boolean {
+  if (!id || id.length !== 10 || !/^1\d{9}$/.test(id)) {
+    return false;
+  }
+  return validateLuhnChecksum(id);
+}
+
+/**
+ * Validate an Iqama ID
+ * @param id The 10-digit Iqama ID string
+ * @returns True if the ID is valid (starts with 2 and has valid checksum)
+ */
+export function validateIqamaID(id: string): boolean {
+  if (!id || id.length !== 10 || !/^2\d{9}$/.test(id)) {
+    return false;
+  }
+  return validateLuhnChecksum(id);
 }
 
 // Generate a random Passport ID (XX + 7 alphanumeric characters)
