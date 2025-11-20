@@ -59,6 +59,29 @@ export function InteractiveJson({ data, editable = false, onEdit }: JsonViewerPr
     setIsEditing(false);
   };
 
+  const formatJson = () => {
+    try {
+      const parsed = JSON.parse(editableValue);
+      setEditableValue(JSON.stringify(parsed, null, 2));
+    } catch (e) {
+      alert(`Cannot format invalid JSON: ${(e as Error).message}`);
+    }
+  };
+
+  const minifyJson = () => {
+    try {
+      const parsed = JSON.parse(editableValue);
+      setEditableValue(JSON.stringify(parsed));
+    } catch (e) {
+      alert(`Cannot minify invalid JSON: ${(e as Error).message}`);
+    }
+  };
+
+  const copyToClipboard = () => {
+    navigator.clipboard.writeText(editableValue);
+    alert('Copied to clipboard!');
+  };
+
   const updateJsonValue = (path: string[], newValue: any) => {
     try {
       const parsedData = JSON.parse(editableValue);
@@ -96,7 +119,7 @@ export function InteractiveJson({ data, editable = false, onEdit }: JsonViewerPr
 
     if (value === null) {
       return editable ? (
-        <span 
+        <span
           className="text-gray-500 cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-700 px-1 rounded"
           onClick={() => {
             const newValue = prompt('Edit value:', 'null');
@@ -122,7 +145,7 @@ export function InteractiveJson({ data, editable = false, onEdit }: JsonViewerPr
 
     if (typeof value === 'boolean') {
       return editable ? (
-        <span 
+        <span
           className="text-yellow-500 cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-700 px-1 rounded"
           onClick={() => {
             updateJsonValue(path, !value);
@@ -137,7 +160,7 @@ export function InteractiveJson({ data, editable = false, onEdit }: JsonViewerPr
 
     if (typeof value === 'number') {
       return editable ? (
-        <span 
+        <span
           className="text-blue-500 cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-700 px-1 rounded"
           onClick={() => {
             const newValue = prompt('Edit value:', value.toString());
@@ -160,7 +183,7 @@ export function InteractiveJson({ data, editable = false, onEdit }: JsonViewerPr
 
     if (typeof value === 'string') {
       return editable ? (
-        <span 
+        <span
           className="text-green-500 cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-700 px-1 rounded"
           onClick={() => {
             const newValue = prompt('Edit value:', value);
@@ -181,8 +204,8 @@ export function InteractiveJson({ data, editable = false, onEdit }: JsonViewerPr
 
       return (
         <div>
-          <span 
-            className="cursor-pointer" 
+          <span
+            className="cursor-pointer"
             onClick={() => toggleExpand(currentPath)}
           >
             {isExpanded ? '▼' : '▶'} Array[{value.length}]
@@ -208,8 +231,8 @@ export function InteractiveJson({ data, editable = false, onEdit }: JsonViewerPr
 
       return (
         <div>
-          <span 
-            className="cursor-pointer" 
+          <span
+            className="cursor-pointer"
             onClick={() => toggleExpand(currentPath)}
           >
             {isExpanded ? '▼' : '▶'} Object{keys.length > 0 ? `{${keys.length}}` : '{}'}
@@ -246,55 +269,72 @@ export function InteractiveJson({ data, editable = false, onEdit }: JsonViewerPr
 
   if (isEditing) {
     return (
-      <div className="bg-gray-100 dark:bg-gray-800 p-4 rounded-md max-w-full">
-        <div className="mb-2 flex gap-2">
-          <button 
-            onClick={() => setEditMode('raw')} 
-            className={`btn btn-sm ${editMode === 'raw' ? 'btn-primary' : 'btn-secondary'}`}
-          >
-            Raw Edit
-          </button>
-          <button 
-            onClick={() => setEditMode('pretty')} 
-            className={`btn btn-sm ${editMode === 'pretty' ? 'btn-primary' : 'btn-secondary'}`}
-          >
-            Pretty Edit
-          </button>
-        </div>
-
-        {editMode === 'raw' ? (
-          <textarea
-            className="w-full h-64 p-2 border border-gray-300 dark:border-gray-700 rounded-md bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 font-mono"
-            value={editableValue}
-            onChange={(e) => setEditableValue(e.target.value)}
-          />
-        ) : (
-          <div className="w-full h-64 p-2 border border-gray-300 dark:border-gray-700 rounded-md bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 font-mono overflow-auto max-w-full">
-            {renderPrettyEditor()}
+      <div className="border border-slate-300 dark:border-slate-700 rounded-lg overflow-hidden">
+        {/* Editor Toolbar */}
+        <div className="bg-slate-100 dark:bg-slate-800 border-b border-slate-300 dark:border-slate-700 px-4 py-2 flex items-center justify-between">
+          <div className="flex gap-2">
+            <button
+              onClick={formatJson}
+              className="btn btn-sm btn-secondary"
+              title="Format JSON (prettify)"
+            >
+              Format
+            </button>
+            <button
+              onClick={minifyJson}
+              className="btn btn-sm btn-secondary"
+              title="Minify JSON"
+            >
+              Minify
+            </button>
+            <button
+              onClick={copyToClipboard}
+              className="btn btn-sm btn-secondary"
+              title="Copy to clipboard"
+            >
+              Copy
+            </button>
           </div>
-        )}
-
-        <div className="mt-2 flex gap-2">
-          <button onClick={saveEdit} className="btn btn-primary">Save</button>
-          <button onClick={cancelEdit} className="btn btn-secondary">Cancel</button>
+          <div className="flex gap-2">
+            <button onClick={saveEdit} className="btn btn-sm btn-primary">
+              Save
+            </button>
+            <button onClick={cancelEdit} className="btn btn-sm btn-secondary">
+              Cancel
+            </button>
+          </div>
         </div>
+
+        {/* Editor Textarea */}
+        <textarea
+          className="w-full h-96 p-4 bg-slate-900 text-slate-100 font-mono text-sm resize-none focus:outline-none"
+          style={{
+            fontFamily: 'Consolas, Monaco, "Courier New", monospace',
+            lineHeight: '1.5',
+            tabSize: 2
+          }}
+          value={editableValue}
+          onChange={(e) => setEditableValue(e.target.value)}
+          spellCheck={false}
+        />
       </div>
     );
   }
 
+
   return (
-    <div className="bg-gray-100 dark:bg-gray-800 p-4 rounded-md overflow-auto max-h-96 max-w-full font-mono">
+    <div className="border border-slate-300 dark:border-slate-700 rounded-lg overflow-hidden">
       {editable && (
-        <div className="mb-2">
-          <button 
-            onClick={() => handleEdit([])} 
+        <div className="bg-slate-100 dark:bg-slate-800 border-b border-slate-300 dark:border-slate-700 px-4 py-2">
+          <button
+            onClick={() => handleEdit([])}
             className="btn btn-sm btn-secondary"
           >
             Edit JSON
           </button>
         </div>
       )}
-      <div className="text-sm">
+      <div className="bg-slate-900 text-slate-100 p-4 overflow-auto max-h-96 font-mono text-sm">
         {renderValue(data)}
       </div>
     </div>
