@@ -43,24 +43,39 @@ export function compareJsonObjects(jsonA: any, jsonB: any) {
   // Find keys in B that are not in A
   const keysOnlyInB = keysB.filter(key => !keysA.includes(key));
 
-  // Find keys in both but with different values
+  // Find keys in both
   const keysInBoth = keysA.filter(key => keysB.includes(key));
+
+  // Separate keys with same values from keys with different values
+  const commonKeysWithSameValue: string[] = [];
   const valueDiffs = keysInBoth.filter(key => {
     const valueA = getValueByPath(jsonA, key);
     const valueB = getValueByPath(jsonB, key);
 
     // Handle special cases like null, undefined, NaN
     if (valueA === null || valueA === undefined || valueB === null || valueB === undefined) {
-      return valueA !== valueB;
+      const isDifferent = valueA !== valueB;
+      if (!isDifferent) {
+        commonKeysWithSameValue.push(key);
+      }
+      return isDifferent;
     }
 
     // Compare objects and arrays by stringifying
     if (typeof valueA === 'object' && typeof valueB === 'object') {
-      return JSON.stringify(valueA) !== JSON.stringify(valueB);
+      const isDifferent = JSON.stringify(valueA) !== JSON.stringify(valueB);
+      if (!isDifferent) {
+        commonKeysWithSameValue.push(key);
+      }
+      return isDifferent;
     }
 
     // Simple value comparison
-    return valueA !== valueB;
+    const isDifferent = valueA !== valueB;
+    if (!isDifferent) {
+      commonKeysWithSameValue.push(key);
+    }
+    return isDifferent;
   }).map(key => ({
     key,
     valueA: getValueByPath(jsonA, key),
@@ -71,6 +86,7 @@ export function compareJsonObjects(jsonA: any, jsonB: any) {
     keysOnlyInA,
     keysOnlyInB,
     keysInBoth,
+    commonKeysWithSameValue,
     valueDiffs,
     totalKeysA: keysA.length,
     totalKeysB: keysB.length
@@ -159,13 +175,13 @@ export function createTreeFromKeys(keys: string[], json: any, status?: 'added' |
         }
 
         // Find or create the array item node
-        let arrayItemNode = childNode.children.find(child => 
+        let arrayItemNode = childNode.children.find(child =>
           child.name === `[${arrayIndex}]`
         );
 
         if (!arrayItemNode) {
-          arrayItemNode = { 
-            name: `[${arrayIndex}]`, 
+          arrayItemNode = {
+            name: `[${arrayIndex}]`,
             children: [],
             path: parts.slice(0, index + 1).join('.')
           };
@@ -194,9 +210,9 @@ export function createTreeFromKeys(keys: string[], json: any, status?: 'added' |
 
 // Merge two trees for comparison
 export function mergeTrees(treeA: TreeNode, treeB: TreeNode): TreeNode {
-  const mergedTree: TreeNode = { 
-    name: 'root', 
-    children: [] 
+  const mergedTree: TreeNode = {
+    name: 'root',
+    children: []
   };
 
   // Helper function to add nodes from a source tree to the merged tree
@@ -209,8 +225,8 @@ export function mergeTrees(treeA: TreeNode, treeB: TreeNode): TreeNode {
 
       if (!mergedNode) {
         // Create a new node in the merged tree
-        mergedNode = { 
-          name: child.name, 
+        mergedNode = {
+          name: child.name,
           children: [],
           path: child.path,
           value: child.value,
@@ -226,7 +242,7 @@ export function mergeTrees(treeA: TreeNode, treeB: TreeNode): TreeNode {
         }
 
         child.children.forEach(grandchild => {
-          const mergedGrandchild = { 
+          const mergedGrandchild = {
             ...grandchild,
             status: status || grandchild.status
           };

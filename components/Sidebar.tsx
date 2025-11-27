@@ -14,12 +14,13 @@ export function Sidebar() {
   const navItems = [
     { name: 'Home', path: '/' },
     { name: 'Saudi Fake Data Generator', path: '/saudi-data-generator' },
-    { name: 'JSON Key Comparator', path: '/json-comparator' },
+    { name: 'Feature Toggle Diff', path: '/json-comparator' },
+    { name: 'JSON Comparison', path: '/json-comparison' },
     { name: 'Base64 Image Viewer', path: '/base64-viewer' },
   ];
 
   return (
-    <aside className="w-64 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 h-screen">
+    <aside className="w-64 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 h-screen fixed left-0 top-0 overflow-y-auto">
       <div className="p-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
         <div>
           <h1 className="text-xl font-bold text-primary-600 dark:text-primary-400">DevTools Suite</h1>
@@ -33,11 +34,10 @@ export function Sidebar() {
             <li key={item.path}>
               <Link
                 href={item.path}
-                className={`block p-2 rounded-md ${
-                  isActive(item.path)
-                    ? 'bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400'
-                    : 'hover:bg-gray-100 dark:hover:bg-gray-700'
-                }`}
+                className={`block p-2 rounded-md ${isActive(item.path)
+                  ? 'bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400'
+                  : 'hover:bg-gray-100 dark:hover:bg-gray-700'
+                  }`}
               >
                 {item.name}
               </Link>

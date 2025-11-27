@@ -2,13 +2,13 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { Sidebar } from '@/components/Sidebar';
-import { 
-  extractMimeType, 
-  createBlobUrl, 
-  getImageMetadata, 
-  formatFileSize, 
+import {
+  extractMimeType,
+  createBlobUrl,
+  getImageMetadata,
+  formatFileSize,
   normalizeBase64,
-  ImageMetadata 
+  ImageMetadata
 } from '@/utils/base64ImageViewer';
 
 export default function Base64ViewerPage() {
@@ -167,116 +167,126 @@ export default function Base64ViewerPage() {
   };
 
   return (
-    <div className="flex min-h-screen">
+    <div className="flex">
       <Sidebar />
 
-      <main className="flex-1 p-8">
-        <h1 className="text-3xl font-bold mb-6">Base64 Image Viewer</h1>
+      <main className="flex-1 ml-64 min-h-screen">
+        {/* Sticky Header */}
+        <div className="sticky top-0 z-10 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 p-6">
+          <h1 className="text-2xl font-bold">Base64 Image Viewer</h1>
+          <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
+            Decode and view Base64 encoded images with metadata information
+          </p>
+        </div>
 
-        <div className="card mb-6">
-          <h2 className="text-xl font-semibold mb-4">Paste Base64 String or Upload Image</h2>
-          <textarea
-            className="w-full h-32 p-2 border border-gray-300 dark:border-gray-700 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 font-mono text-sm"
-            value={base64Input}
-            onChange={(e) => setBase64Input(e.target.value)}
-            placeholder="Paste your base64 encoded image data here..."
-          />
+        {/* Main Content */}
+        <div className="p-6">
 
-          <div className="mt-4 mb-4">
-            <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">Or upload an image file (recommended for large images):</p>
-            <input
-              type="file"
-              ref={fileInputRef}
-              onChange={handleFileUpload}
-              accept="image/*"
-              className="block w-full text-sm text-gray-500 dark:text-gray-400
+          <div className="card mb-6">
+            <h2 className="text-xl font-semibold mb-4">Paste Base64 String or Upload Image</h2>
+            <textarea
+              className="w-full h-32 p-2 border border-gray-300 dark:border-gray-700 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 font-mono text-sm"
+              value={base64Input}
+              onChange={(e) => setBase64Input(e.target.value)}
+              placeholder="Paste your base64 encoded image data here..."
+            />
+
+            <div className="mt-4 mb-4">
+              <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">Or upload an image file (recommended for large images):</p>
+              <input
+                type="file"
+                ref={fileInputRef}
+                onChange={handleFileUpload}
+                accept="image/*"
+                className="block w-full text-sm text-gray-500 dark:text-gray-400
                 file:mr-4 file:py-2 file:px-4
                 file:rounded-md file:border-0
                 file:text-sm file:font-semibold
                 file:bg-blue-50 file:text-blue-700
                 dark:file:bg-blue-900/20 dark:file:text-blue-300
                 hover:file:bg-blue-100 dark:hover:file:bg-blue-900/30"
-            />
-          </div>
+              />
+            </div>
 
-          <div className="flex gap-2 mt-4">
-            <button 
-              onClick={() => handleDecode()} 
-              disabled={loading} 
-              className="btn btn-primary"
-            >
-              {loading ? 'Processing...' : 'Decode Image'}
-            </button>
-            <button 
-              onClick={handleClear} 
-              className="btn btn-secondary"
-            >
-              Clear
-            </button>
-          </div>
-        </div>
-
-        {error && (
-          <div className="bg-red-100 dark:bg-red-900/20 text-red-800 dark:text-red-200 p-4 rounded-md mb-6">
-            {error}
-          </div>
-        )}
-
-        {imageUrl && (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="md:col-span-2 card">
-              <h2 className="text-xl font-semibold mb-4">Image Preview</h2>
-              <div className="bg-gray-100 dark:bg-gray-800 p-4 rounded-md flex items-center justify-center">
-                <img 
-                  src={imageUrl} 
-                  alt="Decoded base64 image" 
-                  className="max-w-full max-h-96 object-contain"
-                />
-              </div>
-              <button 
-                onClick={handleDownload} 
-                className="btn btn-primary mt-4"
+            <div className="flex gap-2 mt-4">
+              <button
+                onClick={() => handleDecode()}
+                disabled={loading}
+                className="btn btn-primary"
               >
-                Download Image
+                {loading ? 'Processing...' : 'Decode Image'}
+              </button>
+              <button
+                onClick={handleClear}
+                className="btn btn-secondary"
+              >
+                Clear
               </button>
             </div>
-
-            <div className="card">
-              <h2 className="text-xl font-semibold mb-4">Image Metadata</h2>
-              {metadata ? (
-                <div className="space-y-2">
-                  <div className="flex justify-between">
-                    <span className="font-medium">Format:</span>
-                    <span>{metadata.format}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="font-medium">MIME Type:</span>
-                    <span>{metadata.mimeType}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="font-medium">Dimensions:</span>
-                    <span>{metadata.width} × {metadata.height} px</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="font-medium">Size:</span>
-                    <span>{formatFileSize(metadata.sizeInBytes)}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="font-medium">Aspect Ratio:</span>
-                    <span>
-                      {metadata.width / gcd(metadata.width, metadata.height)}:
-                      {metadata.height / gcd(metadata.width, metadata.height)}
-                    </span>
-                  </div>
-                </div>
-              ) : (
-                <p className="text-gray-500 dark:text-gray-400">
-                  Metadata will appear here after decoding an image.
-                </p>
-              )}
-            </div>
           </div>
-        )}
+
+          {error && (
+            <div className="bg-red-100 dark:bg-red-900/20 text-red-800 dark:text-red-200 p-4 rounded-md mb-6">
+              {error}
+            </div>
+          )}
+
+          {imageUrl && (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="md:col-span-2 card">
+                <h2 className="text-xl font-semibold mb-4">Image Preview</h2>
+                <div className="bg-gray-100 dark:bg-gray-800 p-4 rounded-md flex items-center justify-center">
+                  <img
+                    src={imageUrl}
+                    alt="Decoded base64 image"
+                    className="max-w-full max-h-96 object-contain"
+                  />
+                </div>
+                <button
+                  onClick={handleDownload}
+                  className="btn btn-primary mt-4"
+                >
+                  Download Image
+                </button>
+              </div>
+
+              <div className="card">
+                <h2 className="text-xl font-semibold mb-4">Image Metadata</h2>
+                {metadata ? (
+                  <div className="space-y-2">
+                    <div className="flex justify-between">
+                      <span className="font-medium">Format:</span>
+                      <span>{metadata.format}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="font-medium">MIME Type:</span>
+                      <span>{metadata.mimeType}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="font-medium">Dimensions:</span>
+                      <span>{metadata.width} × {metadata.height} px</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="font-medium">Size:</span>
+                      <span>{formatFileSize(metadata.sizeInBytes)}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="font-medium">Aspect Ratio:</span>
+                      <span>
+                        {metadata.width / gcd(metadata.width, metadata.height)}:
+                        {metadata.height / gcd(metadata.width, metadata.height)}
+                      </span>
+                    </div>
+                  </div>
+                ) : (
+                  <p className="text-gray-500 dark:text-gray-400">
+                    Metadata will appear here after decoding an image.
+                  </p>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
       </main>
     </div>
   );

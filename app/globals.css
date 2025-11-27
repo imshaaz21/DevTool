@@ -16,9 +16,8 @@
 
 @layer base {
   body {
-    @apply antialiased bg-slate-50 text-slate-900 dark:bg-slate-900 dark:text-slate-100 overflow-hidden;
+    @apply antialiased bg-slate-50 text-slate-900 dark:bg-slate-900 dark:text-slate-100;
     min-height: 100vh;
-    max-height: 100vh;
   }
 }
 
@@ -101,5 +100,121 @@
 
   .stat-value {
     @apply mt-1 text-2xl font-semibold text-slate-900 dark:text-slate-100;
+  }
+
+  /* JSON Editor Dark Mode Support */
+  .dark .jsoneditor-react-container {
+    @apply border-slate-600;
+  }
+
+  /* Dark mode for JSON Editor */
+  .dark .jsoneditor,
+  .dark .jsoneditor-menu {
+    @apply bg-slate-800 border-slate-600;
+  }
+
+  .dark .jsoneditor-menu {
+    @apply bg-slate-700 border-b border-slate-600;
+  }
+
+  .dark .jsoneditor-contextmenu {
+    @apply bg-slate-700 border border-slate-600 shadow-xl;
+  }
+
+  .dark .jsoneditor-contextmenu ul li button {
+    @apply bg-slate-700 text-slate-100;
+  }
+
+  .dark .jsoneditor-contextmenu ul li button:hover,
+  .dark .jsoneditor-contextmenu ul li button:focus {
+    @apply bg-slate-600 text-white;
+  }
+
+  /* Dark mode for tree mode */
+  .dark .jsoneditor-tree {
+    @apply bg-slate-800 text-slate-100;
+  }
+
+  .dark .jsoneditor-field,
+  .dark .jsoneditor-value {
+    @apply text-slate-100;
+  }
+
+  .dark .jsoneditor-readonly {
+    @apply text-slate-400;
+  }
+
+  /* Dark mode for search box */
+  .dark .jsoneditor-search input {
+    @apply bg-slate-700 border-slate-600 text-slate-100;
+  }
+
+  .dark .jsoneditor-search input:focus {
+    @apply bg-slate-600 border-slate-500;
+  }
+
+  .dark .jsoneditor-search button {
+    @apply bg-slate-600 border-slate-500;
+  }
+
+  .dark .jsoneditor-search button:hover {
+    @apply bg-slate-500;
+  }
+
+  /* Dark mode for menu buttons */
+  .dark .jsoneditor-menu>button,
+  .dark .jsoneditor-menu>.jsoneditor-modes>button {
+    @apply bg-slate-600 text-slate-100 border-slate-500;
+  }
+
+  .dark .jsoneditor-menu>button:hover,
+  .dark .jsoneditor-menu>.jsoneditor-modes>button:hover {
+    @apply bg-slate-500 border-slate-400;
+  }
+
+  /* Dark mode for status bar */
+  .dark .jsoneditor-statusbar {
+    @apply bg-slate-700 border-t border-slate-600 text-slate-300;
+  }
+
+  /* Dark mode for code editor (ACE) */
+  .dark .ace-jsoneditor {
+    @apply bg-slate-900 text-slate-100;
+  }
+
+  .dark .ace-jsoneditor .ace_gutter {
+    @apply bg-slate-800 text-slate-400;
+  }
+
+  .dark .ace-jsoneditor .ace_gutter-active-line {
+    @apply bg-slate-700;
+  }
+
+  .dark .ace-jsoneditor .ace_marker-layer .ace_active-line {
+    @apply bg-slate-800;
+  }
+
+  .dark .ace-jsoneditor .ace_cursor {
+    @apply border-l-2 border-slate-100;
+  }
+
+  /* Dark mode for modals */
+  .dark .jsoneditor-modal {
+    @apply bg-slate-800 border border-slate-600;
+  }
+
+  .dark .jsoneditor-modal .pico-modal-header {
+    @apply bg-slate-700 border-b border-slate-600;
+  }
+
+  .dark .jsoneditor-modal input,
+  .dark .jsoneditor-modal textarea,
+  .dark .jsoneditor-modal select {
+    @apply bg-slate-700 border-slate-600 text-slate-100;
+  }
+
+  /* Dark mode for JSON repair */
+  .dark .jsoneditor-repair {
+    @apply bg-slate-700 border-slate-600 text-slate-100;
   }
 }
