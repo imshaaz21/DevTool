@@ -10,7 +10,9 @@
   },
   "dependencies": {
     "@heroicons/react": "^2.0.18",
+    "@types/crypto-js": "^4.2.2",
     "clsx": "^2.0.0",
+    "crypto-js": "^4.2.0",
     "diff-match-patch": "^1.0.5",
     "jsoneditor": "^10.4.2",
     "lucide-react": "^0.555.0",
