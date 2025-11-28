@@ -1,6 +1,11 @@
 # DevTools Suite
 
-![CI](https://github.com/yourusername/devtools-suite/workflows/CI/badge.svg)
+![CI](https://github.com/imshaaz21/DevTool/workflows/CI/badge.svg)
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=imshaaz21_DevTools&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=imshaaz21_DevTools)
+[![Coverage](https://sonarcloud.io/api/project_badges/measure?project=imshaaz21_DevTools&metric=coverage)](https://sonarcloud.io/summary/new_code?id=imshaaz21_DevTools)
+[![Bugs](https://sonarcloud.io/api/project_badges/measure?project=imshaaz21_DevTools&metric=bugs)](https://sonarcloud.io/summary/new_code?id=imshaaz21_DevTools)
+[![Code Smells](https://sonarcloud.io/api/project_badges/measure?project=imshaaz21_DevTools&metric=code_smells)](https://sonarcloud.io/summary/new_code?id=imshaaz21_DevTools)
+[![Security Rating](https://sonarcloud.io/api/project_badges/measure?project=imshaaz21_DevTools&metric=security_rating)](https://sonarcloud.io/summary/new_code?id=imshaaz21_DevTools)
 
 A modular full-stack web application containing multiple developer tools in one UI.
 
@@ -98,13 +103,19 @@ npm run test:watch
 npm run test:coverage
 ```
 
-### CI/CD
+### CI/CD & Code Quality
 
 The project includes a GitHub Actions workflow that automatically:
 - Runs on every push and pull request to `main`/`master`
 - Tests on Node.js 18.x and 20.x
 - Executes linting, tests, and builds
 - Uploads test coverage reports
+- **Analyzes code quality with SonarCloud** (bugs, vulnerabilities, code smells)
+
+**Setting up SonarCloud** (optional but recommended):
+- See [SONARCLOUD_SETUP.md](./SONARCLOUD_SETUP.md) for step-by-step instructions
+- It's free for public repositories
+- Provides automated code quality feedback on every PR
 
 See [TESTING.md](./TESTING.md) for more details on the testing infrastructure.
 
