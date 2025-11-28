@@ -1,11 +1,11 @@
 # DevTools Suite
 
 ![CI](https://github.com/imshaaz21/DevTool/workflows/CI/badge.svg)
-[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=imshaaz21_DevTools&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=imshaaz21_DevTools)
-[![Coverage](https://sonarcloud.io/api/project_badges/measure?project=imshaaz21_DevTools&metric=coverage)](https://sonarcloud.io/summary/new_code?id=imshaaz21_DevTools)
-[![Bugs](https://sonarcloud.io/api/project_badges/measure?project=imshaaz21_DevTools&metric=bugs)](https://sonarcloud.io/summary/new_code?id=imshaaz21_DevTools)
-[![Code Smells](https://sonarcloud.io/api/project_badges/measure?project=imshaaz21_DevTools&metric=code_smells)](https://sonarcloud.io/summary/new_code?id=imshaaz21_DevTools)
-[![Security Rating](https://sonarcloud.io/api/project_badges/measure?project=imshaaz21_DevTools&metric=security_rating)](https://sonarcloud.io/summary/new_code?id=imshaaz21_DevTools)
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=imshaaz21_DevTool&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=imshaaz21_DevTool)
+[![Coverage](https://sonarcloud.io/api/project_badges/measure?project=imshaaz21_DevTool&metric=coverage)](https://sonarcloud.io/summary/new_code?id=imshaaz21_DevTool)
+[![Bugs](https://sonarcloud.io/api/project_badges/measure?project=imshaaz21_DevTool&metric=bugs)](https://sonarcloud.io/summary/new_code?id=imshaaz21_DevTool)
+[![Code Smells](https://sonarcloud.io/api/project_badges/measure?project=imshaaz21_DevTool&metric=code_smells)](https://sonarcloud.io/summary/new_code?id=imshaaz21_DevTool)
+[![Security Rating](https://sonarcloud.io/api/project_badges/measure?project=imshaaz21_DevTool&metric=security_rating)](https://sonarcloud.io/summary/new_code?id=imshaaz21_DevTool)
 
 A modular full-stack web application containing multiple developer tools in one UI.
 
