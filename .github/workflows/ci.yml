@@ -56,5 +56,5 @@ jobs:
       continue-on-error: true
       with:
         args: >
-          -Dsonar.projectKey=imshaaz21_DevTools
+          -Dsonar.projectKey=imshaaz21_DevTool
           -Dsonar.organization=imshaaz21
