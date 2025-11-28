@@ -7,7 +7,7 @@ import 'jsoneditor/dist/jsoneditor.css';
 interface JsonEditorProps {
     json: any;
     onChange: (json: any) => void;
-    mode?: 'code' | 'view';
+    mode?: 'tree' | 'code' | 'view' | 'form' | 'text';
     height?: string;
     readOnly?: boolean;
 }
@@ -27,7 +27,7 @@ export function JsonEditorComponent({
 
         const options: JSONEditorOptions = {
             mode: mode,
-            modes: mode === 'code' ? ['code'] : ['view'], // Lock to specified mode only
+            modes: ['tree', 'code', 'view', 'form', 'text'], // Allow all modes
             theme: 'ace/theme/monokai', // Dark theme
             onChange: () => {
                 if (!readOnly) {

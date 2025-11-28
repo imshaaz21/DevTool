@@ -43,6 +43,14 @@ export default function Home() {
           </div>
 
           <div className="card flex flex-col">
+            <h2 className="text-xl font-semibold mb-4">JSON Formatter</h2>
+            <p className="mb-4 flex-grow">Parse stringified JSON, format, minify, or escape. Handles nested stringified values automatically.</p>
+            <Link href="/json-formatter" className="btn btn-primary inline-block">
+              Open Tool
+            </Link>
+          </div>
+
+          <div className="card flex flex-col">
             <h2 className="text-xl font-semibold mb-4">Encoder/Decoder & Hash</h2>
             <p className="mb-4 flex-grow">Encode/decode text (Base64, URL, HTML, Unicode) and generate hashes (SHA-1/256/512). Perfect for K8s secrets.</p>
             <Link href="/encoder-decoder" className="btn btn-primary inline-block">

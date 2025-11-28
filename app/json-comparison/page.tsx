@@ -1,9 +1,10 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import dynamic from 'next/dynamic';
 import { Sidebar } from '@/components/Sidebar';
 import { compareJsonObjects } from '@/utils/jsonComparator';
-import { JsonEditorComponent } from '@/components/JsonEditorComponent';
+const JsonEditorComponent = dynamic(() => import('@/components/JsonEditorComponent').then(mod => ({ default: mod.JsonEditorComponent })), { ssr: false });
 import { JsonDiffViewer } from '@/components/JsonDiffViewer';
 import { ArrowLeft } from 'lucide-react';
 

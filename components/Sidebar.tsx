@@ -45,6 +45,7 @@ export function Sidebar() {
     { name: 'Saudi Fake Data Generator', path: '/saudi-data-generator' },
     { name: 'Feature Toggle Diff', path: '/json-comparator' },
     { name: 'JSON Comparison', path: '/json-comparison' },
+    { name: 'JSON Formatter', path: '/json-formatter' },
     { name: 'Base64 Image Viewer', path: '/base64-viewer' },
     { name: 'Encoder/Decoder & Hash', path: '/encoder-decoder' },
   ];
