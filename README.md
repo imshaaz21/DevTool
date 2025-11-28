@@ -66,8 +66,8 @@ A modular full-stack web application containing multiple developer tools in one 
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/yourusername/devtools-suite.git
-cd devtools-suite
+git clone https://github.com/imshaaz21/DevTool.git
+cd DevTool
 ```
 
 2. Install dependencies:
