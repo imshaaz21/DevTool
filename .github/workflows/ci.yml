@@ -46,3 +46,15 @@ jobs:
         name: coverage-report
         path: coverage/
         retention-days: 7
+
+    - name: SonarCloud Scan (Node 20.x only)
+      if: matrix.node-version == '20.x'
+      uses: SonarSource/sonarcloud-github-action@master
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+      continue-on-error: true
+      with:
+        args: >
+          -Dsonar.projectKey=imshaaz21_DevTools
+          -Dsonar.organization=imshaaz21
