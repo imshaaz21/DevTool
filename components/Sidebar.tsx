@@ -48,6 +48,7 @@ export function Sidebar() {
     { name: 'JSON Formatter', path: '/json-formatter' },
     { name: 'Base64 Image Viewer', path: '/base64-viewer' },
     { name: 'Encoder/Decoder & Hash', path: '/encoder-decoder' },
+    { name: 'Time Zone Converter', path: '/timezone-converter' },
   ];
 
   return (
