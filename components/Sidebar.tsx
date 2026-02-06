@@ -49,6 +49,7 @@ export function Sidebar() {
     { name: 'Base64 Image Viewer', path: '/base64-viewer' },
     { name: 'UUID Generator', path: '/uuid-generator' },
     { name: 'Encoder/Decoder & Hash', path: '/encoder-decoder' },
+    { name: 'Time Zone Converter', path: '/timezone-converter' },
   ];
 
   return (
