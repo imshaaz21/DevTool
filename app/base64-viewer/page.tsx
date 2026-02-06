@@ -11,12 +11,15 @@ import {
   ImageMetadata
 } from '@/utils/base64ImageViewer';
 
+import { ImageModal } from '@/components/ImageModal';
+
 export default function Base64ViewerPage() {
   const [base64Input, setBase64Input] = useState<string>('');
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [metadata, setMetadata] = useState<ImageMetadata | null>(null);
   const [error, setError] = useState<string>('');
   const [loading, setLoading] = useState<boolean>(false);
+  const [showModal, setShowModal] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Clean up blob URL when component unmounts or when a new one is created
@@ -86,6 +89,9 @@ export default function Base64ViewerPage() {
       // Get image metadata
       const imageMetadata = await getImageMetadata(normalizedBase64);
       setMetadata(imageMetadata);
+      
+      // Auto-open modal on successful decode
+      setShowModal(true);
     } catch (err) {
       setError(`Error decoding base64 image: ${(err as Error).message}`);
       setImageUrl(null);
@@ -105,6 +111,7 @@ export default function Base64ViewerPage() {
     setImageUrl(null);
     setMetadata(null);
     setError('');
+    setShowModal(false);
 
     // Reset file input
     if (fileInputRef.current) {
@@ -236,11 +243,18 @@ export default function Base64ViewerPage() {
               <div className="md:col-span-2 card">
                 <h2 className="text-xl font-semibold mb-4">Image Preview</h2>
                 <div className="bg-gray-100 dark:bg-gray-800 p-4 rounded-md flex items-center justify-center">
-                  <img
-                    src={imageUrl}
-                    alt="Decoded base64 image"
-                    className="max-w-full max-h-96 object-contain"
-                  />
+                  <div className="relative group cursor-pointer" onClick={() => setShowModal(true)}>
+                    <img
+                      src={imageUrl}
+                      alt="Decoded base64 image"
+                      className="max-w-full max-h-96 object-contain"
+                    />
+                    <div className="absolute inset-0 flex items-center justify-center bg-black/0 group-hover:bg-black/20 transition-colors rounded-md">
+                      <span className="opacity-0 group-hover:opacity-100 bg-black/60 text-white px-3 py-1 rounded-full text-sm font-medium transition-opacity">
+                        Click to Zoom
+                      </span>
+                    </div>
+                  </div>
                 </div>
                 <button
                   onClick={handleDownload}
@@ -287,6 +301,13 @@ export default function Base64ViewerPage() {
             </div>
           )}
         </div>
+        
+        <ImageModal 
+          isOpen={showModal} 
+          onClose={() => setShowModal(false)} 
+          imageUrl={imageUrl}
+          imageAlt="Decoded Base64 Image"
+        />
       </main>
     </div>
   );
