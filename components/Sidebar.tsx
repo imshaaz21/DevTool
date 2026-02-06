@@ -47,6 +47,7 @@ export function Sidebar() {
     { name: 'JSON Comparison', path: '/json-comparison' },
     { name: 'JSON Formatter', path: '/json-formatter' },
     { name: 'Base64 Image Viewer', path: '/base64-viewer' },
+    { name: 'UUID Generator', path: '/uuid-generator' },
     { name: 'Encoder/Decoder & Hash', path: '/encoder-decoder' },
   ];
 

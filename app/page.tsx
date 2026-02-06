@@ -57,6 +57,14 @@ export default function Home() {
               Open Tool
             </Link>
           </div>
+
+          <div className="card flex flex-col">
+            <h2 className="text-xl font-semibold mb-4">UUID Generator</h2>
+            <p className="mb-4 flex-grow">Generate standard Version 4 UUIDs instantly. Supports bulk generation and history tracking.</p>
+            <Link href="/uuid-generator" className="btn btn-primary inline-block">
+              Open Tool
+            </Link>
+          </div>
         </div>
       </main>
     </div>
