@@ -28,7 +28,7 @@ export function JsonEditorComponent({
         const options: JSONEditorOptions = {
             mode: mode,
             modes: ['tree', 'code', 'view', 'form', 'text'], // Allow all modes
-            theme: 'ace/theme/monokai', // Dark theme
+            theme: 'ace/theme/chrome', // Light theme
             onChange: () => {
                 if (!readOnly) {
                     try {

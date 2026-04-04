@@ -146,7 +146,7 @@ export function InteractiveJson({ data, editable = false, onEdit }: JsonViewerPr
     if (typeof value === 'boolean') {
       return editable ? (
         <span
-          className="text-yellow-500 cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-700 px-1 rounded"
+          className="text-yellow-600 cursor-pointer hover:bg-slate-100 px-1 rounded"
           onClick={() => {
             updateJsonValue(path, !value);
           }}
@@ -161,7 +161,7 @@ export function InteractiveJson({ data, editable = false, onEdit }: JsonViewerPr
     if (typeof value === 'number') {
       return editable ? (
         <span
-          className="text-blue-500 cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-700 px-1 rounded"
+          className="text-blue-600 cursor-pointer hover:bg-slate-100 px-1 rounded"
           onClick={() => {
             const newValue = prompt('Edit value:', value.toString());
             if (newValue !== null) {
@@ -184,7 +184,7 @@ export function InteractiveJson({ data, editable = false, onEdit }: JsonViewerPr
     if (typeof value === 'string') {
       return editable ? (
         <span
-          className="text-green-500 cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-700 px-1 rounded"
+          className="text-green-600 cursor-pointer hover:bg-slate-100 px-1 rounded"
           onClick={() => {
             const newValue = prompt('Edit value:', value);
             if (newValue !== null) {
@@ -307,7 +307,7 @@ export function InteractiveJson({ data, editable = false, onEdit }: JsonViewerPr
 
         {/* Editor Textarea */}
         <textarea
-          className="w-full h-96 p-4 bg-slate-900 text-slate-100 font-mono text-sm resize-none focus:outline-none"
+          className="w-full h-96 p-4 bg-slate-50 text-slate-900 font-mono text-sm resize-none focus:outline-none border border-slate-200"
           style={{
             fontFamily: 'Consolas, Monaco, "Courier New", monospace',
             lineHeight: '1.5',
@@ -334,7 +334,7 @@ export function InteractiveJson({ data, editable = false, onEdit }: JsonViewerPr
           </button>
         </div>
       )}
-      <div className="bg-slate-900 text-slate-100 p-4 overflow-auto max-h-96 font-mono text-sm">
+      <div className="bg-white text-slate-900 p-4 overflow-auto max-h-96 font-mono text-sm">
         {renderValue(data)}
       </div>
     </div>

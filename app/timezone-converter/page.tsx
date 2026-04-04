@@ -1,7 +1,8 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Sidebar } from '@/components/Sidebar';
+import { useSidebar } from '@/components/SidebarContext';
 import {
     parseInputTime,
     convertToTimezone,
@@ -10,286 +11,213 @@ import {
     TIME_ZONES,
     TimeZoneId,
 } from '@/utils/timezoneConverter';
-import { Copy, Clock, Trash2, Calendar } from 'lucide-react';
+import { Copy, Clock, Trash2, Calendar, Globe, ArrowRightLeft, Zap, CheckCircle2 } from 'lucide-react';
+import { toast } from 'react-hot-toast';
 
 type InputMode = 'paste' | 'picker';
 
 export default function TimeZoneConverterPage() {
+    const { width } = useSidebar();
     const [inputMode, setInputMode] = useState<InputMode>('paste');
     const [sourceTimezone, setSourceTimezone] = useState<TimeZoneId>('UTC');
     const [textInput, setTextInput] = useState('');
     const [dateTimeInput, setDateTimeInput] = useState('');
-    const [convertedTimes, setConvertedTimes] = useState<{ timezone: TimeZoneId; name: string; time: string; diff: string }[]>([]);
+    const [convertedTimes, setConvertedTimes] = useState<{ timezone: TimeZoneId; name: string; time: string; diff: string; abbreviation: string }[]>([]);
     const [error, setError] = useState('');
-    const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
 
-    // Auto-convert when inputs change
-    useEffect(() => {
-        handleConvert();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [textInput, dateTimeInput, sourceTimezone, inputMode]);
-
-    const handleConvert = () => {
+    const handleConvert = useCallback(() => {
         setError('');
-        setConvertedTimes([]);
-
         let parsedDate: Date | null = null;
 
         if (inputMode === 'paste' && textInput.trim()) {
             parsedDate = parseInputTime(textInput, sourceTimezone);
-            if (!parsedDate) {
-                setError('Could not parse the input time. Supported formats: YYYY-MM-DD HH:mm:ss.SSS, YYYY-MM-DD HH:mm:ss, DD/MM/YYYY HH:mm:ss');
+            if (!parsedDate && textInput.length > 10) {
+                setError('Format error. Try: YYYY-MM-DD HH:mm:ss');
                 return;
             }
         } else if (inputMode === 'picker' && dateTimeInput) {
             parsedDate = parseDateTimeLocalInput(dateTimeInput, sourceTimezone);
-            if (!parsedDate) {
-                setError('Invalid date/time selection');
-                return;
-            }
         }
 
         if (!parsedDate) {
+            setConvertedTimes([]);
             return;
         }
 
         const sourceOffset = getTimezoneOffsetMs(sourceTimezone);
-
         const results = TIME_ZONES.map((tz) => {
             const targetOffset = getTimezoneOffsetMs(tz.id);
-            const diffMs = targetOffset - sourceOffset;
-            const diffHours = diffMs / (1000 * 60 * 60);
-            
-            let diffString = '';
-            if (diffHours > 0) {
-                diffString = `(+${Number.isInteger(diffHours) ? diffHours : diffHours.toFixed(1)}h)`;
-            } else if (diffHours < 0) {
-                diffString = `(${Number.isInteger(diffHours) ? diffHours : diffHours.toFixed(1)}h)`;
-            }
+            const diffHours = (targetOffset - sourceOffset) / (1000 * 60 * 60);
+            const diffString = diffHours === 0 ? 'Same' : (diffHours > 0 ? `+${diffHours}h` : `${diffHours}h`);
 
             return {
                 timezone: tz.id,
-                name: `${tz.name} (${tz.abbreviation})`,
+                name: tz.name,
+                abbreviation: tz.abbreviation,
                 time: convertToTimezone(parsedDate!, tz.id),
                 diff: diffString,
             };
         });
 
         setConvertedTimes(results);
-    };
+    }, [textInput, dateTimeInput, sourceTimezone, inputMode]);
 
-    const handleCopy = async (text: string, index: number) => {
-        try {
-            await navigator.clipboard.writeText(text);
-            setCopiedIndex(index);
-            setTimeout(() => setCopiedIndex(null), 2000);
-        } catch (err) {
-            console.error('Failed to copy:', err);
-        }
-    };
+    useEffect(() => {
+        handleConvert();
+    }, [handleConvert]);
 
-    const handleClear = () => {
-        setTextInput('');
-        setDateTimeInput('');
-        setConvertedTimes([]);
-        setError('');
+    const handleCopy = (text: string) => {
+        navigator.clipboard.writeText(text);
+        toast.success('Time copied!');
     };
 
     const handleUseNow = () => {
         const now = new Date();
         if (inputMode === 'picker') {
-            // Set datetime-local value in local time
-            const localISOTime = new Date(now.getTime() - (now.getTimezoneOffset() * 60000))
-                .toISOString()
-                .slice(0, 19);
+            const localISOTime = new Date(now.getTime() - (now.getTimezoneOffset() * 60000)).toISOString().slice(0, 19);
             setDateTimeInput(localISOTime);
         } else {
-            // Set text input to current time in source timezone
             setTextInput(convertToTimezone(now, sourceTimezone));
         }
     };
 
     return (
-        <div className="flex">
+        <div className="flex h-screen overflow-hidden">
             <Sidebar />
 
-            <main className="flex-1 ml-64 min-h-screen overflow-hidden">
-                {/* Sticky Header */}
-                <div className="sticky top-0 z-10 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 p-6">
-                    <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">
-                        Time Zone Converter
-                    </h1>
-                    <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
-                        Convert between UTC, Saudi Arabia (AST), and Sri Lanka (IST) time zones.
-                    </p>
-                </div>
-
-                {/* Main Content */}
-                <div className="p-6 space-y-6">
-                    {/* Input Mode Selector */}
-                    <div className="card">
-                        <div className="flex flex-wrap items-center gap-4">
-                            <label className="text-sm font-medium text-slate-700 dark:text-slate-300">
-                                Input Method:
-                            </label>
-                            <div className="flex gap-2">
-                                <button
-                                    onClick={() => setInputMode('paste')}
-                                    className={`px-4 py-2 rounded-md font-medium transition-colors flex items-center gap-2 ${
-                                        inputMode === 'paste'
-                                            ? 'bg-indigo-600 text-white'
-                                            : 'bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-300 dark:hover:bg-slate-600'
-                                    }`}
-                                >
-                                    <Clock className="w-4 h-4" />
-                                    Paste Time
-                                </button>
-                                <button
-                                    onClick={() => setInputMode('picker')}
-                                    className={`px-4 py-2 rounded-md font-medium transition-colors flex items-center gap-2 ${
-                                        inputMode === 'picker'
-                                            ? 'bg-indigo-600 text-white'
-                                            : 'bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-300 dark:hover:bg-slate-600'
-                                    }`}
-                                >
-                                    <Calendar className="w-4 h-4" />
-                                    Date Picker
-                                </button>
-                            </div>
-
-                            <div className="border-l border-slate-300 dark:border-slate-600 h-8 mx-2"></div>
-
-                            <label className="text-sm font-medium text-slate-700 dark:text-slate-300">
-                                Source Time Zone:
-                            </label>
-                            <select
-                                value={sourceTimezone}
-                                onChange={(e) => setSourceTimezone(e.target.value as TimeZoneId)}
-                                className="px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md bg-white dark:bg-slate-800 text-sm"
-                            >
-                                {TIME_ZONES.map((tz) => (
-                                    <option key={tz.id} value={tz.id}>
-                                        {tz.name} ({tz.abbreviation}) {tz.offset}
-                                    </option>
-                                ))}
-                            </select>
+            <main 
+                className="flex-1 flex flex-col h-full bg-slate-50 dark:bg-slate-950 transition-all duration-300"
+                style={{ marginLeft: width }}
+            >
+                <header className="flex items-center justify-between px-8 py-4 border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-slate-900 shadow-sm z-10 transition-colors">
+                    <div className="flex items-center gap-3">
+                        <div className="p-2 bg-amber-100 dark:bg-amber-900/30 rounded-lg text-amber-600 dark:text-amber-400">
+                            <Globe size={20} />
+                        </div>
+                        <div>
+                            <h1 className="text-xl font-bold text-slate-900 dark:text-slate-100">Time Zone Converter</h1>
+                            <p className="text-xs text-slate-500 dark:text-slate-400 font-medium font-mono uppercase tracking-tighter">UTC • AST • IST</p>
                         </div>
                     </div>
 
-                    {/* Input Section */}
-                    <div className="card">
-                        <div className="flex items-center justify-between mb-4">
-                            <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
-                                {inputMode === 'paste' ? 'Paste Time String' : 'Select Date & Time'}
-                            </h2>
-                            <div className="flex gap-2">
-                                <button
-                                    onClick={handleUseNow}
-                                    className="btn btn-secondary btn-sm flex items-center gap-1"
-                                >
-                                    <Clock className="w-4 h-4" />
-                                    Use Now
-                                </button>
-                                <button
-                                    onClick={handleClear}
-                                    className="btn btn-secondary btn-sm flex items-center gap-1"
-                                >
-                                    <Trash2 className="w-4 h-4" />
-                                    Clear
-                                </button>
-                            </div>
+                    <div className="flex items-center gap-4">
+                        <div className="flex bg-slate-100 dark:bg-slate-800 p-1 rounded-lg border border-slate-200 dark:border-slate-700">
+                          <button onClick={() => setInputMode('paste')} className={`px-4 py-1.5 rounded-md text-[10px] font-black uppercase tracking-widest transition-all ${inputMode === 'paste' ? 'bg-white dark:bg-slate-700 text-amber-600 shadow-sm' : 'text-slate-400'}`}>Paste Text</button>
+                          <button onClick={() => setInputMode('picker')} className={`px-4 py-1.5 rounded-md text-[10px] font-black uppercase tracking-widest transition-all ${inputMode === 'picker' ? 'bg-white dark:bg-slate-700 text-amber-600 shadow-sm' : 'text-slate-400'}`}>Picker</button>
                         </div>
-
-                        {inputMode === 'paste' ? (
-                            <div>
-                                <input
-                                    type="text"
-                                    value={textInput}
-                                    onChange={(e) => setTextInput(e.target.value)}
-                                    placeholder="e.g., 2026-01-01 11:04:44.001 or 01/01/2026 11:04:44"
-                                    className="w-full p-4 border border-slate-300 dark:border-slate-600 rounded-md bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 font-mono text-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                                />
-                                <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
-                                    Supported formats: YYYY-MM-DD HH:mm:ss.SSS, YYYY-MM-DD HH:mm:ss, YYYY-MM-DD HH:mm, DD/MM/YYYY HH:mm:ss
-                                </p>
-                            </div>
-                        ) : (
-                            <input
-                                type="datetime-local"
-                                step="1"
-                                value={dateTimeInput}
-                                onChange={(e) => setDateTimeInput(e.target.value)}
-                                className="w-full p-4 border border-slate-300 dark:border-slate-600 rounded-md bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 font-mono text-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                            />
-                        )}
+                        <button onClick={handleUseNow} className="px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded-xl text-xs font-bold transition-all flex items-center gap-2 shadow-lg shadow-amber-500/20 active:scale-95">
+                            <Zap size={14} /> Use Current
+                        </button>
                     </div>
+                </header>
 
-                    {/* Error Display */}
-                    {error && (
-                        <div className="bg-red-100 dark:bg-red-900/20 text-red-800 dark:text-red-200 p-4 rounded-md">
-                            {error}
-                        </div>
-                    )}
-
-                    {/* Results Section */}
-                    {convertedTimes.length > 0 && (
-                        <div className="card">
-                            <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100 mb-4">
-                                Converted Times
-                            </h2>
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                {convertedTimes.map((result, index) => (
-                                    <div
-                                        key={result.timezone}
-                                        className={`p-4 rounded-lg border-2 transition-all ${
-                                            result.timezone === sourceTimezone
-                                                ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-900/20'
-                                                : 'border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900'
-                                        }`}
-                                    >
-                                        <div className="flex items-center justify-between mb-2">
-                                            <span className="text-sm font-medium text-slate-600 dark:text-slate-400">
-                                                {result.name} <span className="text-indigo-600 dark:text-indigo-400 font-semibold">{result.diff}</span>
-                                                {result.timezone === sourceTimezone && (
-                                                    <span className="ml-2 px-2 py-0.5 text-xs bg-indigo-500 text-white rounded">
-                                                        Source
-                                                    </span>
-                                                )}
-                                            </span>
-                                            <button
-                                                onClick={() => handleCopy(result.time, index)}
-                                                className="p-1.5 rounded hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
-                                                title="Copy to clipboard"
-                                            >
-                                                {copiedIndex === index ? (
-                                                    <span className="text-green-500 text-xs font-medium">Copied!</span>
-                                                ) : (
-                                                    <Copy className="w-4 h-4 text-slate-500" />
-                                                )}
-                                            </button>
+                <div className="flex-1 overflow-auto p-8 scrollbar-thin scrollbar-thumb-slate-300 dark:scrollbar-thumb-slate-800">
+                    <div className="max-w-5xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                        {/* Input Area */}
+                        <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-xl p-8 group">
+                            <div className="flex items-center gap-6">
+                                <div className="flex-1">
+                                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-4 block">Source Time & Zone</label>
+                                    <div className="flex flex-col sm:flex-row gap-4">
+                                        <div className="flex-1">
+                                            {inputMode === 'paste' ? (
+                                                <input
+                                                    type="text"
+                                                    value={textInput}
+                                                    onChange={(e) => setTextInput(e.target.value)}
+                                                    placeholder="2026-04-04 11:21:40"
+                                                    className="w-full bg-slate-50 dark:bg-slate-800 border-2 border-transparent focus:border-amber-500/50 rounded-2xl p-4 font-mono text-xl text-slate-900 dark:text-white outline-none transition-all"
+                                                />
+                                            ) : (
+                                                <input
+                                                    type="datetime-local"
+                                                    step="1"
+                                                    value={dateTimeInput}
+                                                    onChange={(e) => setDateTimeInput(e.target.value)}
+                                                    className="w-full bg-slate-50 dark:bg-slate-800 border-2 border-transparent focus:border-amber-500/50 rounded-2xl p-4 font-mono text-xl text-slate-900 dark:text-white outline-none transition-all"
+                                                />
+                                            )}
                                         </div>
-                                        <div className="font-mono text-lg text-slate-900 dark:text-slate-100">
-                                            {result.time}
+                                        <div className="sm:w-64">
+                                            <select
+                                                value={sourceTimezone}
+                                                onChange={(e) => setSourceTimezone(e.target.value as TimeZoneId)}
+                                                className="w-full h-full bg-slate-50 dark:bg-slate-800 border-2 border-transparent focus:border-amber-500/50 rounded-2xl p-4 font-bold text-slate-600 dark:text-slate-300 outline-none cursor-pointer appearance-none"
+                                            >
+                                                {TIME_ZONES.map((tz) => (
+                                                    <option key={tz.id} value={tz.id}>{tz.abbreviation} ({tz.offset})</option>
+                                                ))}
+                                            </select>
                                         </div>
                                     </div>
-                                ))}
+                                </div>
+                            </div>
+                            {error && <p className="mt-4 text-xs font-bold text-red-500 flex items-center gap-2"><Trash2 size={12}/> {error}</p>}
+                        </div>
+
+                        {/* Results Grid */}
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            {convertedTimes.length > 0 ? (
+                                convertedTimes.map((tz, i) => (
+                                    <div 
+                                        key={tz.timezone}
+                                        className={`group relative bg-white dark:bg-slate-900 rounded-3xl border-2 p-6 shadow-xl transition-all duration-500 ${tz.timezone === sourceTimezone ? 'border-amber-500 ring-4 ring-amber-500/5' : 'border-slate-100 dark:border-slate-800'}`}
+                                        style={{ animationDelay: `${i * 100}ms` }}
+                                    >
+                                        <div className="flex items-center justify-between mb-6">
+                                            <div className="flex flex-col">
+                                                <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">{tz.name}</span>
+                                                <span className="text-xl font-black text-slate-900 dark:text-white">{tz.abbreviation}</span>
+                                            </div>
+                                            <div className={`px-2 py-1 rounded-lg text-[10px] font-black ${tz.timezone === sourceTimezone ? 'bg-amber-500 text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-500'}`}>
+                                                {tz.diff}
+                                            </div>
+                                        </div>
+                                        <div className="font-mono text-lg font-bold text-slate-600 dark:text-slate-300 break-all mb-6">
+                                            {tz.time}
+                                        </div>
+                                        <button 
+                                            onClick={() => handleCopy(tz.time)}
+                                            className="w-full flex items-center justify-center gap-2 py-3 bg-slate-50 dark:bg-slate-800/50 hover:bg-amber-600 hover:text-white rounded-2xl transition-all text-xs font-bold text-slate-500"
+                                        >
+                                            <Copy size={14} /> Copy Result
+                                        </button>
+                                    </div>
+                                ))
+                            ) : (
+                                <div className="col-span-3 h-64 border-4 border-dashed border-slate-100 dark:border-slate-800 rounded-3xl flex flex-col items-center justify-center text-slate-300 gap-4">
+                                     <ArrowRightLeft size={48} className="opacity-20" />
+                                     <p className="text-xs font-black uppercase tracking-widest">Waiting for input...</p>
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Technical Footer */}
+                        <div className="bg-slate-900 rounded-3xl p-8 text-white/50 flex flex-wrap gap-8 items-center justify-between border border-white/5">
+                            <div className="flex items-center gap-3">
+                                <div className="p-2 bg-white/5 rounded-xl text-emerald-400"><CheckCircle2 size={24}/></div>
+                                <div>
+                                    <h4 className="text-xs font-black uppercase text-white tracking-widest">Precision Engine</h4>
+                                    <p className="text-[10px] font-medium opacity-60">Milliseconds preserved during conversion.</p>
+                                </div>
+                            </div>
+                            <div className="flex gap-4">
+                                <InfoItem label="Engine" value="Intl.DateTimeFormat" />
+                                <InfoItem label="Base" value="ISO 8601" />
                             </div>
                         </div>
-                    )}
-
-                    {/* Info Card */}
-                    <div className="card bg-slate-50 dark:bg-slate-900">
-                        <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
-                            Time Zone Information
-                        </h3>
-                        <ul className="text-sm text-slate-600 dark:text-slate-400 space-y-1">
-                            <li>• <strong>UTC</strong> - Coordinated Universal Time (GMT+0)</li>
-                            <li>• <strong>Saudi Arabia (AST)</strong> - Arabia Standard Time (GMT+3)</li>
-                            <li>• <strong>Sri Lanka (IST)</strong> - India Standard Time (GMT+5:30)</li>
-                        </ul>
                     </div>
                 </div>
             </main>
+        </div>
+    );
+}
+
+function InfoItem({ label, value }: { label: string, value: string }) {
+    return (
+        <div className="text-right">
+            <div className="text-[8px] font-black uppercase tracking-tighter opacity-40">{label}</div>
+            <div className="text-[10px] font-bold text-white/80">{value}</div>
         </div>
     );
 }

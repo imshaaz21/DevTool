@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { Sidebar } from '@/components/Sidebar';
+import { useSidebar } from '@/components/SidebarContext';
 import {
   extractMimeType,
   createBlobUrl,
@@ -10,10 +11,11 @@ import {
   normalizeBase64,
   ImageMetadata
 } from '@/utils/base64ImageViewer';
-
 import { ImageModal } from '@/components/ImageModal';
+import { ImageIcon, Upload, Trash2, Download, Maximize2, Info, FileImage } from 'lucide-react';
 
 export default function Base64ViewerPage() {
+  const { width } = useSidebar();
   const [base64Input, setBase64Input] = useState<string>('');
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [metadata, setMetadata] = useState<ImageMetadata | null>(null);
@@ -22,7 +24,6 @@ export default function Base64ViewerPage() {
   const [showModal, setShowModal] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Clean up blob URL when component unmounts or when a new one is created
   useEffect(() => {
     return () => {
       if (imageUrl && imageUrl.startsWith('blob:')) {
@@ -33,67 +34,28 @@ export default function Base64ViewerPage() {
 
   const handleDecode = async (inputBase64?: string) => {
     let base64 = inputBase64 || base64Input;
-
     base64 = base64.trim();
-    if (base64.startsWith('"') && base64.endsWith('"')) {
-      base64 = base64.slice(1, -1);
-    }
-
+    if (base64.startsWith('"') && base64.endsWith('"')) base64 = base64.slice(1, -1);
     if (!base64.trim()) {
-      setError('Please enter a base64 string or upload an image');
+      setError('Enter Base64 data or upload an image');
       return;
     }
 
     setLoading(true);
     setError('');
-
     try {
-      // Clean up previous blob URL if it exists
-      if (imageUrl && imageUrl.startsWith('blob:')) {
-        URL.revokeObjectURL(imageUrl);
-      }
-
-      // For large base64 strings, process in a non-blocking way
-      // to prevent UI freezing
-      await new Promise(resolve => setTimeout(resolve, 0));
-
-      // Extract MIME type
+      if (imageUrl && imageUrl.startsWith('blob:')) URL.revokeObjectURL(imageUrl);
       const mimeType = extractMimeType(base64);
-
       if (!mimeType.startsWith('image/')) {
-        setError('The provided data does not appear to be an image');
-        setLoading(false);
-        return;
+        throw new Error('Data does not appear to be a valid image');
       }
-
-      // Create blob URL for the image
-      // Use setTimeout to prevent UI blocking for large images
-      await new Promise(resolve => setTimeout(resolve, 0));
       const normalizedBase64 = normalizeBase64(base64, mimeType);
-
-      // Show a processing message for large images
-      const isLargeImage = normalizedBase64.length > 1000000; // Roughly 1MB
-      if (isLargeImage) {
-        setError('Processing large image, please wait...');
-      }
-
-      // Process in a non-blocking way
-      await new Promise(resolve => setTimeout(resolve, 0));
       const blobUrl = createBlobUrl(normalizedBase64, mimeType);
       setImageUrl(blobUrl);
-
-      if (isLargeImage) {
-        setError('');
-      }
-
-      // Get image metadata
       const imageMetadata = await getImageMetadata(normalizedBase64);
       setMetadata(imageMetadata);
-      
-      // Auto-open modal on successful decode
-      setShowModal(true);
     } catch (err) {
-      setError(`Error decoding base64 image: ${(err as Error).message}`);
+      setError((err as Error).message);
       setImageUrl(null);
       setMetadata(null);
     } finally {
@@ -101,219 +63,161 @@ export default function Base64ViewerPage() {
     }
   };
 
-  const handleClear = () => {
-    // Clean up blob URL if it exists
-    if (imageUrl && imageUrl.startsWith('blob:')) {
-      URL.revokeObjectURL(imageUrl);
-    }
-
-    setBase64Input('');
-    setImageUrl(null);
-    setMetadata(null);
-    setError('');
-    setShowModal(false);
-
-    // Reset file input
-    if (fileInputRef.current) {
-      fileInputRef.current.value = '';
-    }
-  };
-
-  // Handle file upload and convert to base64
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
-
-    // Check if it's an image
     if (!file.type.startsWith('image/')) {
       setError('Please select an image file');
       return;
     }
-
-    setLoading(true);
-    setError('');
-
-    // Show a processing message for large files
-    if (file.size > 1000000) { // 1MB
-      setError('Processing large image, please wait...');
-    }
-
     const reader = new FileReader();
-
-    reader.onload = async (e) => {
-      try {
-        const base64 = e.target?.result as string;
-        setBase64Input(base64);
-
-        // Process the image
-        await handleDecode(base64);
-      } catch (err) {
-        setError(`Error processing image: ${(err as Error).message}`);
-        setLoading(false);
-      }
+    reader.onload = (e) => {
+      const base64 = e.target?.result as string;
+      setBase64Input(base64);
+      handleDecode(base64);
     };
-
-    reader.onerror = () => {
-      setError('Failed to read the file');
-      setLoading(false);
-    };
-
-    // Read the file as a data URL (base64)
     reader.readAsDataURL(file);
   };
 
   const handleDownload = () => {
     if (!imageUrl) return;
-
     const a = document.createElement('a');
     a.href = imageUrl;
-    a.download = `image.${metadata?.format.toLowerCase() || 'jpg'}`;
-    document.body.appendChild(a);
+    a.download = `decoded-image.${metadata?.format.toLowerCase() || 'png'}`;
     a.click();
-    document.body.removeChild(a);
   };
 
   return (
-    <div className="flex">
+    <div className="flex h-screen overflow-hidden">
       <Sidebar />
 
-      <main className="flex-1 ml-64 min-h-screen">
-        {/* Sticky Header */}
-        <div className="sticky top-0 z-10 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 p-6">
-          <h1 className="text-2xl font-bold">Base64 Image Viewer</h1>
-          <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
-            Decode and view Base64 encoded images with metadata information
-          </p>
-        </div>
-
-        {/* Main Content */}
-        <div className="p-6">
-
-          <div className="card mb-6">
-            <h2 className="text-xl font-semibold mb-4">Paste Base64 String or Upload Image</h2>
-            <textarea
-              className="w-full h-32 p-2 border border-gray-300 dark:border-gray-700 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 font-mono text-sm"
-              value={base64Input}
-              onChange={(e) => setBase64Input(e.target.value)}
-              placeholder="Paste your base64 encoded image data here..."
-            />
-
-            <div className="mt-4 mb-4">
-              <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">Or upload an image file (recommended for large images):</p>
-              <input
-                type="file"
-                ref={fileInputRef}
-                onChange={handleFileUpload}
-                accept="image/*"
-                className="block w-full text-sm text-gray-500 dark:text-gray-400
-                file:mr-4 file:py-2 file:px-4
-                file:rounded-md file:border-0
-                file:text-sm file:font-semibold
-                file:bg-blue-50 file:text-blue-700
-                dark:file:bg-blue-900/20 dark:file:text-blue-300
-                hover:file:bg-blue-100 dark:hover:file:bg-blue-900/30"
-              />
+      <main 
+        className="flex-1 flex flex-col h-full bg-slate-50 dark:bg-slate-950 transition-all duration-300"
+        style={{ marginLeft: width }}
+      >
+        <header className="flex items-center justify-between px-8 py-4 border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-slate-900 shadow-sm z-10 transition-colors">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-pink-100 dark:bg-pink-900/30 rounded-lg text-pink-600 dark:text-pink-400">
+              <ImageIcon size={20} />
             </div>
-
-            <div className="flex gap-2 mt-4">
-              <button
-                onClick={() => handleDecode()}
-                disabled={loading}
-                className="btn btn-primary"
-              >
-                {loading ? 'Processing...' : 'Decode Image'}
-              </button>
-              <button
-                onClick={handleClear}
-                className="btn btn-secondary"
-              >
-                Clear
-              </button>
+            <div>
+              <h1 className="text-xl font-bold text-slate-900 dark:text-slate-100">Base64 Image Viewer</h1>
+              <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">Render images from encoded strings instantly.</p>
             </div>
           </div>
+          <div className="flex items-center gap-3">
+             <button
+              onClick={() => fileInputRef.current?.click()}
+              className="px-4 py-2 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-xl text-xs font-bold hover:bg-slate-200 dark:hover:bg-slate-700 transition-all flex items-center gap-2"
+            >
+              <Upload size={14} /> Upload Image
+            </button>
+            <input type="file" ref={fileInputRef} onChange={handleFileUpload} accept="image/*" className="hidden" />
+            <button
+              onClick={() => handleDecode()}
+              disabled={loading}
+              className="px-6 py-2 bg-pink-600 hover:bg-pink-700 text-white rounded-xl text-sm font-bold transition-all shadow-lg shadow-pink-500/20 active:scale-95 disabled:opacity-50"
+            >
+              {loading ? 'Decoding...' : 'Render Image'}
+            </button>
+          </div>
+        </header>
 
-          {error && (
-            <div className="bg-red-100 dark:bg-red-900/20 text-red-800 dark:text-red-200 p-4 rounded-md mb-6">
-              {error}
-            </div>
-          )}
-
-          {imageUrl && (
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="md:col-span-2 card">
-                <h2 className="text-xl font-semibold mb-4">Image Preview</h2>
-                <div className="bg-gray-100 dark:bg-gray-800 p-4 rounded-md flex items-center justify-center">
-                  <div className="relative group cursor-pointer" onClick={() => setShowModal(true)}>
-                    <img
-                      src={imageUrl}
-                      alt="Decoded base64 image"
-                      className="max-w-full max-h-96 object-contain"
-                    />
-                    <div className="absolute inset-0 flex items-center justify-center bg-black/0 group-hover:bg-black/20 transition-colors rounded-md">
-                      <span className="opacity-0 group-hover:opacity-100 bg-black/60 text-white px-3 py-1 rounded-full text-sm font-medium transition-opacity">
-                        Click to Zoom
-                      </span>
-                    </div>
-                  </div>
+        <div className="flex-1 overflow-auto p-8 scrollbar-thin scrollbar-thumb-slate-300 dark:scrollbar-thumb-slate-800">
+          <div className="max-w-6xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+              {/* Input Area */}
+              <div className="lg:col-span-2 space-y-6">
+                <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-xl overflow-hidden min-h-[200px] flex flex-col group">
+                   <div className="px-5 py-3 border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/50 flex justify-between items-center">
+                      <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Base64 Input</span>
+                      <button onClick={() => setBase64Input('')} className="text-slate-400 hover:text-red-500 transition-colors"><Trash2 size={12}/></button>
+                   </div>
+                   <textarea
+                    value={base64Input}
+                    onChange={(e) => setBase64Input(e.target.value)}
+                    placeholder="Paste data:image/... base64 here..."
+                    className="flex-1 p-6 bg-transparent text-slate-900 dark:text-slate-100 font-mono text-xs focus:outline-none resize-none"
+                   />
                 </div>
-                <button
-                  onClick={handleDownload}
-                  className="btn btn-primary mt-4"
-                >
-                  Download Image
-                </button>
-              </div>
 
-              <div className="card">
-                <h2 className="text-xl font-semibold mb-4">Image Metadata</h2>
-                {metadata ? (
-                  <div className="space-y-2">
-                    <div className="flex justify-between">
-                      <span className="font-medium">Format:</span>
-                      <span>{metadata.format}</span>
+                {imageUrl ? (
+                  <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-2xl overflow-hidden group relative">
+                    <div className="px-5 py-3 border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/50 flex justify-between items-center">
+                      <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Rendering Canvas</span>
+                      <div className="flex items-center gap-2">
+                        <button onClick={() => setShowModal(true)} className="p-1.5 bg-slate-100 dark:bg-slate-800 rounded-lg text-slate-500 hover:text-indigo-500 transition-all"><Maximize2 size={14}/></button>
+                        <button onClick={handleDownload} className="p-1.5 bg-slate-100 dark:bg-slate-800 rounded-lg text-slate-500 hover:text-pink-500 transition-all"><Download size={14}/></button>
+                      </div>
                     </div>
-                    <div className="flex justify-between">
-                      <span className="font-medium">MIME Type:</span>
-                      <span>{metadata.mimeType}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="font-medium">Dimensions:</span>
-                      <span>{metadata.width} × {metadata.height} px</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="font-medium">Size:</span>
-                      <span>{formatFileSize(metadata.sizeInBytes)}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="font-medium">Aspect Ratio:</span>
-                      <span>
-                        {metadata.width / gcd(metadata.width, metadata.height)}:
-                        {metadata.height / gcd(metadata.width, metadata.height)}
-                      </span>
+                    <div className="p-8 flex items-center justify-center bg-slate-100 dark:bg-slate-950/50 min-h-[400px]">
+                      <img 
+                        src={imageUrl} 
+                        alt="Preview" 
+                        className="max-w-full max-h-[500px] object-contain shadow-2xl rounded-lg cursor-zoom-in" 
+                        onClick={() => setShowModal(true)}
+                      />
                     </div>
                   </div>
                 ) : (
-                  <p className="text-gray-500 dark:text-gray-400">
-                    Metadata will appear here after decoding an image.
-                  </p>
+                  <div className="h-[400px] rounded-3xl border-4 border-dashed border-slate-200 dark:border-slate-800 flex flex-col items-center justify-center text-slate-400 gap-4">
+                    <div className="p-6 bg-slate-100 dark:bg-slate-900 rounded-full">
+                      <FileImage size={48} className="opacity-20" />
+                    </div>
+                    <p className="text-sm font-bold uppercase tracking-widest opacity-50">Canvas is Empty</p>
+                  </div>
                 )}
               </div>
+
+              {/* Metadata Area */}
+              <div className="space-y-6">
+                <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-xl overflow-hidden">
+                  <div className="px-5 py-3 border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/50 flex items-center gap-2">
+                    <Info size={14} className="text-pink-500" />
+                    <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Image Intelligence</span>
+                  </div>
+                  <div className="p-6 space-y-4">
+                    {metadata ? (
+                      <>
+                        <MetaRow label="Format" value={metadata.format} />
+                        <MetaRow label="Dimensions" value={`${metadata.width} × ${metadata.height} px`} />
+                        <MetaRow label="File Size" value={formatFileSize(metadata.sizeInBytes)} />
+                        <MetaRow label="Mime Type" value={metadata.mimeType} />
+                        <MetaRow label="Aspect Ratio" value={(metadata.width / metadata.height).toFixed(2) + ':1'} />
+                      </>
+                    ) : (
+                      <p className="text-xs text-slate-400 italic text-center py-10">No metadata available yet.</p>
+                    )}
+                  </div>
+                </div>
+
+                <div className="bg-gradient-to-br from-pink-500 to-rose-600 rounded-3xl p-6 text-white shadow-xl shadow-pink-500/20">
+                  <h3 className="font-black uppercase tracking-tighter text-xl mb-1">Internal Tool</h3>
+                  <p className="text-xs font-medium opacity-80 leading-relaxed italic">"For when your JSON responses have images hidden as strings."</p>
+                </div>
+              </div>
             </div>
-          )}
+
+            {error && (
+              <div className="p-4 bg-red-500/10 border border-red-500/20 rounded-2xl flex items-center gap-3 text-red-600 dark:text-red-400 text-sm font-bold animate-in fade-in slide-in-from-top-2">
+                <Info size={18} />
+                {error}
+              </div>
+            )}
+          </div>
         </div>
-        
-        <ImageModal 
-          isOpen={showModal} 
-          onClose={() => setShowModal(false)} 
-          imageUrl={imageUrl}
-          imageAlt="Decoded Base64 Image"
-        />
+
+        <ImageModal isOpen={showModal} onClose={() => setShowModal(false)} imageUrl={imageUrl} imageAlt="Base64 Preview" />
       </main>
     </div>
   );
 }
 
-// Helper function to calculate greatest common divisor (for aspect ratio)
-function gcd(a: number, b: number): number {
-  return b === 0 ? a : gcd(b, a % b);
+function MetaRow({ label, value }: { label: string, value: string }) {
+  return (
+    <div className="flex items-center justify-between py-2 border-b border-slate-50 dark:border-slate-800/50 last:border-0">
+      <span className="text-xs font-bold text-slate-500 dark:text-slate-400">{label}</span>
+      <span className="text-xs font-mono font-black text-slate-900 dark:text-white uppercase">{value}</span>
+    </div>
+  );
 }

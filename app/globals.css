@@ -16,205 +16,93 @@
 
 @layer base {
   body {
-    @apply antialiased bg-slate-50 text-slate-900 dark:bg-slate-900 dark:text-slate-100;
+    @apply antialiased bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100;
     min-height: 100vh;
+  }
+
+  /* Custom Modern Scrollbar */
+  @layer utilities {
+    .scrollbar-thin::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    .scrollbar-thin::-webkit-scrollbar-track {
+      @apply bg-transparent;
+    }
+    .scrollbar-thin::-webkit-scrollbar-thumb {
+      @apply bg-slate-200 dark:bg-slate-800 rounded-full hover:bg-slate-300 dark:hover:bg-slate-700 transition-colors;
+    }
   }
 }
 
 @layer components {
-
-  /* Professional Card Styles */
+  /* Premium Card Styles */
   .card {
-    @apply bg-white dark:bg-slate-800 rounded-lg shadow-md border border-slate-300 dark:border-slate-600 p-6 hover:shadow-lg transition-shadow duration-200;
+    @apply bg-white dark:bg-slate-900 rounded-3xl shadow-sm border border-slate-200 dark:border-slate-800 p-6 transition-all duration-300;
+  }
+
+  .stat-card {
+    @apply bg-white dark:bg-slate-900 rounded-3xl p-6 border border-slate-100 dark:border-slate-800 shadow-sm flex flex-col gap-1 transition-all duration-300 hover:shadow-xl hover:-translate-y-1 hover:border-indigo-500/20;
   }
 
   /* Enterprise Button Styles */
   .btn {
-    @apply px-4 py-2.5 rounded-md font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 shadow-sm;
+    @apply px-5 py-2.5 rounded-2xl font-bold transition-all duration-300 focus:outline-none active:scale-95 shadow-sm;
   }
 
   .btn-primary {
-    @apply bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white shadow-md hover:shadow-lg;
+    @apply bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-500/20;
   }
 
   .btn-secondary {
-    @apply bg-white hover:bg-slate-50 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border-2 border-slate-400 dark:border-slate-500 hover:border-slate-500 dark:hover:border-slate-400;
+    @apply bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700;
   }
 
   .btn-sm {
-    @apply px-3 py-1.5 text-sm;
+    @apply px-3 py-1.5 text-[10px] uppercase tracking-widest;
   }
 
   /* Professional Input Styles */
   .input {
-    @apply block w-full rounded-md border-2 border-slate-400 dark:border-slate-500 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 px-3 py-2.5 shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-150;
-  }
-
-  .input:hover {
-    @apply border-slate-500 dark:border-slate-400;
-  }
-
-  /* Fieldset/Legend Styles */
-  .fieldset {
-    @apply border border-slate-200 dark:border-slate-700 rounded-lg p-4 bg-slate-50/50 dark:bg-slate-800/50;
-  }
-
-  .legend {
-    @apply text-sm font-semibold text-slate-700 dark:text-slate-300 px-2;
+    @apply block w-full rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/50 text-slate-900 dark:text-slate-100 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all duration-200;
   }
 
   /* Table Styles */
   .modern-table {
-    @apply min-w-full divide-y divide-slate-200 dark:divide-slate-700 border border-slate-200 dark:border-slate-700 rounded-lg overflow-hidden;
-  }
-
-  .modern-table thead {
-    @apply bg-slate-50 dark:bg-slate-800;
-  }
-
-  .modern-table thead.sticky {
-    @apply bg-slate-50 dark:bg-slate-800;
+    @apply min-w-full divide-y divide-slate-100 dark:divide-slate-800;
   }
 
   .modern-table th {
-    @apply px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider border-b border-slate-200 dark:border-slate-700;
+    @apply px-6 py-4 text-left text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-100 dark:border-slate-800;
   }
 
   .modern-table td {
-    @apply px-6 py-4 whitespace-nowrap text-sm text-slate-900 dark:text-slate-100;
+    @apply px-6 py-4 whitespace-nowrap text-sm text-slate-600 dark:text-slate-300;
   }
 
-  /* JSON Editor Container */
-  .json-container {
-    @apply bg-slate-900 rounded-lg border border-slate-700 shadow-inner font-mono text-sm overflow-hidden;
+  /* Animations */
+  @keyframes float {
+    0% { transform: translateY(0px); }
+    50% { transform: translateY(-10px); }
+    100% { transform: translateY(0px); }
   }
 
-  /* Stat Cards */
-  .stat-card {
-    @apply bg-white dark:bg-slate-800 rounded-lg p-4 border border-slate-200 dark:border-slate-700 shadow-sm;
+  .animate-float {
+    animation: float 6s ease-in-out infinite;
   }
+}
 
-  .stat-label {
-    @apply text-sm font-medium text-slate-500 dark:text-slate-400;
-  }
+/* Professional Dropdown Styles */
+select {
+  @apply appearance-none bg-no-repeat bg-right pr-10;
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+}
 
-  .stat-value {
-    @apply mt-1 text-2xl font-semibold text-slate-900 dark:text-slate-100;
-  }
+.dark select {
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%239ca3af' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+}
 
-  /* JSON Editor Dark Mode Support */
-  .dark .jsoneditor-react-container {
-    @apply border-slate-600;
-  }
-
-  /* Dark mode for JSON Editor */
-  .dark .jsoneditor,
-  .dark .jsoneditor-menu {
-    @apply bg-slate-800 border-slate-600;
-  }
-
-  .dark .jsoneditor-menu {
-    @apply bg-slate-700 border-b border-slate-600;
-  }
-
-  .dark .jsoneditor-contextmenu {
-    @apply bg-slate-700 border border-slate-600 shadow-xl;
-  }
-
-  .dark .jsoneditor-contextmenu ul li button {
-    @apply bg-slate-700 text-slate-100;
-  }
-
-  .dark .jsoneditor-contextmenu ul li button:hover,
-  .dark .jsoneditor-contextmenu ul li button:focus {
-    @apply bg-slate-600 text-white;
-  }
-
-  /* Dark mode for tree mode */
-  .dark .jsoneditor-tree {
-    @apply bg-slate-800 text-slate-100;
-  }
-
-  .dark .jsoneditor-field,
-  .dark .jsoneditor-value {
-    @apply text-slate-100;
-  }
-
-  .dark .jsoneditor-readonly {
-    @apply text-slate-400;
-  }
-
-  /* Dark mode for search box */
-  .dark .jsoneditor-search input {
-    @apply bg-slate-700 border-slate-600 text-slate-100;
-  }
-
-  .dark .jsoneditor-search input:focus {
-    @apply bg-slate-600 border-slate-500;
-  }
-
-  .dark .jsoneditor-search button {
-    @apply bg-slate-600 border-slate-500;
-  }
-
-  .dark .jsoneditor-search button:hover {
-    @apply bg-slate-500;
-  }
-
-  /* Dark mode for menu buttons */
-  .dark .jsoneditor-menu>button,
-  .dark .jsoneditor-menu>.jsoneditor-modes>button {
-    @apply bg-slate-600 text-slate-100 border-slate-500;
-  }
-
-  .dark .jsoneditor-menu>button:hover,
-  .dark .jsoneditor-menu>.jsoneditor-modes>button:hover {
-    @apply bg-slate-500 border-slate-400;
-  }
-
-  /* Dark mode for status bar */
-  .dark .jsoneditor-statusbar {
-    @apply bg-slate-700 border-t border-slate-600 text-slate-300;
-  }
-
-  /* Dark mode for code editor (ACE) */
-  .dark .ace-jsoneditor {
-    @apply bg-slate-900 text-slate-100;
-  }
-
-  .dark .ace-jsoneditor .ace_gutter {
-    @apply bg-slate-800 text-slate-400;
-  }
-
-  .dark .ace-jsoneditor .ace_gutter-active-line {
-    @apply bg-slate-700;
-  }
-
-  .dark .ace-jsoneditor .ace_marker-layer .ace_active-line {
-    @apply bg-slate-800;
-  }
-
-  .dark .ace-jsoneditor .ace_cursor {
-    @apply border-l-2 border-slate-100;
-  }
-
-  /* Dark mode for modals */
-  .dark .jsoneditor-modal {
-    @apply bg-slate-800 border border-slate-600;
-  }
-
-  .dark .jsoneditor-modal .pico-modal-header {
-    @apply bg-slate-700 border-b border-slate-600;
-  }
-
-  .dark .jsoneditor-modal input,
-  .dark .jsoneditor-modal textarea,
-  .dark .jsoneditor-modal select {
-    @apply bg-slate-700 border-slate-600 text-slate-100;
-  }
-
-  /* Dark mode for JSON repair */
-  .dark .jsoneditor-repair {
-    @apply bg-slate-700 border-slate-600 text-slate-100;
-  }
+/* Ensure options have readable backgrounds */
+option {
+  @apply bg-white text-slate-900 dark:bg-slate-800 dark:text-white;
 }

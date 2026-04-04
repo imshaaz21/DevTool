@@ -53,13 +53,13 @@ export function JsonDiffViewer({ jsonA, jsonB }: JsonDiffViewerProps) {
     const getLineClassName = (type: DiffLine['type']) => {
         switch (type) {
             case 'added':
-                return 'bg-green-900/30 border-l-4 border-green-500';
+                return 'bg-green-50 border-l-4 border-green-500 text-green-900';
             case 'removed':
-                return 'bg-red-900/30 border-l-4 border-red-500';
+                return 'bg-red-50 border-l-4 border-red-500 text-red-900';
             case 'modified':
-                return 'bg-yellow-900/30 border-l-4 border-yellow-500';
+                return 'bg-yellow-50 border-l-4 border-yellow-500 text-yellow-900';
             default:
-                return 'bg-slate-800/20';
+                return 'bg-slate-50';
         }
     };
 
@@ -70,7 +70,7 @@ export function JsonDiffViewer({ jsonA, jsonB }: JsonDiffViewerProps) {
                 <div className="bg-red-900/20 px-4 py-2 font-semibold text-red-400 border-b border-red-500/50">
                     JSON A
                 </div>
-                <div className="max-h-[600px] overflow-auto bg-slate-900">
+                <div className="max-h-[600px] overflow-auto bg-white">
                     {diffLines.map((diff, idx) => (
                         <div
                             key={idx}
@@ -93,7 +93,7 @@ export function JsonDiffViewer({ jsonA, jsonB }: JsonDiffViewerProps) {
                 <div className="bg-green-900/20 px-4 py-2 font-semibold text-green-400 border-b border-green-500/50">
                     JSON B
                 </div>
-                <div className="max-h-[600px] overflow-auto bg-slate-900">
+                <div className="max-h-[600px] overflow-auto bg-white">
                     {diffLines.map((diff, idx) => (
                         <div
                             key={idx}
