@@ -22,7 +22,21 @@ export function ImageModal({ isOpen, onClose, imageUrl, imageAlt = 'Image' }: Im
       setScale(1);
       setPosition({ x: 0, y: 0 });
     }
-  }, [isOpen, imageUrl]);
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        onClose();
+      }
+    };
+
+    if (isOpen) {
+      window.addEventListener('keydown', handleKeyDown);
+    }
+
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [isOpen, imageUrl, onClose]);
 
   // Handle zooming
   const handleZoomIn = () => {

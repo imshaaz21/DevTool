@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Sidebar } from '@/components/Sidebar';
 import { useSidebar } from '@/components/SidebarContext';
+import { CustomSelect } from '@/components/CustomSelect';
 import {
     parseInputTime,
     convertToTimezone,
@@ -125,7 +126,7 @@ export default function TimeZoneConverterPage() {
                                                     type="text"
                                                     value={textInput}
                                                     onChange={(e) => setTextInput(e.target.value)}
-                                                    placeholder="2026-04-04 11:21:40"
+                                                    placeholder="2026-04-04 11:21:40 or 1712568051409"
                                                     className="w-full bg-slate-50 dark:bg-slate-800 border-2 border-transparent focus:border-amber-500/50 rounded-2xl p-4 font-mono text-xl text-slate-900 dark:text-white outline-none transition-all"
                                                 />
                                             ) : (
@@ -139,15 +140,12 @@ export default function TimeZoneConverterPage() {
                                             )}
                                         </div>
                                         <div className="sm:w-64">
-                                            <select
+                                            <CustomSelect
                                                 value={sourceTimezone}
-                                                onChange={(e) => setSourceTimezone(e.target.value as TimeZoneId)}
-                                                className="w-full h-full bg-slate-50 dark:bg-slate-800 border-2 border-transparent focus:border-amber-500/50 rounded-2xl p-4 font-bold text-slate-600 dark:text-slate-300 outline-none cursor-pointer appearance-none"
-                                            >
-                                                {TIME_ZONES.map((tz) => (
-                                                    <option key={tz.id} value={tz.id}>{tz.abbreviation} ({tz.offset})</option>
-                                                ))}
-                                            </select>
+                                                onChange={(val) => setSourceTimezone(val as TimeZoneId)}
+                                                options={TIME_ZONES.map(tz => ({ label: `${tz.abbreviation} (${tz.offset})`, value: tz.id }))}
+                                                className="w-full h-full bg-slate-50 dark:bg-slate-800 border-2 border-transparent focus:border-amber-500/50 rounded-2xl p-4 font-bold text-slate-600 dark:text-slate-300"
+                                            />
                                         </div>
                                     </div>
                                 </div>

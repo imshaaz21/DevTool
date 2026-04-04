@@ -4,21 +4,27 @@ import { useState, useEffect } from 'react';
 import { toast } from 'react-hot-toast';
 import { Sidebar } from '@/components/Sidebar';
 import { useSidebar } from '@/components/SidebarContext';
+import { AutoToggle } from '@/components/AutoToggle';
 import { Fingerprint, Copy, RefreshCcw, Hash, Layers, CheckCircle2 } from 'lucide-react';
 
 export default function UuidGenerator() {
   const { width } = useSidebar();
   const [uuids, setUuids] = useState<string[]>([]);
   const [count, setCount] = useState(1);
+  const [autoGenerate, setAutoGenerate] = useState(true);
 
   useEffect(() => {
-    generateUuid();
-  }, []);
+    if (autoGenerate) {
+      generateUuid(false);
+    }
+  }, [count, autoGenerate]);
 
-  const generateUuid = () => {
+  const generateUuid = (showToast = true) => {
     const newUuids = Array.from({ length: count }, () => crypto.randomUUID());
     setUuids(newUuids);
-    toast.success(`Generated ${count} UUID${count > 1 ? 's' : ''}`);
+    if (showToast) {
+      toast.success(`Generated ${count} UUID${count > 1 ? 's' : ''}`);
+    }
   };
 
   const copyToClipboard = (text: string) => {
@@ -44,15 +50,18 @@ export default function UuidGenerator() {
               <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">Standard Version 4 (Random) IDs.</p>
             </div>
           </div>
-          <button
-            onClick={generateUuid}
-            className="px-6 py-2 bg-cyan-600 hover:bg-cyan-700 text-white rounded-xl text-sm font-bold transition-all shadow-lg shadow-cyan-500/20 active:scale-95"
-          >
-            <div className="flex items-center gap-2">
-              <RefreshCcw size={16} />
-              Generate New
-            </div>
-          </button>
+          <div className="flex items-center gap-4">
+            <AutoToggle enabled={autoGenerate} onChange={setAutoGenerate} activeColorClass="bg-cyan-600" activeTextClass="text-cyan-500 fill-cyan-500" />
+            <button
+              onClick={() => generateUuid(true)}
+              className="px-6 py-2 bg-cyan-600 hover:bg-cyan-700 text-white rounded-xl text-sm font-bold transition-all shadow-lg shadow-cyan-500/20 active:scale-95"
+            >
+              <div className="flex items-center gap-2">
+                <RefreshCcw size={16} />
+                Generate New
+              </div>
+            </button>
+          </div>
         </header>
 
         <div className="flex-1 overflow-auto p-8 scrollbar-thin scrollbar-thumb-slate-300 dark:scrollbar-thumb-slate-800">

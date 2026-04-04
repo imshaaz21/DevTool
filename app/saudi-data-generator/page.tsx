@@ -5,6 +5,8 @@ import { Sidebar } from '@/components/Sidebar';
 import { useSidebar } from '@/components/SidebarContext';
 import { Person, generatePeople } from '@/utils/saudiDataGenerator';
 import { InteractiveJson } from '@/components/InteractiveJson';
+import { CustomSelect } from '@/components/CustomSelect';
+import { AutoToggle } from '@/components/AutoToggle';
 import { Database, Download, Copy, RefreshCw, Table as TableIcon, FileJson, Users } from 'lucide-react';
 
 export default function SaudiDataGeneratorPage() {
@@ -17,11 +19,15 @@ export default function SaudiDataGeneratorPage() {
   const [nationality, setNationality] = useState<'Saudi' | 'Non-Saudi'>('Saudi');
   const [idType, setIdType] = useState<'NID' | 'Iqama' | 'Passport'>('NID');
   const [currentPage, setCurrentPage] = useState<number>(1);
+  const [autoGenerate, setAutoGenerate] = useState<boolean>(true);
   const rowsPerPage = 10;
 
   useEffect(() => {
-    handleGenerate();
-  }, []);
+    if (autoGenerate) {
+      handleGenerate();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [count, nationality, idType, autoGenerate]);
 
   const handleNationalityChange = (newNationality: 'Saudi' | 'Non-Saudi') => {
     setNationality(newNationality);
@@ -146,16 +152,19 @@ export default function SaudiDataGeneratorPage() {
               <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">Valid ID checksums & realistic test profiles.</p>
             </div>
           </div>
-          <button
-            onClick={handleGenerate}
-            disabled={loading || count < 1}
-            className="group relative px-6 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-sm font-bold transition-all shadow-lg shadow-indigo-500/20 active:scale-95 disabled:opacity-50"
-          >
-            <div className="flex items-center gap-2">
-              <RefreshCw size={16} className={loading ? 'animate-spin' : 'group-hover:rotate-180 transition-transform duration-500'} />
-              {loading ? 'Generating...' : 'Regenerate'}
-            </div>
-          </button>
+          <div className="flex items-center gap-4">
+            <AutoToggle enabled={autoGenerate} onChange={setAutoGenerate} activeColorClass="bg-indigo-600" activeTextClass="text-indigo-500 fill-indigo-500" />
+            <button
+              onClick={() => handleGenerate()}
+              disabled={loading || count < 1}
+              className="group relative px-6 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-sm font-bold transition-all shadow-lg shadow-indigo-500/20 active:scale-95 disabled:opacity-50"
+            >
+              <div className="flex items-center gap-2">
+                <RefreshCw size={16} className={loading ? 'animate-spin' : 'group-hover:rotate-180 transition-transform duration-500'} />
+                {loading ? 'Generating...' : 'Regenerate'}
+              </div>
+            </button>
+          </div>
         </header>
 
         {/* Scrollable Content */}
@@ -221,6 +230,7 @@ export default function SaudiDataGeneratorPage() {
                           <Th>ID Type</Th>
                           <Th>ID Number</Th>
                           <Th>Name</Th>
+                          <Th>Phone</Th>
                           <Th>Gender</Th>
                           <Th>DOB</Th>
                           <Th>Nationality</Th>
@@ -237,6 +247,7 @@ export default function SaudiDataGeneratorPage() {
                                 <span className="text-xs text-slate-400 font-arabic leading-relaxed">{person.arabicName}</span>
                               </div>
                             </Td>
+                            <Td className="font-mono text-xs font-bold text-slate-600 dark:text-slate-300">{person.phoneNumber}</Td>
                             <Td className="capitalize text-xs font-medium text-slate-500">{person.gender}</Td>
                             <Td className="text-xs text-slate-500">{person.dateOfBirth}</Td>
                             <Td><span className="text-xs font-bold text-slate-600 dark:text-slate-300">{person.nationality}</span></Td>
@@ -283,15 +294,14 @@ export default function SaudiDataGeneratorPage() {
 function SettingCard({ label, value, onChange, options, disabled = false }: { label: string, value: string, onChange: (v: string) => void, options: string[], disabled?: boolean }) {
   return (
     <div className={`stat-card group hover:border-indigo-500/50 transition-all ${disabled ? 'opacity-30 grayscale' : ''}`}>
-      <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 group-hover:text-indigo-500 transition-colors">{label}</label>
-      <select 
+      <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 group-hover:text-indigo-500 transition-colors block mb-1">{label}</label>
+      <CustomSelect 
         value={value} 
-        onChange={(e) => onChange(e.target.value)}
+        onChange={onChange}
         disabled={disabled}
-        className="w-full mt-1 bg-transparent text-xl font-black text-slate-900 dark:text-white outline-none cursor-pointer appearance-none"
-      >
-        {options.map(opt => <option key={opt} value={opt}>{opt}</option>)}
-      </select>
+        options={options}
+        className="bg-transparent text-xl font-black text-slate-900 dark:text-white"
+      />
     </div>
   );
 }

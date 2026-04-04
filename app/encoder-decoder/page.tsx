@@ -3,6 +3,8 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Sidebar } from '@/components/Sidebar';
 import { useSidebar } from '@/components/SidebarContext';
+import { CustomSelect } from '@/components/CustomSelect';
+import { AutoToggle } from '@/components/AutoToggle';
 import {
     encodeBase64,
     decodeBase64,
@@ -123,16 +125,12 @@ export default function EncoderDecoderPage() {
                     </div>
 
                     <div className="flex items-center gap-4">
-                        <div className="flex items-center gap-2 px-3 py-1.5 bg-slate-100 dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700">
-                            <Zap className={`w-3.5 h-3.5 ${isAutoConvert ? 'text-yellow-500 fill-yellow-500' : 'text-slate-400'}`} />
-                            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300">Auto</span>
-                            <button 
-                                onClick={() => setIsAutoConvert(!isAutoConvert)}
-                                className={`w-8 h-4 rounded-full transition-colors relative ${isAutoConvert ? 'bg-indigo-600' : 'bg-slate-300 dark:bg-slate-600'}`}
-                            >
-                                <div className={`absolute top-0.5 left-0.5 w-3 h-3 bg-white rounded-full transition-transform ${isAutoConvert ? 'translate-x-4' : 'translate-x-0'}`} />
-                            </button>
-                        </div>
+                        <AutoToggle 
+                           enabled={isAutoConvert} 
+                           onChange={setIsAutoConvert} 
+                           activeColorClass="bg-indigo-600" 
+                           activeTextClass="text-yellow-500 fill-yellow-500" 
+                        />
                         
                         <div className="flex bg-slate-100 dark:bg-slate-800 p-1 rounded-lg">
                             <button
@@ -185,16 +183,19 @@ export default function EncoderDecoderPage() {
                         ) : (
                             <div className="flex items-center gap-3">
                                 <label className="text-sm font-bold text-slate-700 dark:text-slate-300">Algorithm:</label>
-                                <select
-                                    value={hashType}
-                                    onChange={(e) => setHashType(e.target.value as HashType)}
-                                    className="px-4 py-2 border border-slate-300 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-sm font-semibold focus:ring-2 focus:ring-indigo-500 outline-none shadow-sm"
-                                >
-                                    <option value="md5">MD5</option>
-                                    <option value="sha1">SHA-1</option>
-                                    <option value="sha256">SHA-256</option>
-                                    <option value="sha512">SHA-512</option>
-                                </select>
+                                <div className="w-40 relative">
+                                    <CustomSelect
+                                        value={hashType}
+                                        onChange={(val) => setHashType(val as HashType)}
+                                        options={[
+                                            { label: 'MD5', value: 'md5' },
+                                            { label: 'SHA-1', value: 'sha1' },
+                                            { label: 'SHA-256', value: 'sha256' },
+                                            { label: 'SHA-512', value: 'sha512' }
+                                        ]}
+                                        className="w-full px-4 py-2 border border-slate-300 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-sm font-semibold focus:ring-2 focus:ring-indigo-500 shadow-sm"
+                                    />
+                                </div>
                             </div>
                         )}
 

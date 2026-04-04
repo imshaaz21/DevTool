@@ -33,6 +33,14 @@ export function parseInputTime(input: string, sourceTimezone: TimeZoneId): Date 
 
     const trimmed = input.trim();
     
+    // Check if it's a numeric unix timestamp (10 to 13 digits)
+    if (/^\d{10,13}$/.test(trimmed)) {
+        const num = parseInt(trimmed, 10);
+        // If length is 10, it's likely seconds, convert to ms
+        const ms = trimmed.length === 10 ? num * 1000 : num;
+        return new Date(ms);
+    }
+    
     // Try parsing as-is (for ISO 8601 with timezone, e.g. "Z" or offset)
     // Only use direct Date parsing if the string seems to contain timezone info
     // or if it doesn't match our specific formats that require manual timezone adjustment.
