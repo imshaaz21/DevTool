@@ -6,49 +6,57 @@
  */
 
 /**
- * Calculate Luhn algorithm checksum for a 9-digit array
+ * Calculate the 10th digit for a Saudi ID given the first 9 digits.
+ * Based on the Java backend logic: sum all 10 digits (even indices doubled and digit-summed) 
+ * so that the total is divisible by 10.
  * @param digits Array of 9 digits
- * @returns The checksum digit (0-9)
+ * @returns The 10th digit (0-9)
  */
-function calculateLuhnChecksum(digits: number[]): number {
+function calculateLuhnChecksumDigit(digits: number[]): number {
   let sum = 0;
   
   for (let i = 0; i < 9; i++) {
     if (i % 2 === 0) {
       // Double every even-indexed digit (0, 2, 4, 6, 8)
       let product = digits[i] * 2;
-      if (product > 9) {
-        sum += product - 9; // Subtract 9 if product is greater than 9
-      } else {
-        sum += product;
-      }
+      // In Java: val11 = valStr[0], val12 = valStr[1]. sum += v11 + v12.
+      // This is mathematically equivalent to (product > 9 ? product - 9 : product)
+      sum += (Math.floor(product / 10) + (product % 10));
     } else {
-      // Add odd-indexed digits as-is
+      // Add odd-indexed digits as-is (1, 3, 5, 7)
       sum += digits[i];
     }
   }
   
-  let checksum = 10 - (sum % 10);
-  if (checksum === 10) checksum = 0;
-  
-  return checksum;
+  // We need (sum + d9) % 10 === 0
+  // d9 = (10 - (sum % 10)) % 10
+  return (10 - (sum % 10)) % 10;
 }
 
 /**
- * Validate a 10-digit ID using the Luhn algorithm
+ * Validate a 10-digit ID using the Java-style Luhn algorithm
  * @param id The 10-digit ID string
- * @returns True if the checksum is valid
+ * @returns True if the checksum sum is divisible by 10
  */
 export function validateLuhnChecksum(id: string): boolean {
   if (id.length !== 10 || !/^\d{10}$/.test(id)) {
     return false;
   }
   
-  const digits = id.split('').map(Number);
-  const providedChecksum = digits[9];
-  const calculatedChecksum = calculateLuhnChecksum(digits.slice(0, 9));
+  let sum = 0;
+  for (let i = 0; i < 10; i++) {
+    const digit = parseInt(id.charAt(i), 10);
+    if (i % 2 === 0) {
+      // Even index (0, 2, 4, 6, 8)
+      let product = digit * 2;
+      sum += (Math.floor(product / 10) + (product % 10));
+    } else {
+      // Odd index (1, 3, 5, 7, 9)
+      sum += digit;
+    }
+  }
   
-  return providedChecksum === calculatedChecksum;
+  return sum % 10 === 0;
 }
 
 // Generate a random Saudi National ID (10 digits, starting with 1, with Luhn checksum)
@@ -61,8 +69,8 @@ export function generateSaudiNID(): string {
     first9Digits.push(Math.floor(Math.random() * 10));
   }
   
-  // Calculate and append the Luhn checksum
-  const checksum = calculateLuhnChecksum(first9Digits);
+  // Calculate and append the checksum digit
+  const checksum = calculateLuhnChecksumDigit(first9Digits);
   
   return first9Digits.join('') + checksum;
 }
@@ -77,8 +85,8 @@ export function generateIqamaID(): string {
     first9Digits.push(Math.floor(Math.random() * 10));
   }
   
-  // Calculate and append the Luhn checksum
-  const checksum = calculateLuhnChecksum(first9Digits);
+  // Calculate and append the checksum digit
+  const checksum = calculateLuhnChecksumDigit(first9Digits);
   
   return first9Digits.join('') + checksum;
 }
@@ -106,6 +114,7 @@ export function validateIqamaID(id: string): boolean {
   }
   return validateLuhnChecksum(id);
 }
+
 
 // Generate a random Passport ID (XX + 7 alphanumeric characters)
 export function generatePassportID(): string {
