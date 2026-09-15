@@ -58,6 +58,12 @@ export default function Home() {
               color="bg-indigo-500"
             />
             <ToolCard 
+              title="Screen Permission Decode" 
+              desc="Decompress and compress Gzip Base64 screen permissions with instant JSON formatting." 
+              href="/screen-permission-decode"
+              color="bg-teal-500"
+            />
+            <ToolCard 
               title="Encoder/Decoder" 
               desc="Instant Base64 & Hash generation (MD5, SHA-256) with auto-convert." 
               href="/encoder-decoder"

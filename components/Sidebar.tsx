@@ -16,7 +16,8 @@ import {
   Binary, 
   Globe,
   Clock,
-  Menu
+  Menu,
+  ShieldCheck
 } from 'lucide-react';
 
 export function Sidebar() {
@@ -54,6 +55,7 @@ export function Sidebar() {
     { name: 'Feature Toggle Diff', path: '/json-comparator', icon: Diff },
     { name: 'JSON Comparison', path: '/json-comparison', icon: Binary },
     { name: 'JSON Formatter', path: '/json-formatter', icon: FileJson },
+    { name: 'Screen Permission', path: '/screen-permission-decode', icon: ShieldCheck },
     { name: 'Base64 Image', path: '/base64-viewer', icon: ImageIcon },
     { name: 'UUID Generator', path: '/uuid-generator', icon: Fingerprint },
     { name: 'Encoder/Decoder', path: '/encoder-decoder', icon: Binary },
