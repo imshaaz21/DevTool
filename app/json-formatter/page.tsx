@@ -143,14 +143,14 @@ export default function JsonFormatterPage() {
           />
 
           {/* Mode Switcher */}
-          <div className="flex p-0.5 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-zinc-100 dark:bg-zinc-900">
+          <div className="flex p-0.5 rounded-lg border border-neutral-200 dark:border-neutral-800 bg-neutral-100 dark:bg-neutral-900">
             <button
               type="button"
               onClick={() => setMode('format')}
               className={`px-3 py-1 text-xs font-medium rounded-md transition-colors ${
                 mode === 'format'
-                  ? 'bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 shadow-sm'
-                  : 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200'
+                  ? 'bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 shadow-sm'
+                  : 'text-neutral-500 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-200'
               }`}
             >
               Format
@@ -160,8 +160,8 @@ export default function JsonFormatterPage() {
               onClick={() => setMode('parse')}
               className={`px-3 py-1 text-xs font-medium rounded-md transition-colors ${
                 mode === 'parse'
-                  ? 'bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 shadow-sm'
-                  : 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200'
+                  ? 'bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 shadow-sm'
+                  : 'text-neutral-500 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-200'
               }`}
             >
               Stringified
@@ -171,8 +171,8 @@ export default function JsonFormatterPage() {
               onClick={() => setMode('minify')}
               className={`px-3 py-1 text-xs font-medium rounded-md transition-colors ${
                 mode === 'minify'
-                  ? 'bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 shadow-sm'
-                  : 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200'
+                  ? 'bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 shadow-sm'
+                  : 'text-neutral-500 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-200'
               }`}
             >
               Minify
@@ -205,11 +205,11 @@ export default function JsonFormatterPage() {
           <div className="flex-1 grid grid-cols-1 lg:grid-cols-2 gap-4 min-h-0">
             {/* Input Editor */}
             <div className="card p-0 flex flex-col overflow-hidden">
-              <div className="px-4 py-2 border-b border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/50 flex items-center justify-between shrink-0">
-                <span className="text-xs font-medium text-zinc-600 dark:text-zinc-400 font-mono">
+              <div className="px-4 py-2 border-b border-neutral-200 dark:border-neutral-800 bg-neutral-50/50 dark:bg-neutral-900/50 flex items-center justify-between shrink-0">
+                <span className="text-xs font-medium text-neutral-600 dark:text-neutral-400 font-mono">
                   Input JSON
                 </span>
-                <span className="text-[11px] font-mono text-zinc-400">
+                <span className="text-[11px] font-mono text-neutral-400">
                   {input.length.toLocaleString()} chars
                 </span>
               </div>
@@ -217,16 +217,16 @@ export default function JsonFormatterPage() {
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 placeholder="Paste or type raw, minified, or stringified JSON here..."
-                className="flex-1 w-full p-4 bg-transparent text-zinc-900 dark:text-zinc-100 font-mono text-xs leading-relaxed focus:outline-none resize-none placeholder:text-zinc-400 dark:placeholder:text-zinc-600"
+                className="flex-1 w-full p-4 bg-transparent text-neutral-900 dark:text-neutral-100 font-mono text-xs leading-relaxed focus:outline-none resize-none placeholder:text-neutral-400 dark:placeholder:text-neutral-600"
                 spellCheck={false}
               />
             </div>
 
             {/* Output Editor */}
             <div className="card p-0 flex flex-col overflow-hidden">
-              <div className="px-4 py-2 border-b border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/50 flex items-center justify-between shrink-0">
+              <div className="px-4 py-2 border-b border-neutral-200 dark:border-neutral-800 bg-neutral-50/50 dark:bg-neutral-900/50 flex items-center justify-between shrink-0">
                 <div className="flex items-center gap-2">
-                  <span className="text-xs font-medium text-zinc-600 dark:text-zinc-400 font-mono">
+                  <span className="text-xs font-medium text-neutral-600 dark:text-neutral-400 font-mono">
                     Formatted Result
                   </span>
                   {iterations && (
@@ -262,7 +262,7 @@ export default function JsonFormatterPage() {
                 </div>
               </div>
 
-              <div className="flex-1 relative overflow-hidden bg-white dark:bg-zinc-950">
+              <div className="flex-1 relative overflow-hidden bg-white dark:bg-neutral-950">
                 {outputJson && (mode === 'parse' || mode === 'format') ? (
                   <div className="h-full p-1">
                     <JsonEditorComponent
@@ -274,13 +274,13 @@ export default function JsonFormatterPage() {
                     />
                   </div>
                 ) : output ? (
-                  <pre className="absolute inset-0 p-4 font-mono text-xs leading-relaxed overflow-auto bg-zinc-900 text-zinc-100 dark:bg-zinc-950 dark:text-zinc-200">
+                  <pre className="absolute inset-0 p-4 font-mono text-xs leading-relaxed overflow-auto bg-neutral-900 text-neutral-100 dark:bg-neutral-950 dark:text-neutral-200">
                     <code>{output}</code>
                   </pre>
                 ) : (
-                  <div className="absolute inset-0 flex flex-col items-center justify-center text-zinc-400 gap-2 p-4">
-                    <FileJson size={32} className="text-zinc-300 dark:text-zinc-700" />
-                    <span className="text-xs text-zinc-400">Waiting for valid JSON input...</span>
+                  <div className="absolute inset-0 flex flex-col items-center justify-center text-neutral-400 gap-2 p-4">
+                    <FileJson size={32} className="text-neutral-300 dark:text-neutral-700" />
+                    <span className="text-xs text-neutral-400">Waiting for valid JSON input...</span>
                   </div>
                 )}
               </div>

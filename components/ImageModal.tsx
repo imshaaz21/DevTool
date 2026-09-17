@@ -92,24 +92,24 @@ export function ImageModal({ isOpen, onClose, imageUrl, imageAlt = 'Image Previe
         className="absolute top-4 right-4 flex items-center gap-2 z-10"
         onClick={e => e.stopPropagation()}
       >
-        <div className="bg-zinc-900/90 border border-zinc-800 rounded-lg p-1 flex items-center gap-1 shadow-lg">
+        <div className="bg-neutral-900/90 border border-neutral-800 rounded-lg p-1 flex items-center gap-1 shadow-lg">
           <button
             onClick={handleZoomIn}
-            className="p-1.5 text-zinc-300 hover:text-white hover:bg-zinc-800 rounded transition-colors"
+            className="p-1.5 text-neutral-300 hover:text-white hover:bg-neutral-800 rounded transition-colors"
             title="Zoom In"
           >
             <ZoomIn className="w-4 h-4" />
           </button>
           <button
             onClick={handleZoomOut}
-            className="p-1.5 text-zinc-300 hover:text-white hover:bg-zinc-800 rounded transition-colors"
+            className="p-1.5 text-neutral-300 hover:text-white hover:bg-neutral-800 rounded transition-colors"
             title="Zoom Out"
           >
             <ZoomOut className="w-4 h-4" />
           </button>
           <button
             onClick={handleResetZoom}
-            className="p-1.5 text-zinc-300 hover:text-white hover:bg-zinc-800 rounded transition-colors"
+            className="p-1.5 text-neutral-300 hover:text-white hover:bg-neutral-800 rounded transition-colors"
             title="Reset Zoom"
           >
             {scale === 1 ? <Maximize className="w-4 h-4" /> : <Minimize className="w-4 h-4" />}
@@ -118,7 +118,7 @@ export function ImageModal({ isOpen, onClose, imageUrl, imageAlt = 'Image Previe
 
         <button
           onClick={onClose}
-          className="p-2 bg-zinc-900/90 hover:bg-zinc-800 border border-zinc-800 text-zinc-300 hover:text-white rounded-lg transition-colors shadow-lg"
+          className="p-2 bg-neutral-900/90 hover:bg-neutral-800 border border-neutral-800 text-neutral-300 hover:text-white rounded-lg transition-colors shadow-lg"
           title="Close (Esc)"
         >
           <X className="w-4 h-4" />
@@ -149,7 +149,7 @@ export function ImageModal({ isOpen, onClose, imageUrl, imageAlt = 'Image Previe
       </div>
 
       {/* Zoom indicator */}
-      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-zinc-900/80 border border-zinc-800 text-zinc-200 px-3 py-1 rounded-full text-xs font-mono font-medium pointer-events-none">
+      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-neutral-900/80 border border-neutral-800 text-neutral-200 px-3 py-1 rounded-full text-xs font-mono font-medium pointer-events-none">
         {Math.round(scale * 100)}%
       </div>
     </div>

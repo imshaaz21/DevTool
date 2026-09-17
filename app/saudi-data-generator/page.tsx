@@ -190,7 +190,7 @@ export default function SaudiDataGeneratorPage() {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
               {/* Record Count */}
               <div>
-                <label className="block text-[11px] font-medium text-zinc-500 dark:text-zinc-400 mb-1.5">
+                <label className="block text-[11px] font-medium text-neutral-500 dark:text-neutral-400 mb-1.5">
                   Record Count
                 </label>
                 <div className="flex items-center gap-1.5">
@@ -213,8 +213,8 @@ export default function SaudiDataGeneratorPage() {
                         }}
                         className={`px-2 py-1.5 text-xs rounded-lg border transition-colors ${
                           count === preset
-                            ? 'bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900 border-zinc-900 dark:border-zinc-100 font-medium'
-                            : 'bg-white dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 border-zinc-200 dark:border-zinc-700 hover:bg-zinc-50'
+                            ? 'bg-neutral-900 text-white dark:bg-neutral-100 dark:text-neutral-900 border-neutral-900 dark:border-neutral-100 font-medium'
+                            : 'bg-white dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 border-neutral-200 dark:border-neutral-700 hover:bg-neutral-50'
                         }`}
                       >
                         {preset}
@@ -226,7 +226,7 @@ export default function SaudiDataGeneratorPage() {
 
               {/* Nationality */}
               <div>
-                <label className="block text-[11px] font-medium text-zinc-500 dark:text-zinc-400 mb-1.5">
+                <label className="block text-[11px] font-medium text-neutral-500 dark:text-neutral-400 mb-1.5">
                   Nationality
                 </label>
                 <CustomSelect
@@ -238,7 +238,7 @@ export default function SaudiDataGeneratorPage() {
 
               {/* ID Type */}
               <div>
-                <label className="block text-[11px] font-medium text-zinc-500 dark:text-zinc-400 mb-1.5">
+                <label className="block text-[11px] font-medium text-neutral-500 dark:text-neutral-400 mb-1.5">
                   ID Type
                 </label>
                 <CustomSelect
@@ -251,17 +251,17 @@ export default function SaudiDataGeneratorPage() {
 
               {/* View Format */}
               <div>
-                <label className="block text-[11px] font-medium text-zinc-500 dark:text-zinc-400 mb-1.5">
+                <label className="block text-[11px] font-medium text-neutral-500 dark:text-neutral-400 mb-1.5">
                   View Format
                 </label>
-                <div className="grid grid-cols-2 p-0.5 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900">
+                <div className="grid grid-cols-2 p-0.5 rounded-lg border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900">
                   <button
                     type="button"
                     onClick={() => setOutputFormat('table')}
                     className={`flex items-center justify-center gap-1.5 py-1.5 text-xs rounded-md transition-colors ${
                       outputFormat === 'table'
-                        ? 'bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 shadow-sm font-medium'
-                        : 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-800 dark:hover:text-zinc-200'
+                        ? 'bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 shadow-sm font-medium'
+                        : 'text-neutral-500 dark:text-neutral-400 hover:text-neutral-800 dark:hover:text-neutral-200'
                     }`}
                   >
                     <TableIcon size={13} />
@@ -272,8 +272,8 @@ export default function SaudiDataGeneratorPage() {
                     onClick={() => setOutputFormat('json')}
                     className={`flex items-center justify-center gap-1.5 py-1.5 text-xs rounded-md transition-colors ${
                       outputFormat === 'json'
-                        ? 'bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 shadow-sm font-medium'
-                        : 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-800 dark:hover:text-zinc-200'
+                        ? 'bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 shadow-sm font-medium'
+                        : 'text-neutral-500 dark:text-neutral-400 hover:text-neutral-800 dark:hover:text-neutral-200'
                     }`}
                   >
                     <FileCode size={13} />
@@ -287,8 +287,8 @@ export default function SaudiDataGeneratorPage() {
           {/* Results Container */}
           {people.length > 0 && (
             <div className="card p-0 overflow-hidden">
-              <div className="px-4 py-2.5 border-b border-zinc-200 dark:border-zinc-800 flex flex-wrap items-center justify-between gap-2 bg-zinc-50/50 dark:bg-zinc-900/50">
-                <span className="text-xs font-medium text-zinc-600 dark:text-zinc-400 font-mono">
+              <div className="px-4 py-2.5 border-b border-neutral-200 dark:border-neutral-800 flex flex-wrap items-center justify-between gap-2 bg-neutral-50/50 dark:bg-neutral-900/50">
+                <span className="text-xs font-medium text-neutral-600 dark:text-neutral-400 font-mono">
                   {people.length.toLocaleString()} profiles generated
                 </span>
                 <div className="flex items-center gap-2">
@@ -324,46 +324,46 @@ export default function SaudiDataGeneratorPage() {
                         <th className="text-right">Action</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-zinc-200/60 dark:divide-zinc-800/60">
+                    <tbody className="divide-y divide-neutral-200/60 dark:divide-neutral-800/60">
                       {currentPageData.map((person, idx) => (
                         <tr
                           key={idx}
-                          className="hover:bg-zinc-50/80 dark:hover:bg-zinc-850/50 transition-colors"
+                          className="hover:bg-neutral-50/80 dark:hover:bg-neutral-800/40 transition-colors"
                         >
                           <td>
-                            <span className="inline-block px-1.5 py-0.5 rounded text-[10px] font-mono font-medium bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 border border-zinc-200 dark:border-zinc-700">
+                            <span className="inline-block px-1.5 py-0.5 rounded text-[10px] font-mono font-medium bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 border border-neutral-200 dark:border-neutral-700">
                               {person.idType}
                             </span>
                           </td>
-                          <td className="font-mono text-xs font-semibold text-zinc-900 dark:text-zinc-100">
+                          <td className="font-mono text-xs font-semibold text-neutral-900 dark:text-neutral-100">
                             {person.idNumber}
                           </td>
                           <td>
                             <div className="flex flex-col">
-                              <span className="text-xs font-medium text-zinc-900 dark:text-zinc-100">
+                              <span className="text-xs font-medium text-neutral-900 dark:text-neutral-100">
                                 {person.englishName}
                               </span>
-                              <span className="text-[11px] text-zinc-400 dark:text-zinc-500 font-arabic">
+                              <span className="text-[11px] text-neutral-400 dark:text-neutral-500 font-arabic">
                                 {person.arabicName}
                               </span>
                             </div>
                           </td>
-                          <td className="font-mono text-xs text-zinc-600 dark:text-zinc-400">
+                          <td className="font-mono text-xs text-neutral-600 dark:text-neutral-400">
                             {person.phoneNumber}
                           </td>
-                          <td className="capitalize text-xs text-zinc-500 dark:text-zinc-400">
+                          <td className="capitalize text-xs text-neutral-500 dark:text-neutral-400">
                             {person.gender}
                           </td>
-                          <td className="text-xs text-zinc-500 dark:text-zinc-400 font-mono">
+                          <td className="text-xs text-neutral-500 dark:text-neutral-400 font-mono">
                             {person.dateOfBirth}
                           </td>
-                          <td className="text-xs text-zinc-600 dark:text-zinc-300">
+                          <td className="text-xs text-neutral-600 dark:text-neutral-300">
                             {person.nationality}
                           </td>
                           <td className="text-right">
                             <button
                               onClick={() => handleCopySingle(JSON.stringify(person, null, 2), idx)}
-                              className="p-1 rounded text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
+                              className="p-1 rounded text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
                               title="Copy profile JSON"
                             >
                               {copiedIndex === idx ? (
@@ -386,13 +386,13 @@ export default function SaudiDataGeneratorPage() {
 
               {/* Pagination */}
               {outputFormat === 'table' && totalPages > 1 && (
-                <div className="px-4 py-2.5 border-t border-zinc-200 dark:border-zinc-800 flex items-center justify-between text-xs text-zinc-500 bg-zinc-50/50 dark:bg-zinc-900/50 font-mono">
+                <div className="px-4 py-2.5 border-t border-neutral-200 dark:border-neutral-800 flex items-center justify-between text-xs text-neutral-500 bg-neutral-50/50 dark:bg-neutral-900/50 font-mono">
                   <span>Page {currentPage} of {totalPages}</span>
                   <div className="flex items-center gap-1">
                     <button
                       onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
                       disabled={currentPage === 1}
-                      className="p-1 rounded hover:bg-zinc-100 dark:hover:bg-zinc-800 disabled:opacity-30 transition-colors"
+                      className="p-1 rounded hover:bg-neutral-100 dark:hover:bg-neutral-800 disabled:opacity-30 transition-colors"
                       title="Previous Page"
                     >
                       <ChevronLeft size={15} />
@@ -400,7 +400,7 @@ export default function SaudiDataGeneratorPage() {
                     <button
                       onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
                       disabled={currentPage === totalPages}
-                      className="p-1 rounded hover:bg-zinc-100 dark:hover:bg-zinc-800 disabled:opacity-30 transition-colors"
+                      className="p-1 rounded hover:bg-neutral-100 dark:hover:bg-neutral-800 disabled:opacity-30 transition-colors"
                       title="Next Page"
                     >
                       <ChevronRight size={15} />

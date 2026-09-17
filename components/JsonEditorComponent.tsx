@@ -80,7 +80,7 @@ export function JsonEditorComponent({
         <div
             ref={containerRef}
             style={{ height }}
-            className="jsoneditor-react-container border border-zinc-200 dark:border-zinc-800 rounded-lg overflow-hidden"
+            className="jsoneditor-react-container border border-neutral-200 dark:border-neutral-800 rounded-lg overflow-hidden"
         />
     );
 }

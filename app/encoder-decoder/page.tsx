@@ -140,13 +140,13 @@ export default function EncoderDecoderPage() {
             onChange={setIsAutoConvert}
           />
 
-          <div className="flex p-0.5 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-zinc-100 dark:bg-zinc-900">
+          <div className="flex p-0.5 rounded-lg border border-neutral-200 dark:border-neutral-800 bg-neutral-100 dark:bg-neutral-900">
             <button
               onClick={() => setMode('encode')}
               className={`px-3 py-1 rounded-md text-xs font-medium transition-colors ${
                 mode === 'encode'
-                  ? 'bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 shadow-sm'
-                  : 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200'
+                  ? 'bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 shadow-sm'
+                  : 'text-neutral-500 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-200'
               }`}
             >
               Base64
@@ -155,8 +155,8 @@ export default function EncoderDecoderPage() {
               onClick={() => setMode('hash')}
               className={`px-3 py-1 rounded-md text-xs font-medium transition-colors ${
                 mode === 'hash'
-                  ? 'bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 shadow-sm'
-                  : 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200'
+                  ? 'bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 shadow-sm'
+                  : 'text-neutral-500 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-200'
               }`}
             >
               Hash Checksum
@@ -169,13 +169,13 @@ export default function EncoderDecoderPage() {
           <div className="flex flex-wrap items-center justify-between gap-2 shrink-0">
             <div className="flex items-center gap-3">
               {mode === 'encode' ? (
-                <div className="flex p-0.5 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-zinc-100 dark:bg-zinc-900">
+                <div className="flex p-0.5 rounded-lg border border-neutral-200 dark:border-neutral-800 bg-neutral-100 dark:bg-neutral-900">
                   <button
                     onClick={() => setIsEncoding(true)}
                     className={`px-3 py-1 rounded-md text-xs font-medium transition-colors ${
                       isEncoding
-                        ? 'bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 shadow-sm'
-                        : 'text-zinc-500 dark:text-zinc-400'
+                        ? 'bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 shadow-sm'
+                        : 'text-neutral-500 dark:text-neutral-400'
                     }`}
                   >
                     Encode
@@ -184,8 +184,8 @@ export default function EncoderDecoderPage() {
                     onClick={() => setIsEncoding(false)}
                     className={`px-3 py-1 rounded-md text-xs font-medium transition-colors ${
                       !isEncoding
-                        ? 'bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 shadow-sm'
-                        : 'text-zinc-500 dark:text-zinc-400'
+                        ? 'bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 shadow-sm'
+                        : 'text-neutral-500 dark:text-neutral-400'
                     }`}
                   >
                     Decode
@@ -193,7 +193,7 @@ export default function EncoderDecoderPage() {
                 </div>
               ) : (
                 <div className="flex items-center gap-2">
-                  <span className="text-xs font-medium text-zinc-500">Algorithm:</span>
+                  <span className="text-xs font-medium text-neutral-500">Algorithm:</span>
                   <div className="w-32">
                     <CustomSelect
                       value={hashType}
@@ -252,11 +252,11 @@ export default function EncoderDecoderPage() {
           <div className="flex-1 grid grid-cols-1 lg:grid-cols-2 gap-4 min-h-0">
             {/* Input Card */}
             <div className="card p-0 flex flex-col overflow-hidden">
-              <div className="px-4 py-2 border-b border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/50 flex items-center justify-between shrink-0">
-                <span className="text-xs font-medium text-zinc-600 dark:text-zinc-400 font-mono">
+              <div className="px-4 py-2 border-b border-neutral-200 dark:border-neutral-800 bg-neutral-50/50 dark:bg-neutral-900/50 flex items-center justify-between shrink-0">
+                <span className="text-xs font-medium text-neutral-600 dark:text-neutral-400 font-mono">
                   Input Source
                 </span>
-                <span className="text-[11px] font-mono text-zinc-400">
+                <span className="text-[11px] font-mono text-neutral-400">
                   {input.length.toLocaleString()} chars
                 </span>
               </div>
@@ -264,15 +264,15 @@ export default function EncoderDecoderPage() {
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 placeholder={mode === 'hash' ? 'Paste text to generate cryptographic hash...' : 'Paste text to convert...'}
-                className="flex-1 w-full p-4 bg-transparent text-zinc-900 dark:text-zinc-100 font-mono text-xs leading-relaxed focus:outline-none resize-none placeholder:text-zinc-400 dark:placeholder:text-zinc-600"
+                className="flex-1 w-full p-4 bg-transparent text-neutral-900 dark:text-neutral-100 font-mono text-xs leading-relaxed focus:outline-none resize-none placeholder:text-neutral-400 dark:placeholder:text-neutral-600"
                 spellCheck={false}
               />
             </div>
 
             {/* Output Card */}
             <div className="card p-0 flex flex-col overflow-hidden">
-              <div className="px-4 py-2 border-b border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/50 flex items-center justify-between shrink-0">
-                <span className="text-xs font-medium text-zinc-600 dark:text-zinc-400 font-mono">
+              <div className="px-4 py-2 border-b border-neutral-200 dark:border-neutral-800 bg-neutral-50/50 dark:bg-neutral-900/50 flex items-center justify-between shrink-0">
+                <span className="text-xs font-medium text-neutral-600 dark:text-neutral-400 font-mono">
                   Output Result
                 </span>
                 <button
@@ -288,7 +288,7 @@ export default function EncoderDecoderPage() {
                 readOnly
                 value={output}
                 placeholder="Result will appear here..."
-                className="flex-1 w-full p-4 bg-zinc-50/50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 font-mono text-xs leading-relaxed focus:outline-none resize-none placeholder:text-zinc-400 dark:placeholder:text-zinc-600"
+                className="flex-1 w-full p-4 bg-neutral-50/50 dark:bg-neutral-950 text-neutral-900 dark:text-neutral-100 font-mono text-xs leading-relaxed focus:outline-none resize-none placeholder:text-neutral-400 dark:placeholder:text-neutral-600"
                 spellCheck={false}
               />
             </div>
