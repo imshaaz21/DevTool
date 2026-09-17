@@ -112,7 +112,7 @@ export function InteractiveJson({ data, editable = false, onEdit }: JsonViewerPr
     if (value === null) {
       return canEdit ? (
         <span
-          className="text-zinc-400 cursor-pointer hover:bg-zinc-200 dark:hover:bg-zinc-800 px-1 rounded"
+          className="text-neutral-400 cursor-pointer hover:bg-neutral-200 dark:hover:bg-neutral-800 px-1 rounded"
           onClick={() => {
             const newValue = prompt('Edit value:', 'null');
             if (newValue !== null) {
@@ -127,18 +127,18 @@ export function InteractiveJson({ data, editable = false, onEdit }: JsonViewerPr
           null
         </span>
       ) : (
-        <span className="text-zinc-400">null</span>
+        <span className="text-neutral-400">null</span>
       );
     }
 
     if (typeof value === 'undefined') {
-      return <span className="text-zinc-400">undefined</span>;
+      return <span className="text-neutral-400">undefined</span>;
     }
 
     if (typeof value === 'boolean') {
       return canEdit ? (
         <span
-          className="text-amber-600 dark:text-amber-400 cursor-pointer hover:bg-zinc-100 dark:hover:bg-zinc-800 px-1 rounded"
+          className="text-amber-600 dark:text-amber-400 cursor-pointer hover:bg-neutral-100 dark:hover:bg-neutral-800 px-1 rounded"
           onClick={() => {
             updateJsonValue(path, !value);
           }}
@@ -153,7 +153,7 @@ export function InteractiveJson({ data, editable = false, onEdit }: JsonViewerPr
     if (typeof value === 'number') {
       return canEdit ? (
         <span
-          className="text-blue-600 dark:text-blue-400 cursor-pointer hover:bg-zinc-100 dark:hover:bg-zinc-800 px-1 rounded"
+          className="text-neutral-900 dark:text-neutral-100 font-semibold cursor-pointer hover:bg-neutral-100 dark:hover:bg-neutral-800 px-1 rounded"
           onClick={() => {
             const newValue = prompt('Edit value:', value.toString());
             if (newValue !== null) {
@@ -169,14 +169,14 @@ export function InteractiveJson({ data, editable = false, onEdit }: JsonViewerPr
           {value}
         </span>
       ) : (
-        <span className="text-blue-600 dark:text-blue-400">{value}</span>
+        <span className="text-neutral-900 dark:text-neutral-100 font-semibold">{value}</span>
       );
     }
 
     if (typeof value === 'string') {
       return canEdit ? (
         <span
-          className="text-emerald-600 dark:text-emerald-400 cursor-pointer hover:bg-zinc-100 dark:hover:bg-zinc-800 px-1 rounded"
+          className="text-emerald-600 dark:text-emerald-400 cursor-pointer hover:bg-neutral-100 dark:hover:bg-neutral-800 px-1 rounded"
           onClick={() => {
             const newValue = prompt('Edit value:', value);
             if (newValue !== null) {
@@ -197,17 +197,17 @@ export function InteractiveJson({ data, editable = false, onEdit }: JsonViewerPr
       return (
         <div>
           <span
-            className="cursor-pointer select-none text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200"
+            className="cursor-pointer select-none text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200"
             onClick={() => toggleExpand(currentPath)}
           >
             {isExpanded ? '▼' : '▶'} Array[{value.length}]
           </span>
 
           {isExpanded && (
-            <div className="pl-4 border-l border-zinc-200 dark:border-zinc-800 ml-2">
+            <div className="pl-4 border-l border-neutral-200 dark:border-neutral-800 ml-2">
               {value.map((item, index) => (
                 <div key={index} className="my-1">
-                  <span className="text-zinc-400">{index}: </span>
+                  <span className="text-neutral-400">{index}: </span>
                   {renderValue(item, [...path, index.toString()], level + 1, canEdit)}
                 </div>
               ))}
@@ -224,17 +224,17 @@ export function InteractiveJson({ data, editable = false, onEdit }: JsonViewerPr
       return (
         <div>
           <span
-            className="cursor-pointer select-none text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200"
+            className="cursor-pointer select-none text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200"
             onClick={() => toggleExpand(currentPath)}
           >
             {isExpanded ? '▼' : '▶'} Object{keys.length > 0 ? `{${keys.length}}` : '{}'}
           </span>
 
           {isExpanded && keys.length > 0 && (
-            <div className="pl-4 border-l border-zinc-200 dark:border-zinc-800 ml-2">
+            <div className="pl-4 border-l border-neutral-200 dark:border-neutral-800 ml-2">
               {keys.map(key => (
                 <div key={key} className="my-1">
-                  <span className="text-zinc-700 dark:text-zinc-300 font-medium">"{key}"</span>: {renderValue(value[key], [...path, key], level + 1, canEdit)}
+                  <span className="text-neutral-700 dark:text-neutral-300 font-medium">"{key}"</span>: {renderValue(value[key], [...path, key], level + 1, canEdit)}
                 </div>
               ))}
             </div>
@@ -248,8 +248,8 @@ export function InteractiveJson({ data, editable = false, onEdit }: JsonViewerPr
 
   if (isEditing) {
     return (
-      <div className="border border-zinc-200 dark:border-zinc-800 rounded-lg overflow-hidden">
-        <div className="bg-zinc-50 dark:bg-zinc-900 border-b border-zinc-200 dark:border-zinc-800 px-3 py-2 flex items-center justify-between">
+      <div className="border border-neutral-200 dark:border-neutral-800 rounded-lg overflow-hidden">
+        <div className="bg-neutral-50 dark:bg-neutral-900 border-b border-neutral-200 dark:border-neutral-800 px-3 py-2 flex items-center justify-between">
           <div className="flex gap-1.5">
             <button
               onClick={formatJson}
@@ -281,7 +281,7 @@ export function InteractiveJson({ data, editable = false, onEdit }: JsonViewerPr
         </div>
 
         <textarea
-          className="w-full h-96 p-4 bg-white dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 font-mono text-xs leading-relaxed resize-none focus:outline-none"
+          className="w-full h-96 p-4 bg-white dark:bg-[#0a0a0c] text-neutral-900 dark:text-neutral-100 font-mono text-xs leading-relaxed resize-none focus:outline-none"
           value={editableValue}
           onChange={(e) => setEditableValue(e.target.value)}
           spellCheck={false}
@@ -291,9 +291,9 @@ export function InteractiveJson({ data, editable = false, onEdit }: JsonViewerPr
   }
 
   return (
-    <div className="border border-zinc-200 dark:border-zinc-800 rounded-lg overflow-hidden">
+    <div className="border border-neutral-200 dark:border-neutral-800 rounded-lg overflow-hidden">
       {editable && (
-        <div className="bg-zinc-50 dark:bg-zinc-900 border-b border-zinc-200 dark:border-zinc-800 px-3 py-2">
+        <div className="bg-neutral-50 dark:bg-neutral-900 border-b border-neutral-200 dark:border-neutral-800 px-3 py-2">
           <button
             onClick={() => handleEdit([])}
             className="btn btn-sm btn-secondary"
@@ -302,7 +302,7 @@ export function InteractiveJson({ data, editable = false, onEdit }: JsonViewerPr
           </button>
         </div>
       )}
-      <div className="bg-white dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 p-4 overflow-auto max-h-96 font-mono text-xs leading-relaxed">
+      <div className="bg-white dark:bg-[#0a0a0c] text-neutral-900 dark:text-neutral-100 p-4 overflow-auto max-h-96 font-mono text-xs leading-relaxed">
         {renderValue(data)}
       </div>
     </div>

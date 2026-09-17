@@ -198,13 +198,13 @@ export default function ScreenPermissionDecodePage() {
           />
 
           {/* Mode Switcher */}
-          <div className="flex p-0.5 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-zinc-100 dark:bg-zinc-900">
+          <div className="flex p-0.5 rounded-lg border border-neutral-200 dark:border-neutral-800 bg-neutral-100 dark:bg-neutral-900">
             <button
               onClick={() => handleModeChange('decompress')}
               className={`px-3 py-1 rounded-md text-xs font-medium transition-colors ${
                 mode === 'decompress'
-                  ? 'bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 shadow-sm'
-                  : 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200'
+                  ? 'bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 shadow-sm'
+                  : 'text-neutral-500 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-200'
               }`}
             >
               Decompress (Gzip → JSON)
@@ -213,8 +213,8 @@ export default function ScreenPermissionDecodePage() {
               onClick={() => handleModeChange('compress')}
               className={`px-3 py-1 rounded-md text-xs font-medium transition-colors ${
                 mode === 'compress'
-                  ? 'bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 shadow-sm'
-                  : 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200'
+                  ? 'bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 shadow-sm'
+                  : 'text-neutral-500 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-200'
               }`}
             >
               Compress (JSON → Gzip)
@@ -230,18 +230,18 @@ export default function ScreenPermissionDecodePage() {
                 onClick={handleLoadSample}
                 className="btn btn-secondary btn-sm"
               >
-                <Sparkles size={13} className="text-zinc-400" />
+                <Sparkles size={13} className="text-neutral-400" />
                 <span>Load Sample {mode === 'decompress' ? 'Base64 Gzip' : 'JSON'}</span>
               </button>
 
               {mode === 'decompress' && stats?.isJson && (
-                <div className="flex p-0.5 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-zinc-100 dark:bg-zinc-900">
+                <div className="flex p-0.5 rounded-lg border border-neutral-200 dark:border-neutral-800 bg-neutral-100 dark:bg-neutral-900">
                   <button
                     onClick={() => setViewFormat('pretty')}
                     className={`px-2.5 py-1 text-xs font-medium rounded-md transition-colors ${
                       viewFormat === 'pretty'
-                        ? 'bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 shadow-sm'
-                        : 'text-zinc-500 dark:text-zinc-400'
+                        ? 'bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 shadow-sm'
+                        : 'text-neutral-500 dark:text-neutral-400'
                     }`}
                   >
                     Pretty JSON
@@ -250,8 +250,8 @@ export default function ScreenPermissionDecodePage() {
                     onClick={() => setViewFormat('raw')}
                     className={`px-2.5 py-1 text-xs font-medium rounded-md transition-colors ${
                       viewFormat === 'raw'
-                        ? 'bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 shadow-sm'
-                        : 'text-zinc-500 dark:text-zinc-400'
+                        ? 'bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 shadow-sm'
+                        : 'text-neutral-500 dark:text-neutral-400'
                     }`}
                   >
                     Raw Text
@@ -262,17 +262,17 @@ export default function ScreenPermissionDecodePage() {
 
             {/* Stats Bar */}
             {stats && (
-              <div className="flex items-center gap-2.5 text-xs bg-white dark:bg-zinc-900 px-3 py-1.5 rounded-lg border border-zinc-200 dark:border-zinc-800 font-mono">
-                <span className="text-zinc-500">
-                  In: <strong className="text-zinc-800 dark:text-zinc-200">{stats.inputSize} B</strong>
+              <div className="flex items-center gap-2.5 text-xs bg-white dark:bg-neutral-900 px-3 py-1.5 rounded-lg border border-neutral-200 dark:border-neutral-800 font-mono">
+                <span className="text-neutral-500">
+                  In: <strong className="text-neutral-800 dark:text-neutral-200">{stats.inputSize} B</strong>
                 </span>
-                <span className="text-zinc-300 dark:text-zinc-700">|</span>
-                <span className="text-zinc-500">
-                  Out: <strong className="text-zinc-800 dark:text-zinc-200">{stats.outputSize} B</strong>
+                <span className="text-neutral-300 dark:text-neutral-700">|</span>
+                <span className="text-neutral-500">
+                  Out: <strong className="text-neutral-800 dark:text-neutral-200">{stats.outputSize} B</strong>
                 </span>
                 {stats.ratio && (
                   <>
-                    <span className="text-zinc-300 dark:text-zinc-700">|</span>
+                    <span className="text-neutral-300 dark:text-neutral-700">|</span>
                     <span className="text-emerald-600 dark:text-emerald-400 font-medium">
                       {stats.ratio} compression savings
                     </span>
@@ -280,7 +280,7 @@ export default function ScreenPermissionDecodePage() {
                 )}
                 {stats.isJson && (
                   <>
-                    <span className="text-zinc-300 dark:text-zinc-700">|</span>
+                    <span className="text-neutral-300 dark:text-neutral-700">|</span>
                     <span className="flex items-center gap-1 text-emerald-600 dark:text-emerald-400 font-medium">
                       <FileCode size={12} /> Valid JSON
                     </span>
@@ -330,13 +330,13 @@ export default function ScreenPermissionDecodePage() {
           <div className="flex-1 grid grid-cols-1 lg:grid-cols-2 gap-4 min-h-0">
             {/* Input Card */}
             <div className="card p-0 flex flex-col overflow-hidden">
-              <div className="px-4 py-2 border-b border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/50 flex items-center justify-between shrink-0">
-                <span className="text-xs font-medium text-zinc-600 dark:text-zinc-400 font-mono">
+              <div className="px-4 py-2 border-b border-neutral-200 dark:border-neutral-800 bg-neutral-50/50 dark:bg-neutral-900/50 flex items-center justify-between shrink-0">
+                <span className="text-xs font-medium text-neutral-600 dark:text-neutral-400 font-mono">
                   {mode === 'decompress'
                     ? 'Input: Base64 Gzip'
                     : 'Input: JSON / Text to Compress'}
                 </span>
-                <span className="text-[11px] font-mono text-zinc-400">
+                <span className="text-[11px] font-mono text-neutral-400">
                   {input.length.toLocaleString()} chars
                 </span>
               </div>
@@ -348,15 +348,15 @@ export default function ScreenPermissionDecodePage() {
                     ? 'Paste Base64-encoded Gzip screen permission payload here (e.g. H4sIAAAAA...)...'
                     : 'Paste screen permission JSON or plain text here...'
                 }
-                className="flex-1 w-full p-4 bg-transparent text-zinc-900 dark:text-zinc-100 font-mono text-xs leading-relaxed focus:outline-none resize-none placeholder:text-zinc-400 dark:placeholder:text-zinc-600"
+                className="flex-1 w-full p-4 bg-transparent text-neutral-900 dark:text-neutral-100 font-mono text-xs leading-relaxed focus:outline-none resize-none placeholder:text-neutral-400 dark:placeholder:text-neutral-600"
                 spellCheck={false}
               />
             </div>
 
             {/* Output Card */}
             <div className="card p-0 flex flex-col overflow-hidden">
-              <div className="px-4 py-2 border-b border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/50 flex items-center justify-between shrink-0">
-                <span className="text-xs font-medium text-zinc-600 dark:text-zinc-400 font-mono">
+              <div className="px-4 py-2 border-b border-neutral-200 dark:border-neutral-800 bg-neutral-50/50 dark:bg-neutral-900/50 flex items-center justify-between shrink-0">
+                <span className="text-xs font-medium text-neutral-600 dark:text-neutral-400 font-mono">
                   {mode === 'decompress'
                     ? 'Output: Decompressed Result'
                     : 'Output: Base64 Gzip'}
@@ -389,7 +389,7 @@ export default function ScreenPermissionDecodePage() {
                     ? 'Decompressed JSON or readable screen permission will appear here...'
                     : 'Compressed Base64 Gzip string will appear here...'
                 }
-                className="flex-1 w-full p-4 bg-zinc-50/50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 font-mono text-xs leading-relaxed focus:outline-none resize-none placeholder:text-zinc-400 dark:placeholder:text-zinc-600"
+                className="flex-1 w-full p-4 bg-neutral-50/50 dark:bg-neutral-950 text-neutral-900 dark:text-neutral-100 font-mono text-xs leading-relaxed focus:outline-none resize-none placeholder:text-neutral-400 dark:placeholder:text-neutral-600"
                 spellCheck={false}
               />
             </div>

@@ -78,10 +78,10 @@ export default function UuidGenerator() {
             <div className="card p-4">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
-                  <label className="block text-xs font-semibold text-zinc-900 dark:text-zinc-100 mb-0.5">
+                  <label className="block text-xs font-semibold text-neutral-900 dark:text-neutral-100 mb-0.5">
                     Quantity
                   </label>
-                  <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                  <p className="text-xs text-neutral-500 dark:text-neutral-400">
                     Select number of UUIDs to generate at once (1 – 50)
                   </p>
                 </div>
@@ -94,8 +94,8 @@ export default function UuidGenerator() {
                         onClick={() => setCount(num)}
                         className={`px-2.5 py-1 text-xs rounded-lg border transition-colors ${
                           count === num
-                            ? 'bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900 border-zinc-900 dark:border-zinc-100 font-medium'
-                            : 'bg-white dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 border-zinc-200 dark:border-zinc-700 hover:bg-zinc-50'
+                            ? 'bg-neutral-900 text-white dark:bg-neutral-100 dark:text-neutral-900 border-neutral-900 dark:border-neutral-100 font-medium'
+                            : 'bg-white dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 border-neutral-200 dark:border-neutral-700 hover:bg-neutral-50'
                         }`}
                       >
                         {num}
@@ -103,7 +103,7 @@ export default function UuidGenerator() {
                     ))}
                   </div>
 
-                  <div className="h-6 w-[1px] bg-zinc-200 dark:border-zinc-800" />
+                  <div className="h-6 w-[1px] bg-neutral-200 dark:border-neutral-800" />
 
                   <input
                     type="range"
@@ -111,9 +111,9 @@ export default function UuidGenerator() {
                     max="50"
                     value={count}
                     onChange={(e) => setCount(parseInt(e.target.value, 10))}
-                    className="w-28 accent-zinc-900 dark:accent-zinc-100"
+                    className="w-28 accent-neutral-900 dark:accent-neutral-100"
                   />
-                  <span className="font-mono text-xs font-semibold text-zinc-900 dark:text-zinc-100 w-6 text-right">
+                  <span className="font-mono text-xs font-semibold text-neutral-900 dark:text-neutral-100 w-6 text-right">
                     {count}
                   </span>
                 </div>
@@ -122,8 +122,8 @@ export default function UuidGenerator() {
 
             {/* Results Container */}
             <div className="card p-0 overflow-hidden">
-              <div className="px-4 py-2.5 border-b border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/50 flex items-center justify-between">
-                <div className="flex items-center gap-2 text-xs font-mono text-zinc-500 dark:text-zinc-400">
+              <div className="px-4 py-2.5 border-b border-neutral-200 dark:border-neutral-800 bg-neutral-50/50 dark:bg-neutral-900/50 flex items-center justify-between">
+                <div className="flex items-center gap-2 text-xs font-mono text-neutral-500 dark:text-neutral-400">
                   <Layers size={13} />
                   <span>{uuids.length} Generated UUIDs</span>
                 </div>
@@ -136,24 +136,24 @@ export default function UuidGenerator() {
                 </button>
               </div>
 
-              <div className="divide-y divide-zinc-100 dark:divide-zinc-800/80 max-h-[540px] overflow-y-auto">
+              <div className="divide-y divide-neutral-100 dark:divide-neutral-800/80 max-h-[540px] overflow-y-auto">
                 {uuids.map((uuid, i) => (
                   <div
                     key={`${uuid}-${i}`}
-                    className="flex items-center justify-between px-4 py-2.5 hover:bg-zinc-50/80 dark:hover:bg-zinc-850/50 transition-colors group"
+                    className="flex items-center justify-between px-4 py-2.5 hover:bg-neutral-50/80 dark:hover:bg-neutral-800/40 transition-colors group"
                   >
                     <div className="flex items-center gap-3 min-w-0">
-                      <span className="text-[11px] font-mono text-zinc-400 select-none w-5 text-right">
+                      <span className="text-[11px] font-mono text-neutral-400 select-none w-5 text-right">
                         {i + 1}
                       </span>
-                      <span className="font-mono text-xs text-zinc-800 dark:text-zinc-200 truncate select-all">
+                      <span className="font-mono text-xs text-neutral-800 dark:text-neutral-200 truncate select-all">
                         {uuid}
                       </span>
                     </div>
 
                     <button
                       onClick={() => copyToClipboard(uuid, i)}
-                      className="p-1 rounded text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors shrink-0"
+                      className="p-1 rounded text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors shrink-0"
                       title="Copy UUID"
                     >
                       {copiedIndex === i ? (

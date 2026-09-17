@@ -172,18 +172,18 @@ export default function Base64ViewerPage() {
               {/* Input Area */}
               <div className="lg:col-span-2 space-y-4">
                 <div className="card p-0 overflow-hidden flex flex-col min-h-[220px]">
-                  <div className="px-4 py-2 border-b border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/50 flex items-center justify-between">
-                    <span className="text-xs font-medium text-zinc-600 dark:text-zinc-400 font-mono">
+                  <div className="px-4 py-2 border-b border-neutral-200 dark:border-neutral-800 bg-neutral-50/50 dark:bg-neutral-900/50 flex items-center justify-between">
+                    <span className="text-xs font-medium text-neutral-600 dark:text-neutral-400 font-mono">
                       Base64 Input
                     </span>
                     <div className="flex items-center gap-2">
-                      <span className="text-[11px] font-mono text-zinc-400">
+                      <span className="text-[11px] font-mono text-neutral-400">
                         {base64Input.length.toLocaleString()} chars
                       </span>
                       <button
                         onClick={handleClear}
                         disabled={!base64Input}
-                        className="text-zinc-400 hover:text-red-500 disabled:opacity-30 p-1"
+                        className="text-neutral-400 hover:text-red-500 disabled:opacity-30 p-1"
                         title="Clear input"
                       >
                         <Trash2 size={13} />
@@ -194,7 +194,7 @@ export default function Base64ViewerPage() {
                     value={base64Input}
                     onChange={(e) => setBase64Input(e.target.value)}
                     placeholder="Paste Base64 encoded image string or data:image/... URI here..."
-                    className="flex-1 w-full p-4 bg-transparent text-zinc-900 dark:text-zinc-100 font-mono text-xs leading-relaxed focus:outline-none resize-none placeholder:text-zinc-400 dark:placeholder:text-zinc-600"
+                    className="flex-1 w-full p-4 bg-transparent text-neutral-900 dark:text-neutral-100 font-mono text-xs leading-relaxed focus:outline-none resize-none placeholder:text-neutral-400 dark:placeholder:text-neutral-600"
                     spellCheck={false}
                   />
                 </div>
@@ -209,8 +209,8 @@ export default function Base64ViewerPage() {
                 {/* Canvas */}
                 {imageUrl ? (
                   <div className="card p-0 overflow-hidden">
-                    <div className="px-4 py-2 border-b border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/50 flex items-center justify-between">
-                      <span className="text-xs font-medium text-zinc-600 dark:text-zinc-400 font-mono">
+                    <div className="px-4 py-2 border-b border-neutral-200 dark:border-neutral-800 bg-neutral-50/50 dark:bg-neutral-900/50 flex items-center justify-between">
+                      <span className="text-xs font-medium text-neutral-600 dark:text-neutral-400 font-mono">
                         Preview Canvas
                       </span>
                       <div className="flex items-center gap-1.5">
@@ -232,11 +232,11 @@ export default function Base64ViewerPage() {
                         </button>
                       </div>
                     </div>
-                    <div className="p-6 flex items-center justify-center bg-zinc-50/50 dark:bg-zinc-950/80 min-h-[360px]">
+                    <div className="p-6 flex items-center justify-center bg-neutral-50/50 dark:bg-neutral-950/80 min-h-[360px]">
                       <img
                         src={imageUrl}
                         alt="Preview"
-                        className="max-w-full max-h-[460px] object-contain rounded border border-zinc-200/80 dark:border-zinc-800 shadow-sm cursor-zoom-in"
+                        className="max-w-full max-h-[460px] object-contain rounded border border-neutral-200/80 dark:border-neutral-800 shadow-sm cursor-zoom-in"
                         onClick={() => setShowModal(true)}
                       />
                     </div>
@@ -244,10 +244,10 @@ export default function Base64ViewerPage() {
                 ) : (
                   <div
                     onClick={() => fileInputRef.current?.click()}
-                    className="h-72 rounded-xl border border-dashed border-zinc-300 dark:border-zinc-800 flex flex-col items-center justify-center text-zinc-400 gap-2 cursor-pointer hover:bg-zinc-50 dark:hover:bg-zinc-900/40 transition-colors"
+                    className="h-72 rounded-xl border border-dashed border-neutral-300 dark:border-neutral-800 flex flex-col items-center justify-center text-neutral-400 gap-2 cursor-pointer hover:bg-neutral-50 dark:hover:bg-neutral-900/40 transition-colors"
                   >
-                    <FileImage size={32} className="text-zinc-300 dark:text-zinc-700" />
-                    <p className="text-xs font-medium text-zinc-500">
+                    <FileImage size={32} className="text-neutral-300 dark:text-neutral-700" />
+                    <p className="text-xs font-medium text-neutral-500">
                       No image rendered yet. Paste Base64 or click to upload.
                     </p>
                   </div>
@@ -257,9 +257,9 @@ export default function Base64ViewerPage() {
               {/* Metadata Panel */}
               <div className="space-y-4">
                 <div className="card p-4 space-y-3">
-                  <div className="flex items-center gap-2 pb-2 border-b border-zinc-100 dark:border-zinc-800">
-                    <Info size={14} className="text-zinc-500" />
-                    <span className="text-xs font-semibold text-zinc-900 dark:text-zinc-100">
+                  <div className="flex items-center gap-2 pb-2 border-b border-neutral-100 dark:border-neutral-800">
+                    <Info size={14} className="text-neutral-500" />
+                    <span className="text-xs font-semibold text-neutral-900 dark:text-neutral-100">
                       Image Intelligence
                     </span>
                   </div>
@@ -273,7 +273,7 @@ export default function Base64ViewerPage() {
                       <MetaRow label="Aspect Ratio" value={metadata.height ? `${(metadata.width / metadata.height).toFixed(2)}:1` : 'N/A'} />
                     </div>
                   ) : (
-                    <p className="text-xs text-zinc-400 py-4 text-center italic">
+                    <p className="text-xs text-neutral-400 py-4 text-center italic">
                       Metadata appears when an image is decoded.
                     </p>
                   )}
@@ -295,9 +295,9 @@ export default function Base64ViewerPage() {
 
 function MetaRow({ label, value }: { label: string; value: string }) {
   return (
-    <div className="flex items-center justify-between py-1 border-b border-zinc-100 dark:border-zinc-800/60 last:border-0">
-      <span className="text-zinc-500">{label}</span>
-      <span className="font-mono font-medium text-zinc-900 dark:text-zinc-100">{value}</span>
+    <div className="flex items-center justify-between py-1 border-b border-neutral-100 dark:border-neutral-800/60 last:border-0">
+      <span className="text-neutral-500">{label}</span>
+      <span className="font-mono font-medium text-neutral-900 dark:text-neutral-100">{value}</span>
     </div>
   );
 }

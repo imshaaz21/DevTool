@@ -72,7 +72,7 @@ export default function JsonComparisonPage() {
         >
           {viewMode === 'comparison' ? (
             <div className="flex items-center gap-2">
-              <div className="flex p-0.5 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-zinc-100 dark:bg-zinc-900">
+              <div className="flex p-0.5 rounded-lg border border-neutral-200 dark:border-neutral-800 bg-neutral-100 dark:bg-neutral-900">
                 <ViewTab active={selectedView === 'diff'} onClick={() => setSelectedView('diff')} label="Visual Diff" />
                 <ViewTab active={selectedView === 'keys'} onClick={() => setSelectedView('keys')} label="Keys" />
                 <ViewTab active={selectedView === 'values'} onClick={() => setSelectedView('values')} label="Values" />
@@ -117,7 +117,7 @@ export default function JsonComparisonPage() {
                 <StatBox
                   label="Total Changes"
                   value={comparison.valueDiffs.length + comparison.keysOnlyInA.length + comparison.keysOnlyInB.length}
-                  icon={<Binary size={14} className="text-zinc-500" />}
+                  icon={<Binary size={14} className="text-neutral-500" />}
                 />
                 <StatBox
                   label="Keys Only in A"
@@ -145,7 +145,7 @@ export default function JsonComparisonPage() {
                 )}
 
                 {selectedView === 'keys' && (
-                  <div className="grid grid-cols-1 md:grid-cols-2 divide-y md:divide-y-0 md:divide-x divide-zinc-200 dark:divide-zinc-800">
+                  <div className="grid grid-cols-1 md:grid-cols-2 divide-y md:divide-y-0 md:divide-x divide-neutral-200 dark:divide-neutral-800">
                     <KeyDiffList title="Keys Only in A" items={comparison.keysOnlyInA} type="removed" />
                     <KeyDiffList title="Keys Only in B" items={comparison.keysOnlyInB} type="added" />
                   </div>
@@ -162,18 +162,18 @@ export default function JsonComparisonPage() {
 
                 {selectedView === 'all' && (
                   <div className="p-10 flex flex-col items-center justify-center text-center space-y-4">
-                    <div className="w-10 h-10 bg-zinc-100 dark:bg-zinc-800 rounded-lg flex items-center justify-center text-zinc-600 dark:text-zinc-300">
+                    <div className="w-10 h-10 bg-neutral-100 dark:bg-neutral-800 rounded-lg flex items-center justify-center text-neutral-600 dark:text-neutral-300">
                       <LayoutGrid size={20} />
                     </div>
-                    <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">Comparison Complete</h2>
+                    <h2 className="text-sm font-semibold text-neutral-900 dark:text-neutral-100">Comparison Complete</h2>
                     <div className="grid grid-cols-2 gap-3 w-full max-w-xs mt-2">
-                      <div className="p-3 bg-zinc-50 dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800 text-left">
-                        <div className="text-[10px] font-mono text-zinc-400">Keys in A</div>
-                        <div className="text-lg font-bold font-mono text-zinc-900 dark:text-zinc-100">{comparison.totalKeysA}</div>
+                      <div className="p-3 bg-neutral-50 dark:bg-neutral-900 rounded-lg border border-neutral-200 dark:border-neutral-800 text-left">
+                        <div className="text-[10px] font-mono text-neutral-400">Keys in A</div>
+                        <div className="text-lg font-bold font-mono text-neutral-900 dark:text-neutral-100">{comparison.totalKeysA}</div>
                       </div>
-                      <div className="p-3 bg-zinc-50 dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800 text-left">
-                        <div className="text-[10px] font-mono text-zinc-400">Keys in B</div>
-                        <div className="text-lg font-bold font-mono text-zinc-900 dark:text-zinc-100">{comparison.totalKeysB}</div>
+                      <div className="p-3 bg-neutral-50 dark:bg-neutral-900 rounded-lg border border-neutral-200 dark:border-neutral-800 text-left">
+                        <div className="text-[10px] font-mono text-neutral-400">Keys in B</div>
+                        <div className="text-lg font-bold font-mono text-neutral-900 dark:text-neutral-100">{comparison.totalKeysB}</div>
                       </div>
                     </div>
                   </div>
@@ -193,8 +193,8 @@ function ViewTab({ active, onClick, label }: { active: boolean, onClick: () => v
       onClick={onClick}
       className={`px-3 py-1 rounded-md text-xs font-medium transition-colors ${
         active
-          ? 'bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 shadow-sm'
-          : 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200'
+          ? 'bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 shadow-sm'
+          : 'text-neutral-500 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-200'
       }`}
     >
       {label}
@@ -205,9 +205,9 @@ function ViewTab({ active, onClick, label }: { active: boolean, onClick: () => v
 function EditorPanel({ title, json, onChange }: { title: string, json: any, onChange: (j: any) => void }) {
   return (
     <div className="flex flex-col card p-0 overflow-hidden lg:h-[600px]">
-      <div className="px-4 py-2.5 border-b border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/50 flex items-center justify-between">
-        <span className="text-xs font-medium text-zinc-600 dark:text-zinc-400 font-mono">{title}</span>
-        <FileCode size={13} className="text-zinc-400" />
+      <div className="px-4 py-2.5 border-b border-neutral-200 dark:border-neutral-800 bg-neutral-50/50 dark:bg-neutral-900/50 flex items-center justify-between">
+        <span className="text-xs font-medium text-neutral-600 dark:text-neutral-400 font-mono">{title}</span>
+        <FileCode size={13} className="text-neutral-400" />
       </div>
       <div className="flex-1 overflow-hidden p-1">
         <JsonEditorComponent json={json} onChange={onChange} mode="code" height="100%" />
@@ -220,10 +220,10 @@ function StatBox({ label, value, icon }: { label: string, value: number, icon: R
   return (
     <div className="card p-3.5">
       <div className="flex items-center justify-between mb-1">
-        <span className="text-[11px] font-medium text-zinc-500 dark:text-zinc-400">{label}</span>
+        <span className="text-[11px] font-medium text-neutral-500 dark:text-neutral-400">{label}</span>
         {icon}
       </div>
-      <div className="text-xl font-bold font-mono text-zinc-900 dark:text-zinc-100">{value}</div>
+      <div className="text-xl font-bold font-mono text-neutral-900 dark:text-neutral-100">{value}</div>
     </div>
   );
 }
@@ -232,10 +232,10 @@ function KeyDiffList({ title, items, type }: { title: string, items: string[], t
   const isAdded = type === 'added';
   return (
     <div className="p-4">
-      <h3 className="text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-3 flex items-center gap-1.5">
+      <h3 className="text-xs font-semibold text-neutral-700 dark:text-neutral-300 mb-3 flex items-center gap-1.5">
         <span className={`w-2 h-2 rounded-full ${isAdded ? 'bg-emerald-500' : 'bg-rose-500'}`} />
         {title}
-        <span className="text-[10px] font-mono text-zinc-400 ml-auto">({items.length})</span>
+        <span className="text-[10px] font-mono text-neutral-400 ml-auto">({items.length})</span>
       </h3>
       <div className="space-y-1.5">
         {items.map((item, i) => (
@@ -250,7 +250,7 @@ function KeyDiffList({ title, items, type }: { title: string, items: string[], t
             {isAdded ? '+' : '-'} {item}
           </div>
         ))}
-        {items.length === 0 && <p className="text-xs text-zinc-400 italic">No keys in this category</p>}
+        {items.length === 0 && <p className="text-xs text-neutral-400 italic">No keys in this category</p>}
       </div>
     </div>
   );
@@ -258,8 +258,8 @@ function KeyDiffList({ title, items, type }: { title: string, items: string[], t
 
 function ValueDiffRow({ diff }: { diff: any }) {
   return (
-    <div className="p-3 bg-zinc-50/60 dark:bg-zinc-900/40 rounded-lg border border-zinc-200/80 dark:border-zinc-800">
-      <div className="font-mono text-xs font-medium text-zinc-900 dark:text-zinc-100 mb-2 truncate">
+    <div className="p-3 bg-neutral-50/60 dark:bg-neutral-900/40 rounded-lg border border-neutral-200/80 dark:border-neutral-800">
+      <div className="font-mono text-xs font-medium text-neutral-900 dark:text-neutral-100 mb-2 truncate">
         {diff.key}
       </div>
       <div className="grid grid-cols-2 gap-2">
@@ -273,8 +273,8 @@ function ValueDiffRow({ diff }: { diff: any }) {
 function ValBox({ label, value, variant }: { label: string, value: any, variant: 'added' | 'removed' }) {
   const valStr = typeof value === 'object' ? JSON.stringify(value) : String(value);
   return (
-    <div className="bg-white dark:bg-zinc-900 border border-zinc-200/80 dark:border-zinc-800 p-2 rounded-md">
-      <div className="text-[10px] uppercase font-mono text-zinc-400 mb-0.5">{label}</div>
+    <div className="bg-white dark:bg-neutral-900 border border-neutral-200/80 dark:border-neutral-800 p-2 rounded-md">
+      <div className="text-[10px] uppercase font-mono text-neutral-400 mb-0.5">{label}</div>
       <div className={`font-mono text-xs font-semibold ${variant === 'added' ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'}`}>
         {valStr}
       </div>
@@ -284,9 +284,9 @@ function ValBox({ label, value, variant }: { label: string, value: any, variant:
 
 function EmptyState({ text }: { text: string }) {
   return (
-    <div className="py-8 flex flex-col items-center justify-center text-zinc-400 gap-1.5">
-      <CheckCircle2 size={18} className="text-zinc-300 dark:text-zinc-600" />
-      <p className="text-xs text-zinc-500">{text}</p>
+    <div className="py-8 flex flex-col items-center justify-center text-neutral-400 gap-1.5">
+      <CheckCircle2 size={18} className="text-neutral-300 dark:text-neutral-600" />
+      <p className="text-xs text-neutral-500">{text}</p>
     </div>
   );
 }

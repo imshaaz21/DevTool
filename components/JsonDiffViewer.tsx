@@ -59,27 +59,27 @@ export function JsonDiffViewer({ jsonA, jsonB }: JsonDiffViewerProps) {
       case 'modified':
         return 'bg-amber-500/10 text-amber-800 dark:text-amber-300';
       default:
-        return 'text-zinc-800 dark:text-zinc-300';
+        return 'text-neutral-800 dark:text-neutral-300';
     }
   };
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-3 font-mono text-xs">
       {/* JSON A Side */}
-      <div className="rounded-lg border border-zinc-200 dark:border-zinc-800 overflow-hidden bg-white dark:bg-zinc-950">
-        <div className="bg-zinc-50 dark:bg-zinc-900/80 px-3 py-1.5 font-medium text-zinc-600 dark:text-zinc-400 border-b border-zinc-200 dark:border-zinc-800 flex items-center justify-between">
+      <div className="rounded-lg border border-neutral-200 dark:border-neutral-800 overflow-hidden bg-white dark:bg-[#0d0d0f]">
+        <div className="bg-neutral-50 dark:bg-neutral-900/80 px-3 py-1.5 font-medium text-neutral-600 dark:text-neutral-400 border-b border-neutral-200 dark:border-neutral-800 flex items-center justify-between">
           <span>Original (A)</span>
-          <span className="text-[10px] text-zinc-400 font-mono">Input A</span>
+          <span className="text-[10px] text-neutral-400 font-mono">Input A</span>
         </div>
-        <div className="max-h-[500px] overflow-auto divide-y divide-zinc-100 dark:divide-zinc-900/50">
+        <div className="max-h-[500px] overflow-auto divide-y divide-neutral-100 dark:divide-neutral-900/50">
           {diffLines.map((diff, idx) => (
             <div
               key={idx}
               className={`flex items-center text-xs leading-relaxed ${
-                diff.lineA ? getLineClassName(diff.lineA.type) : 'bg-zinc-50/30 dark:bg-zinc-900/20'
+                diff.lineA ? getLineClassName(diff.lineA.type) : 'bg-neutral-50/30 dark:bg-neutral-900/20'
               }`}
             >
-              <span className="px-2.5 py-0.5 text-zinc-400 dark:text-zinc-600 select-none w-10 shrink-0 text-right text-[11px]">
+              <span className="px-2.5 py-0.5 text-neutral-400 dark:text-neutral-600 select-none w-10 shrink-0 text-right text-[11px]">
                 {diff.lineA?.lineNumber || ''}
               </span>
               <span className="px-2 py-0.5 flex-1 whitespace-pre overflow-x-auto">
@@ -91,20 +91,20 @@ export function JsonDiffViewer({ jsonA, jsonB }: JsonDiffViewerProps) {
       </div>
 
       {/* JSON B Side */}
-      <div className="rounded-lg border border-zinc-200 dark:border-zinc-800 overflow-hidden bg-white dark:bg-zinc-950">
-        <div className="bg-zinc-50 dark:bg-zinc-900/80 px-3 py-1.5 font-medium text-zinc-600 dark:text-zinc-400 border-b border-zinc-200 dark:border-zinc-800 flex items-center justify-between">
+      <div className="rounded-lg border border-neutral-200 dark:border-neutral-800 overflow-hidden bg-white dark:bg-[#0d0d0f]">
+        <div className="bg-neutral-50 dark:bg-neutral-900/80 px-3 py-1.5 font-medium text-neutral-600 dark:text-neutral-400 border-b border-neutral-200 dark:border-neutral-800 flex items-center justify-between">
           <span>Comparison (B)</span>
-          <span className="text-[10px] text-zinc-400 font-mono">Input B</span>
+          <span className="text-[10px] text-neutral-400 font-mono">Input B</span>
         </div>
-        <div className="max-h-[500px] overflow-auto divide-y divide-zinc-100 dark:divide-zinc-900/50">
+        <div className="max-h-[500px] overflow-auto divide-y divide-neutral-100 dark:divide-neutral-900/50">
           {diffLines.map((diff, idx) => (
             <div
               key={idx}
               className={`flex items-center text-xs leading-relaxed ${
-                diff.lineB ? getLineClassName(diff.lineB.type) : 'bg-zinc-50/30 dark:bg-zinc-900/20'
+                diff.lineB ? getLineClassName(diff.lineB.type) : 'bg-neutral-50/30 dark:bg-neutral-900/20'
               }`}
             >
-              <span className="px-2.5 py-0.5 text-zinc-400 dark:text-zinc-600 select-none w-10 shrink-0 text-right text-[11px]">
+              <span className="px-2.5 py-0.5 text-neutral-400 dark:text-neutral-600 select-none w-10 shrink-0 text-right text-[11px]">
                 {diff.lineB?.lineNumber || ''}
               </span>
               <span className="px-2 py-0.5 flex-1 whitespace-pre overflow-x-auto">

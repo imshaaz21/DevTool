@@ -49,14 +49,14 @@ export function CustomSelect({
         type="button"
         disabled={disabled}
         onClick={() => setIsOpen(!isOpen)}
-        className={`w-full flex items-center justify-between gap-2 px-3 py-2 text-xs font-medium rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 hover:border-zinc-300 dark:hover:border-zinc-700 transition-colors focus:outline-none focus:ring-1 focus:ring-zinc-400 dark:focus:ring-zinc-600 ${
+        className={`w-full flex items-center justify-between gap-2 px-3 py-2 text-xs font-medium rounded-lg border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-neutral-100 hover:border-neutral-300 dark:hover:border-neutral-700 transition-colors focus:outline-none focus:ring-1 focus:ring-neutral-400 dark:focus:ring-neutral-600 ${
           disabled ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer'
         } ${className}`}
       >
         <span className="truncate">{selectedLabel}</span>
         <ChevronDown
           size={14}
-          className={`shrink-0 text-zinc-400 transition-transform duration-150 ${
+          className={`shrink-0 text-neutral-400 transition-transform duration-150 ${
             isOpen ? 'rotate-180' : ''
           }`}
         />
@@ -64,7 +64,7 @@ export function CustomSelect({
 
       {isOpen && !disabled && (
         <div
-          className={`absolute z-50 w-full mt-1.5 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg shadow-lg py-1 max-h-60 overflow-y-auto overflow-x-hidden ${dropdownClassName}`}
+          className={`absolute z-50 w-full mt-1.5 bg-white dark:bg-[#141416] border border-neutral-200 dark:border-neutral-800 rounded-lg shadow-lg py-1 max-h-60 overflow-y-auto overflow-x-hidden ${dropdownClassName}`}
         >
           {formattedOptions.map(opt => {
             const isSelected = value === opt.value;
@@ -78,12 +78,12 @@ export function CustomSelect({
                 }}
                 className={`w-full flex items-center justify-between px-3 py-1.5 text-xs text-left transition-colors ${
                   isSelected
-                    ? 'bg-zinc-100 dark:bg-zinc-800 font-semibold text-zinc-900 dark:text-zinc-100'
-                    : 'text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-800/60 font-normal'
+                    ? 'bg-neutral-100 dark:bg-neutral-800 font-semibold text-neutral-900 dark:text-neutral-100'
+                    : 'text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-800/60 font-normal'
                 }`}
               >
                 <span className="truncate">{opt.label}</span>
-                {isSelected && <Check size={12} className="shrink-0 text-zinc-600 dark:text-zinc-400 ml-2" />}
+                {isSelected && <Check size={12} className="shrink-0 text-neutral-600 dark:text-neutral-400 ml-2" />}
               </button>
             );
           })}

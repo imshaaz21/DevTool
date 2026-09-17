@@ -115,13 +115,13 @@ export default function TimeZoneConverterPage() {
           description="Convert timestamps with live offsets across UTC, Saudi Arabia (AST), and Sri Lanka (IST)."
           badge="AST • UTC • IST"
         >
-          <div className="flex p-0.5 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-zinc-100 dark:bg-zinc-900">
+          <div className="flex p-0.5 rounded-lg border border-neutral-200 dark:border-neutral-800 bg-neutral-100 dark:bg-neutral-900">
             <button
               onClick={() => setInputMode('paste')}
               className={`px-3 py-1 rounded-md text-xs font-medium transition-colors ${
                 inputMode === 'paste'
-                  ? 'bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 shadow-sm'
-                  : 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200'
+                  ? 'bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 shadow-sm'
+                  : 'text-neutral-500 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-200'
               }`}
             >
               Paste Text
@@ -130,8 +130,8 @@ export default function TimeZoneConverterPage() {
               onClick={() => setInputMode('picker')}
               className={`px-3 py-1 rounded-md text-xs font-medium transition-colors ${
                 inputMode === 'picker'
-                  ? 'bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 shadow-sm'
-                  : 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200'
+                  ? 'bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 shadow-sm'
+                  : 'text-neutral-500 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-200'
               }`}
             >
               Date Picker
@@ -152,7 +152,7 @@ export default function TimeZoneConverterPage() {
           <div className="max-w-4xl mx-auto space-y-6">
             {/* Input Card */}
             <div className="card p-5 space-y-4">
-              <label className="block text-xs font-semibold text-zinc-900 dark:text-zinc-100">
+              <label className="block text-xs font-semibold text-neutral-900 dark:text-neutral-100">
                 Source Timestamp & Time Zone
               </label>
 
@@ -207,31 +207,31 @@ export default function TimeZoneConverterPage() {
                       key={tz.timezone}
                       className={`card p-4 flex flex-col justify-between transition-colors ${
                         isSource
-                          ? 'border-zinc-900 dark:border-zinc-100 bg-white dark:bg-zinc-900'
-                          : 'border-zinc-200/80 dark:border-zinc-800 bg-white dark:bg-zinc-900/50'
+                          ? 'border-neutral-900 dark:border-neutral-100 bg-white dark:bg-neutral-900'
+                          : 'border-neutral-200/80 dark:border-neutral-800 bg-white dark:bg-neutral-900/50'
                       }`}
                     >
                       <div>
                         <div className="flex items-center justify-between gap-2 mb-2">
                           <div className="flex flex-col">
-                            <span className="text-xs font-semibold text-zinc-900 dark:text-zinc-100">
+                            <span className="text-xs font-semibold text-neutral-900 dark:text-neutral-100">
                               {tz.name}
                             </span>
-                            <span className="text-[10px] font-mono text-zinc-400">
+                            <span className="text-[10px] font-mono text-neutral-400">
                               {tz.abbreviation}
                             </span>
                           </div>
 
                           <span className={`text-[10px] font-mono px-1.5 py-0.5 rounded ${
                             isSource
-                              ? 'bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900 font-medium'
-                              : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 border border-zinc-200 dark:border-zinc-700'
+                              ? 'bg-neutral-900 text-white dark:bg-neutral-100 dark:text-neutral-900 font-medium'
+                              : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 border border-neutral-200 dark:border-neutral-700'
                           }`}>
                             {tz.diff}
                           </span>
                         </div>
 
-                        <div className="py-3 font-mono text-sm font-semibold text-zinc-900 dark:text-zinc-100 select-all">
+                        <div className="py-3 font-mono text-sm font-semibold text-neutral-900 dark:text-neutral-100 select-all">
                           {tz.time}
                         </div>
                       </div>
@@ -251,9 +251,9 @@ export default function TimeZoneConverterPage() {
                   );
                 })
               ) : (
-                <div className="md:col-span-3 p-12 text-center border border-dashed border-zinc-200 dark:border-zinc-800 rounded-xl bg-white dark:bg-zinc-900/30">
-                  <Clock size={28} className="mx-auto text-zinc-300 dark:text-zinc-700 mb-2" />
-                  <p className="text-xs text-zinc-500">
+                <div className="md:col-span-3 p-12 text-center border border-dashed border-neutral-200 dark:border-neutral-800 rounded-xl bg-white dark:bg-neutral-900/30">
+                  <Clock size={28} className="mx-auto text-neutral-300 dark:text-neutral-700 mb-2" />
+                  <p className="text-xs text-neutral-500">
                     Enter a valid date/time or click &ldquo;Use Current&rdquo; to calculate timezone conversions.
                   </p>
                 </div>
