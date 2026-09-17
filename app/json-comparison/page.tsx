@@ -4,261 +4,289 @@ import { useState, useEffect } from 'react';
 import dynamic from 'next/dynamic';
 import { Sidebar } from '@/components/Sidebar';
 import { useSidebar } from '@/components/SidebarContext';
+import { PageHeader } from '@/components/PageHeader';
 import { compareJsonObjects } from '@/utils/jsonComparator';
 const JsonEditorComponent = dynamic(() => import('@/components/JsonEditorComponent').then(mod => ({ default: mod.JsonEditorComponent })), { ssr: false });
 import { JsonDiffViewer } from '@/components/JsonDiffViewer';
-import { ArrowLeft, Binary, FileCode, CheckCircle2, AlertCircle, Info, LayoutGrid } from 'lucide-react';
+import {
+  ArrowLeft,
+  Binary,
+  FileCode,
+  CheckCircle2,
+  AlertCircle,
+  Info,
+  LayoutGrid
+} from 'lucide-react';
 
 export default function JsonComparisonPage() {
-    const { width } = useSidebar();
-    const [jsonA, setJsonA] = useState<any>({
-        example: "Paste or edit JSON A here",
-        user: { name: "John", age: 30 }
-    });
-    const [jsonB, setJsonB] = useState<any>({
-        example: "Paste or edit JSON B here",
-        user: { name: "Jane", age: 25 }
-    });
+  const { width } = useSidebar();
+  const [jsonA, setJsonA] = useState<any>({
+    example: "Paste or edit JSON A here",
+    user: { name: "John", age: 30 }
+  });
+  const [jsonB, setJsonB] = useState<any>({
+    example: "Paste or edit JSON B here",
+    user: { name: "Jane", age: 25 }
+  });
 
-    const [comparison, setComparison] = useState<any>(null);
-    const [error, setError] = useState<string>('');
-    const [viewMode, setViewMode] = useState<'input' | 'comparison'>('input');
-    const [selectedView, setSelectedView] = useState<'diff' | 'common' | 'values' | 'keys' | 'all'>('diff');
+  const [comparison, setComparison] = useState<any>(null);
+  const [error, setError] = useState<string>('');
+  const [viewMode, setViewMode] = useState<'input' | 'comparison'>('input');
+  const [selectedView, setSelectedView] = useState<'diff' | 'common' | 'values' | 'keys' | 'all'>('diff');
 
-    useEffect(() => {
-        if (viewMode === 'comparison') {
-            setViewMode('input');
-            setComparison(null);
-            setError('');
-        }
-    }, [jsonA, jsonB]);
+  useEffect(() => {
+    if (viewMode === 'comparison') {
+      setViewMode('input');
+      setComparison(null);
+      setError('');
+    }
+  }, [jsonA, jsonB]);
 
-    const handleCompare = () => {
-        setError('');
-        try {
-            if (!jsonA || typeof jsonA !== 'object' || !jsonB || typeof jsonB !== 'object') {
-                throw new Error('Both inputs must be valid JSON objects');
-            }
-            const result = compareJsonObjects(jsonA, jsonB);
-            setComparison(result);
-            setViewMode('comparison');
-        } catch (err) {
-            setError(`Error: ${(err as Error).message}`);
-        }
-    };
+  const handleCompare = () => {
+    setError('');
+    try {
+      if (!jsonA || typeof jsonA !== 'object' || !jsonB || typeof jsonB !== 'object') {
+        throw new Error('Both inputs must be valid JSON objects');
+      }
+      const result = compareJsonObjects(jsonA, jsonB);
+      setComparison(result);
+      setViewMode('comparison');
+    } catch (err) {
+      setError(`Error: ${(err as Error).message}`);
+    }
+  };
 
-    return (
-        <div className="flex h-screen overflow-hidden">
-            <Sidebar />
+  return (
+    <div className="flex h-screen overflow-hidden bg-[#fafafa] dark:bg-[#09090b]">
+      <Sidebar />
 
-            <main 
-                className="flex-1 flex flex-col h-full bg-slate-50 dark:bg-slate-950 transition-all duration-300"
-                style={{ marginLeft: width }}
+      <main
+        className="flex-1 flex flex-col h-full overflow-hidden transition-[margin] duration-200"
+        style={{ marginLeft: width }}
+      >
+        <PageHeader
+          icon={Binary}
+          title="JSON Comparison"
+          description="Side-by-side visual diff and key/value comparison for any two JSON objects."
+          badge="Object Diff"
+        >
+          {viewMode === 'comparison' ? (
+            <div className="flex items-center gap-2">
+              <div className="flex p-0.5 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-zinc-100 dark:bg-zinc-900">
+                <ViewTab active={selectedView === 'diff'} onClick={() => setSelectedView('diff')} label="Visual Diff" />
+                <ViewTab active={selectedView === 'keys'} onClick={() => setSelectedView('keys')} label="Keys" />
+                <ViewTab active={selectedView === 'values'} onClick={() => setSelectedView('values')} label="Values" />
+                <ViewTab active={selectedView === 'all'} onClick={() => setSelectedView('all')} label="Summary" />
+              </div>
+              <button
+                onClick={() => setViewMode('input')}
+                className="btn btn-secondary btn-sm"
+              >
+                <ArrowLeft size={13} /> Back
+              </button>
+            </div>
+          ) : (
+            <button
+              onClick={handleCompare}
+              className="btn btn-primary"
             >
-                {/* Header */}
-                <header className="flex items-center justify-between px-8 py-4 border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-slate-900 shadow-sm z-10 transition-colors">
-                    <div className="flex items-center gap-3">
-                        <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg text-blue-600 dark:text-blue-400">
-                            <Binary size={20} />
-                        </div>
-                        <div>
-                            <h1 className="text-xl font-bold text-slate-900 dark:text-slate-100">JSON Comparison</h1>
-                            <p className="text-xs text-slate-500 dark:text-slate-400 font-medium font-mono">Side-by-side object diffing</p>
-                        </div>
-                    </div>
+              Compare Objects
+            </button>
+          )}
+        </PageHeader>
 
-                    <div className="flex items-center gap-4">
-                        {viewMode === 'comparison' ? (
-                            <>
-                                <div className="flex bg-slate-100 dark:bg-slate-800 p-1 rounded-lg border border-slate-200 dark:border-slate-700">
-                                    <ViewTab active={selectedView === 'diff'} onClick={() => setSelectedView('diff')} label="Full Diff" />
-                                    <ViewTab active={selectedView === 'keys'} onClick={() => setSelectedView('keys')} label="Keys" />
-                                    <ViewTab active={selectedView === 'values'} onClick={() => setSelectedView('values')} label="Values" />
-                                    <ViewTab active={selectedView === 'all'} onClick={() => setSelectedView('all')} label="Summary" />
-                                </div>
-                                <button 
-                                    onClick={() => setViewMode('input')}
-                                    className="px-4 py-2 bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 rounded-xl text-xs font-bold hover:scale-105 transition-all flex items-center gap-2"
-                                >
-                                    <ArrowLeft size={14} /> Back
-                                </button>
-                            </>
-                        ) : (
-                            <button
-                                onClick={handleCompare}
-                                className="px-8 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-sm font-bold transition-all shadow-lg shadow-blue-500/20 active:scale-95"
-                            >
-                                Compare Objects
-                            </button>
-                        )}
-                    </div>
-                </header>
-
-                {/* Scrollable Content */}
-                <div className="flex-1 overflow-auto p-8 scrollbar-thin scrollbar-thumb-slate-300 dark:scrollbar-thumb-slate-800">
-                    {viewMode === 'input' ? (
-                        <div className="h-full flex flex-col gap-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
-                            <div className="grid grid-cols-2 gap-6 flex-1 min-h-[500px]">
-                                <EditorPanel title="Original (A)" json={jsonA} onChange={setJsonA} />
-                                <EditorPanel title="Comparison (B)" json={jsonB} onChange={setJsonB} />
-                            </div>
-                            {error && (
-                                <div className="p-4 bg-red-500/10 border border-red-500/20 rounded-2xl flex items-center gap-3 text-red-600 dark:text-red-400 text-sm font-bold">
-                                    <AlertCircle size={18} />
-                                    {error}
-                                </div>
-                            )}
-                        </div>
-                    ) : (
-                        <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-                            {/* Summary Stats */}
-                            <div className="grid grid-cols-4 gap-4">
-                                <StatBox label="Total Changes" value={comparison.valueDiffs.length + comparison.keysOnlyInA.length + comparison.keysOnlyInB.length} color="text-blue-500" icon={<Binary size={16}/>} />
-                                <StatBox label="Keys Only in A" value={comparison.keysOnlyInA.length} color="text-red-500" icon={<AlertCircle size={16}/>} />
-                                <StatBox label="Keys Only in B" value={comparison.keysOnlyInB.length} color="text-emerald-500" icon={<Info size={16}/>} />
-                                <StatBox label="Common Identical" value={comparison.commonKeysWithSameValue.length} color="text-slate-500" icon={<CheckCircle2 size={16}/>} />
-                            </div>
-
-                            {/* Diffs View */}
-                            <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-xl overflow-hidden min-h-[500px]">
-                                {selectedView === 'diff' && (
-                                    <div className="p-0">
-                                        <div className="px-6 py-4 bg-slate-50 dark:bg-slate-950/50 border-b border-slate-100 dark:border-slate-800">
-                                            <p className="text-[10px] font-black uppercase text-slate-400 tracking-widest">Visual Diff Viewer</p>
-                                        </div>
-                                        <div className="p-6">
-                                            <JsonDiffViewer jsonA={jsonA} jsonB={jsonB} />
-                                        </div>
-                                    </div>
-                                )}
-
-                                {selectedView === 'keys' && (
-                                    <div className="grid grid-cols-2 divide-x divide-slate-100 dark:divide-slate-800">
-                                        <KeyDiffList title="Keys Only in A" items={comparison.keysOnlyInA} type="removed" />
-                                        <KeyDiffList title="Keys Only in B" items={comparison.keysOnlyInB} type="added" />
-                                    </div>
-                                )}
-
-                                {selectedView === 'values' && (
-                                    <div className="p-6 space-y-4">
-                                        {comparison.valueDiffs.map((diff: any, i: number) => (
-                                            <ValueDiffRow key={i} diff={diff} />
-                                        ))}
-                                        {comparison.valueDiffs.length === 0 && <EmptyState text="No value differences found." />}
-                                    </div>
-                                )}
-
-                                {selectedView === 'all' && (
-                                    <div className="p-12 flex flex-col items-center justify-center text-center space-y-4">
-                                        <div className="w-20 h-20 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center text-blue-600">
-                                            <LayoutGrid size={40} />
-                                        </div>
-                                        <h2 className="text-2xl font-black text-slate-900 dark:text-white uppercase tracking-tighter">Object Analysis Ready</h2>
-                                        <div className="grid grid-cols-2 gap-4 w-full max-w-sm mt-8">
-                                            <div className="p-4 bg-slate-50 dark:bg-slate-950 rounded-2xl border border-slate-100 dark:border-slate-800">
-                                                <div className="text-[10px] font-black text-slate-400 uppercase mb-1">Keys in A</div>
-                                                <div className="text-xl font-black">{comparison.totalKeysA}</div>
-                                            </div>
-                                            <div className="p-4 bg-slate-50 dark:bg-slate-950 rounded-2xl border border-slate-100 dark:border-slate-800">
-                                                <div className="text-[10px] font-black text-slate-400 uppercase mb-1">Keys in B</div>
-                                                <div className="text-xl font-black">{comparison.totalKeysB}</div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                )}
-                            </div>
-                        </div>
-                    )}
+        {/* Content */}
+        <div className="flex-1 overflow-auto p-6 space-y-6">
+          {viewMode === 'input' ? (
+            <div className="h-full flex flex-col gap-4">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 flex-1 min-h-[500px]">
+                <EditorPanel title="Original JSON (A)" json={jsonA} onChange={setJsonA} />
+                <EditorPanel title="Comparison JSON (B)" json={jsonB} onChange={setJsonB} />
+              </div>
+              {error && (
+                <div className="p-3 bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-900/50 rounded-lg flex items-center gap-2 text-red-700 dark:text-red-400 text-xs font-medium">
+                  <AlertCircle size={14} className="shrink-0" />
+                  <span>{error}</span>
                 </div>
-            </main>
+              )}
+            </div>
+          ) : (
+            <div className="space-y-6">
+              {/* Summary Stats */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                <StatBox
+                  label="Total Changes"
+                  value={comparison.valueDiffs.length + comparison.keysOnlyInA.length + comparison.keysOnlyInB.length}
+                  icon={<Binary size={14} className="text-zinc-500" />}
+                />
+                <StatBox
+                  label="Keys Only in A"
+                  value={comparison.keysOnlyInA.length}
+                  icon={<AlertCircle size={14} className="text-rose-500" />}
+                />
+                <StatBox
+                  label="Keys Only in B"
+                  value={comparison.keysOnlyInB.length}
+                  icon={<Info size={14} className="text-amber-500" />}
+                />
+                <StatBox
+                  label="Identical Keys"
+                  value={comparison.commonKeysWithSameValue.length}
+                  icon={<CheckCircle2 size={14} className="text-emerald-500" />}
+                />
+              </div>
+
+              {/* Diffs View */}
+              <div className="card p-0 overflow-hidden min-h-[450px]">
+                {selectedView === 'diff' && (
+                  <div className="p-4">
+                    <JsonDiffViewer jsonA={jsonA} jsonB={jsonB} />
+                  </div>
+                )}
+
+                {selectedView === 'keys' && (
+                  <div className="grid grid-cols-1 md:grid-cols-2 divide-y md:divide-y-0 md:divide-x divide-zinc-200 dark:divide-zinc-800">
+                    <KeyDiffList title="Keys Only in A" items={comparison.keysOnlyInA} type="removed" />
+                    <KeyDiffList title="Keys Only in B" items={comparison.keysOnlyInB} type="added" />
+                  </div>
+                )}
+
+                {selectedView === 'values' && (
+                  <div className="p-4 space-y-3">
+                    {comparison.valueDiffs.map((diff: any, i: number) => (
+                      <ValueDiffRow key={i} diff={diff} />
+                    ))}
+                    {comparison.valueDiffs.length === 0 && <EmptyState text="No value differences found." />}
+                  </div>
+                )}
+
+                {selectedView === 'all' && (
+                  <div className="p-10 flex flex-col items-center justify-center text-center space-y-4">
+                    <div className="w-10 h-10 bg-zinc-100 dark:bg-zinc-800 rounded-lg flex items-center justify-center text-zinc-600 dark:text-zinc-300">
+                      <LayoutGrid size={20} />
+                    </div>
+                    <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">Comparison Complete</h2>
+                    <div className="grid grid-cols-2 gap-3 w-full max-w-xs mt-2">
+                      <div className="p-3 bg-zinc-50 dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800 text-left">
+                        <div className="text-[10px] font-mono text-zinc-400">Keys in A</div>
+                        <div className="text-lg font-bold font-mono text-zinc-900 dark:text-zinc-100">{comparison.totalKeysA}</div>
+                      </div>
+                      <div className="p-3 bg-zinc-50 dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800 text-left">
+                        <div className="text-[10px] font-mono text-zinc-400">Keys in B</div>
+                        <div className="text-lg font-bold font-mono text-zinc-900 dark:text-zinc-100">{comparison.totalKeysB}</div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
         </div>
-    );
+      </main>
+    </div>
+  );
 }
 
-// Reuse helper components (In a real app, these would be separate component files)
 function ViewTab({ active, onClick, label }: { active: boolean, onClick: () => void, label: string }) {
-    return (
-        <button 
-            onClick={onClick}
-            className={`px-4 py-1.5 rounded-md text-[10px] font-black uppercase tracking-widest transition-all ${active ? 'bg-white dark:bg-slate-700 text-blue-600 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
-        >
-            {label}
-        </button>
-    );
+  return (
+    <button
+      onClick={onClick}
+      className={`px-3 py-1 rounded-md text-xs font-medium transition-colors ${
+        active
+          ? 'bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 shadow-sm'
+          : 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200'
+      }`}
+    >
+      {label}
+    </button>
+  );
 }
 
 function EditorPanel({ title, json, onChange }: { title: string, json: any, onChange: (j: any) => void }) {
-    return (
-        <div className="flex flex-col bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-lg overflow-hidden lg:h-full">
-            <div className="px-4 py-2 border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/50 flex items-center justify-between">
-                <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">{title}</span>
-                <FileCode size={14} className="text-slate-300" />
-            </div>
-            <div className="flex-1 overflow-hidden">
-                <JsonEditorComponent json={json} onChange={onChange} mode="code" height="100%" />
-            </div>
-        </div>
-    );
+  return (
+    <div className="flex flex-col card p-0 overflow-hidden lg:h-[600px]">
+      <div className="px-4 py-2.5 border-b border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/50 flex items-center justify-between">
+        <span className="text-xs font-medium text-zinc-600 dark:text-zinc-400 font-mono">{title}</span>
+        <FileCode size={13} className="text-zinc-400" />
+      </div>
+      <div className="flex-1 overflow-hidden p-1">
+        <JsonEditorComponent json={json} onChange={onChange} mode="code" height="100%" />
+      </div>
+    </div>
+  );
 }
 
-function StatBox({ label, value, color, icon }: { label: string, value: number, color: string, icon: React.ReactNode }) {
-    return (
-        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 shadow-lg">
-            <div className="flex items-center justify-between mb-2">
-                <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">{label}</span>
-                <div className={color}>{icon}</div>
-            </div>
-            <div className={`text-3xl font-black ${color}`}>{value}</div>
-        </div>
-    );
+function StatBox({ label, value, icon }: { label: string, value: number, icon: React.ReactNode }) {
+  return (
+    <div className="card p-3.5">
+      <div className="flex items-center justify-between mb-1">
+        <span className="text-[11px] font-medium text-zinc-500 dark:text-zinc-400">{label}</span>
+        {icon}
+      </div>
+      <div className="text-xl font-bold font-mono text-zinc-900 dark:text-zinc-100">{value}</div>
+    </div>
+  );
 }
 
 function KeyDiffList({ title, items, type }: { title: string, items: string[], type: 'added' | 'removed' }) {
-    return (
-        <div className="p-6">
-            <h3 className={`text-[10px] font-black uppercase tracking-widest mb-4 ${type === 'added' ? 'text-emerald-500' : 'text-red-500'}`}>{title}</h3>
-            <div className="space-y-2">
-                {items.map((item, i) => (
-                    <div key={i} className={`px-3 py-2 rounded-xl font-mono text-xs break-all border transition-all ${type === 'added' ? 'bg-emerald-500/5 border-emerald-500/10 text-emerald-600' : 'bg-red-500/5 border-red-500/10 text-red-600'}`}>
-                        {type === 'added' ? '+' : '-'} {item}
-                    </div>
-                ))}
-                {items.length === 0 && <p className="text-xs text-slate-400 italic">No matches</p>}
-            </div>
-        </div>
-    );
+  const isAdded = type === 'added';
+  return (
+    <div className="p-4">
+      <h3 className="text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-3 flex items-center gap-1.5">
+        <span className={`w-2 h-2 rounded-full ${isAdded ? 'bg-emerald-500' : 'bg-rose-500'}`} />
+        {title}
+        <span className="text-[10px] font-mono text-zinc-400 ml-auto">({items.length})</span>
+      </h3>
+      <div className="space-y-1.5">
+        {items.map((item, i) => (
+          <div
+            key={i}
+            className={`px-2.5 py-1.5 rounded-md font-mono text-xs border ${
+              isAdded
+                ? 'bg-emerald-50/60 dark:bg-emerald-950/20 border-emerald-200 dark:border-emerald-900/40 text-emerald-800 dark:text-emerald-300'
+                : 'bg-rose-50/60 dark:bg-rose-950/20 border-rose-200 dark:border-rose-900/40 text-rose-800 dark:text-rose-300'
+            }`}
+          >
+            {isAdded ? '+' : '-'} {item}
+          </div>
+        ))}
+        {items.length === 0 && <p className="text-xs text-zinc-400 italic">No keys in this category</p>}
+      </div>
+    </div>
+  );
 }
 
 function ValueDiffRow({ diff }: { diff: any }) {
-    return (
-        <div className="p-4 bg-slate-50 dark:bg-slate-950/50 rounded-2xl border border-slate-100 dark:border-slate-800 group transition-all hover:border-blue-500/30">
-            <div className="flex items-center gap-2 mb-3">
-                <div className="w-1.5 h-1.5 bg-blue-500 rounded-full group-hover:scale-150 transition-all" />
-                <span className="font-mono text-xs font-bold text-slate-600 dark:text-slate-300 break-all">{diff.key}</span>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-                <ValBox label="JSON A" value={diff.valueA} color="text-red-500" />
-                <ValBox label="JSON B" value={diff.valueB} color="text-emerald-500" />
-            </div>
-        </div>
-    );
+  return (
+    <div className="p-3 bg-zinc-50/60 dark:bg-zinc-900/40 rounded-lg border border-zinc-200/80 dark:border-zinc-800">
+      <div className="font-mono text-xs font-medium text-zinc-900 dark:text-zinc-100 mb-2 truncate">
+        {diff.key}
+      </div>
+      <div className="grid grid-cols-2 gap-2">
+        <ValBox label="JSON A" value={diff.valueA} variant="removed" />
+        <ValBox label="JSON B" value={diff.valueB} variant="added" />
+      </div>
+    </div>
+  );
 }
 
-function ValBox({ label, value, color }: { label: string, value: any, color: string }) {
-    const valStr = typeof value === 'object' ? JSON.stringify(value) : String(value);
-    return (
-        <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 p-3 rounded-xl">
-            <div className="text-[8px] font-black uppercase text-slate-400 mb-1">{label}</div>
-            <div className={`font-mono text-xs font-bold ${color}`}>{valStr}</div>
-        </div>
-    );
+function ValBox({ label, value, variant }: { label: string, value: any, variant: 'added' | 'removed' }) {
+  const valStr = typeof value === 'object' ? JSON.stringify(value) : String(value);
+  return (
+    <div className="bg-white dark:bg-zinc-900 border border-zinc-200/80 dark:border-zinc-800 p-2 rounded-md">
+      <div className="text-[10px] uppercase font-mono text-zinc-400 mb-0.5">{label}</div>
+      <div className={`font-mono text-xs font-semibold ${variant === 'added' ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'}`}>
+        {valStr}
+      </div>
+    </div>
+  );
 }
 
 function EmptyState({ text }: { text: string }) {
-    return (
-        <div className="py-12 flex flex-col items-center justify-center text-slate-400 gap-2">
-            <CheckCircle2 size={24} className="text-slate-200" />
-            <p className="text-sm italic">{text}</p>
-        </div>
-    );
+  return (
+    <div className="py-8 flex flex-col items-center justify-center text-zinc-400 gap-1.5">
+      <CheckCircle2 size={18} className="text-zinc-300 dark:text-zinc-600" />
+      <p className="text-xs text-zinc-500">{text}</p>
+    </div>
+  );
 }

@@ -1,8 +1,10 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
+import { toast } from 'react-hot-toast';
 import { Sidebar } from '@/components/Sidebar';
 import { useSidebar } from '@/components/SidebarContext';
+import { PageHeader } from '@/components/PageHeader';
 import {
   extractMimeType,
   createBlobUrl,
@@ -13,7 +15,16 @@ import {
 } from '@/utils/base64ImageViewer';
 import { ImageModal } from '@/components/ImageModal';
 import { AutoToggle } from '@/components/AutoToggle';
-import { ImageIcon, Upload, Trash2, Download, Maximize2, Info, FileImage } from 'lucide-react';
+import {
+  ImageIcon,
+  Upload,
+  Trash2,
+  Download,
+  Maximize2,
+  Info,
+  FileImage,
+  AlertCircle
+} from 'lucide-react';
 
 export default function Base64ViewerPage() {
   const { width } = useSidebar();
@@ -36,7 +47,7 @@ export default function Base64ViewerPage() {
         setMetadata(null);
         setError('');
       }
-    }, 300);
+    }, 250);
     return () => clearTimeout(timer);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [base64Input, isAutoConvert]);
@@ -92,6 +103,7 @@ export default function Base64ViewerPage() {
       const base64 = e.target?.result as string;
       setBase64Input(base64);
       handleDecode(base64);
+      toast.success('Image loaded and converted to Base64');
     };
     reader.readAsDataURL(file);
   };
@@ -102,144 +114,190 @@ export default function Base64ViewerPage() {
     a.href = imageUrl;
     a.download = `decoded-image.${metadata?.format.toLowerCase() || 'png'}`;
     a.click();
+    toast.success('Image downloaded');
+  };
+
+  const handleClear = () => {
+    setBase64Input('');
+    setImageUrl(null);
+    setMetadata(null);
+    setError('');
   };
 
   return (
-    <div className="flex h-screen overflow-hidden">
+    <div className="flex h-screen overflow-hidden bg-[#fafafa] dark:bg-[#09090b]">
       <Sidebar />
 
-      <main 
-        className="flex-1 flex flex-col h-full bg-slate-50 dark:bg-slate-950 transition-all duration-300"
+      <main
+        className="flex-1 flex flex-col h-full overflow-hidden transition-[margin] duration-200"
         style={{ marginLeft: width }}
       >
-        <header className="flex items-center justify-between px-8 py-4 border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-slate-900 shadow-sm z-10 transition-colors">
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-pink-100 dark:bg-pink-900/30 rounded-lg text-pink-600 dark:text-pink-400">
-              <ImageIcon size={20} />
-            </div>
-            <div>
-              <h1 className="text-xl font-bold text-slate-900 dark:text-slate-100">Base64 Image Viewer</h1>
-              <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">Render images from encoded strings instantly.</p>
-            </div>
-          </div>
-          <div className="flex items-center gap-3">
-             <AutoToggle 
-               enabled={isAutoConvert} 
-               onChange={setIsAutoConvert} 
-               activeColorClass="bg-pink-600"
-               activeTextClass="text-pink-500 fill-pink-500"
-             />
-             <button
-              onClick={() => fileInputRef.current?.click()}
-              className="px-4 py-2 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-xl text-xs font-bold hover:bg-slate-200 dark:hover:bg-slate-700 transition-all flex items-center gap-2"
-            >
-              <Upload size={14} /> Upload Image
-            </button>
-            <input type="file" ref={fileInputRef} onChange={handleFileUpload} accept="image/*" className="hidden" />
-            <button
-              onClick={() => handleDecode()}
-              disabled={loading}
-              className="px-6 py-2 bg-pink-600 hover:bg-pink-700 text-white rounded-xl text-sm font-bold transition-all shadow-lg shadow-pink-500/20 active:scale-95 disabled:opacity-50"
-            >
-              {loading ? 'Decoding...' : 'Render Image'}
-            </button>
-          </div>
-        </header>
+        <PageHeader
+          icon={ImageIcon}
+          title="Base64 Image Viewer"
+          description="Decode, render, inspect dimensions, and download Base64 encoded images."
+          badge="Image Decoder"
+        >
+          <AutoToggle
+            enabled={isAutoConvert}
+            onChange={setIsAutoConvert}
+          />
+          <button
+            onClick={() => fileInputRef.current?.click()}
+            className="btn btn-secondary btn-sm"
+          >
+            <Upload size={13} />
+            <span>Upload Image</span>
+          </button>
+          <input
+            type="file"
+            ref={fileInputRef}
+            onChange={handleFileUpload}
+            accept="image/*"
+            className="hidden"
+          />
+          <button
+            onClick={() => handleDecode()}
+            disabled={loading || !base64Input.trim()}
+            className="btn btn-primary"
+          >
+            {loading ? 'Decoding...' : 'Render Image'}
+          </button>
+        </PageHeader>
 
-        <div className="flex-1 overflow-auto p-8 scrollbar-thin scrollbar-thumb-slate-300 dark:scrollbar-thumb-slate-800">
-          <div className="max-w-6xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {/* Content */}
+        <div className="flex-1 overflow-auto p-6 space-y-6">
+          <div className="max-w-6xl mx-auto space-y-6">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               {/* Input Area */}
-              <div className="lg:col-span-2 space-y-6">
-                <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-xl overflow-hidden min-h-[200px] flex flex-col group">
-                   <div className="px-5 py-3 border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/50 flex justify-between items-center">
-                      <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Base64 Input</span>
-                      <button onClick={() => setBase64Input('')} className="text-slate-400 hover:text-red-500 transition-colors"><Trash2 size={12}/></button>
-                   </div>
-                   <textarea
+              <div className="lg:col-span-2 space-y-4">
+                <div className="card p-0 overflow-hidden flex flex-col min-h-[220px]">
+                  <div className="px-4 py-2 border-b border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/50 flex items-center justify-between">
+                    <span className="text-xs font-medium text-zinc-600 dark:text-zinc-400 font-mono">
+                      Base64 Input
+                    </span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-[11px] font-mono text-zinc-400">
+                        {base64Input.length.toLocaleString()} chars
+                      </span>
+                      <button
+                        onClick={handleClear}
+                        disabled={!base64Input}
+                        className="text-zinc-400 hover:text-red-500 disabled:opacity-30 p-1"
+                        title="Clear input"
+                      >
+                        <Trash2 size={13} />
+                      </button>
+                    </div>
+                  </div>
+                  <textarea
                     value={base64Input}
                     onChange={(e) => setBase64Input(e.target.value)}
-                    placeholder="Paste data:image/... base64 here..."
-                    className="flex-1 p-6 bg-transparent text-slate-900 dark:text-slate-100 font-mono text-xs focus:outline-none resize-none"
-                   />
+                    placeholder="Paste Base64 encoded image string or data:image/... URI here..."
+                    className="flex-1 w-full p-4 bg-transparent text-zinc-900 dark:text-zinc-100 font-mono text-xs leading-relaxed focus:outline-none resize-none placeholder:text-zinc-400 dark:placeholder:text-zinc-600"
+                    spellCheck={false}
+                  />
                 </div>
 
+                {error && (
+                  <div className="p-3 bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-900/50 rounded-lg text-xs text-red-700 dark:text-red-400 flex items-center gap-2">
+                    <AlertCircle size={14} className="shrink-0" />
+                    <span>{error}</span>
+                  </div>
+                )}
+
+                {/* Canvas */}
                 {imageUrl ? (
-                  <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-2xl overflow-hidden group relative">
-                    <div className="px-5 py-3 border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/50 flex justify-between items-center">
-                      <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Rendering Canvas</span>
-                      <div className="flex items-center gap-2">
-                        <button onClick={() => setShowModal(true)} className="p-1.5 bg-slate-100 dark:bg-slate-800 rounded-lg text-slate-500 hover:text-indigo-500 transition-all"><Maximize2 size={14}/></button>
-                        <button onClick={handleDownload} className="p-1.5 bg-slate-100 dark:bg-slate-800 rounded-lg text-slate-500 hover:text-pink-500 transition-all"><Download size={14}/></button>
+                  <div className="card p-0 overflow-hidden">
+                    <div className="px-4 py-2 border-b border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/50 flex items-center justify-between">
+                      <span className="text-xs font-medium text-zinc-600 dark:text-zinc-400 font-mono">
+                        Preview Canvas
+                      </span>
+                      <div className="flex items-center gap-1.5">
+                        <button
+                          onClick={() => setShowModal(true)}
+                          className="btn btn-secondary btn-sm"
+                          title="Full Screen Preview"
+                        >
+                          <Maximize2 size={12} />
+                          <span>Expand</span>
+                        </button>
+                        <button
+                          onClick={handleDownload}
+                          className="btn btn-secondary btn-sm"
+                          title="Download Image"
+                        >
+                          <Download size={12} />
+                          <span>Download</span>
+                        </button>
                       </div>
                     </div>
-                    <div className="p-8 flex items-center justify-center bg-slate-100 dark:bg-slate-950/50 min-h-[400px]">
-                      <img 
-                        src={imageUrl} 
-                        alt="Preview" 
-                        className="max-w-full max-h-[500px] object-contain shadow-2xl rounded-lg cursor-zoom-in" 
+                    <div className="p-6 flex items-center justify-center bg-zinc-50/50 dark:bg-zinc-950/80 min-h-[360px]">
+                      <img
+                        src={imageUrl}
+                        alt="Preview"
+                        className="max-w-full max-h-[460px] object-contain rounded border border-zinc-200/80 dark:border-zinc-800 shadow-sm cursor-zoom-in"
                         onClick={() => setShowModal(true)}
                       />
                     </div>
                   </div>
                 ) : (
-                  <div 
+                  <div
                     onClick={() => fileInputRef.current?.click()}
-                    className="h-[400px] rounded-3xl border-4 border-dashed border-slate-200 dark:border-slate-800 flex flex-col items-center justify-center text-slate-400 gap-4 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-900/50 transition-colors"
+                    className="h-72 rounded-xl border border-dashed border-zinc-300 dark:border-zinc-800 flex flex-col items-center justify-center text-zinc-400 gap-2 cursor-pointer hover:bg-zinc-50 dark:hover:bg-zinc-900/40 transition-colors"
                   >
-                    <div className="p-6 bg-slate-100 dark:bg-slate-900 rounded-full">
-                      <FileImage size={48} className="opacity-20" />
-                    </div>
-                    <p className="text-sm font-bold uppercase tracking-widest opacity-50">Canvas is Empty</p>
+                    <FileImage size={32} className="text-zinc-300 dark:text-zinc-700" />
+                    <p className="text-xs font-medium text-zinc-500">
+                      No image rendered yet. Paste Base64 or click to upload.
+                    </p>
                   </div>
                 )}
               </div>
 
-              {/* Metadata Area */}
-              <div className="space-y-6">
-                <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-xl overflow-hidden">
-                  <div className="px-5 py-3 border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/50 flex items-center gap-2">
-                    <Info size={14} className="text-pink-500" />
-                    <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Image Intelligence</span>
+              {/* Metadata Panel */}
+              <div className="space-y-4">
+                <div className="card p-4 space-y-3">
+                  <div className="flex items-center gap-2 pb-2 border-b border-zinc-100 dark:border-zinc-800">
+                    <Info size={14} className="text-zinc-500" />
+                    <span className="text-xs font-semibold text-zinc-900 dark:text-zinc-100">
+                      Image Intelligence
+                    </span>
                   </div>
-                  <div className="p-6 space-y-4">
-                    {metadata ? (
-                      <>
-                        <MetaRow label="Format" value={metadata.format} />
-                        <MetaRow label="Dimensions" value={`${metadata.width} × ${metadata.height} px`} />
-                        <MetaRow label="File Size" value={formatFileSize(metadata.sizeInBytes)} />
-                        <MetaRow label="Mime Type" value={metadata.mimeType} />
-                        <MetaRow label="Aspect Ratio" value={(metadata.width / metadata.height).toFixed(2) + ':1'} />
-                      </>
-                    ) : (
-                      <p className="text-xs text-slate-400 italic text-center py-10">No metadata available yet.</p>
-                    )}
-                  </div>
-                </div>
 
+                  {metadata ? (
+                    <div className="space-y-2.5 text-xs">
+                      <MetaRow label="Format" value={metadata.format} />
+                      <MetaRow label="Dimensions" value={`${metadata.width} × ${metadata.height} px`} />
+                      <MetaRow label="File Size" value={formatFileSize(metadata.sizeInBytes)} />
+                      <MetaRow label="MIME Type" value={metadata.mimeType} />
+                      <MetaRow label="Aspect Ratio" value={metadata.height ? `${(metadata.width / metadata.height).toFixed(2)}:1` : 'N/A'} />
+                    </div>
+                  ) : (
+                    <p className="text-xs text-zinc-400 py-4 text-center italic">
+                      Metadata appears when an image is decoded.
+                    </p>
+                  )}
+                </div>
               </div>
             </div>
-
-            {error && (
-              <div className="p-4 bg-red-500/10 border border-red-500/20 rounded-2xl flex items-center gap-3 text-red-600 dark:text-red-400 text-sm font-bold animate-in fade-in slide-in-from-top-2">
-                <Info size={18} />
-                {error}
-              </div>
-            )}
           </div>
         </div>
-
-        <ImageModal isOpen={showModal} onClose={() => setShowModal(false)} imageUrl={imageUrl} imageAlt="Base64 Preview" />
       </main>
+
+      <ImageModal
+        isOpen={showModal}
+        onClose={() => setShowModal(false)}
+        imageUrl={imageUrl}
+      />
     </div>
   );
 }
 
-function MetaRow({ label, value }: { label: string, value: string }) {
+function MetaRow({ label, value }: { label: string; value: string }) {
   return (
-    <div className="flex items-center justify-between py-2 border-b border-slate-50 dark:border-slate-800/50 last:border-0">
-      <span className="text-xs font-bold text-slate-500 dark:text-slate-400">{label}</span>
-      <span className="text-xs font-mono font-black text-slate-900 dark:text-white uppercase">{value}</span>
+    <div className="flex items-center justify-between py-1 border-b border-zinc-100 dark:border-zinc-800/60 last:border-0">
+      <span className="text-zinc-500">{label}</span>
+      <span className="font-mono font-medium text-zinc-900 dark:text-zinc-100">{value}</span>
     </div>
   );
 }

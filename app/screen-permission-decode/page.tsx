@@ -1,8 +1,10 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import { toast } from 'react-hot-toast';
 import { Sidebar } from '@/components/Sidebar';
 import { useSidebar } from '@/components/SidebarContext';
+import { PageHeader } from '@/components/PageHeader';
 import { AutoToggle } from '@/components/AutoToggle';
 import {
   decompressScreenPermission,
@@ -91,12 +93,11 @@ export default function ScreenPermissionDecodePage() {
     []
   );
 
-  // Auto-convert with debounce
   useEffect(() => {
     if (!isAutoConvert) return;
     const timer = setTimeout(() => {
       handleProcess(input, mode, viewFormat);
-    }, 250);
+    }, 200);
     return () => clearTimeout(timer);
   }, [input, mode, viewFormat, isAutoConvert, handleProcess]);
 
@@ -113,9 +114,11 @@ export default function ScreenPermissionDecodePage() {
     if (mode === 'decompress') {
       setInput(SAMPLE_SCREEN_PERMISSION_BASE64_GZIP);
       handleProcess(SAMPLE_SCREEN_PERMISSION_BASE64_GZIP, 'decompress', viewFormat);
+      toast.success('Loaded sample Base64 Gzip payload');
     } else {
       setInput(SAMPLE_SCREEN_PERMISSION_JSON);
       handleProcess(SAMPLE_SCREEN_PERMISSION_JSON, 'compress', viewFormat);
+      toast.success('Loaded sample screen permission JSON');
     }
   };
 
@@ -134,6 +137,7 @@ export default function ScreenPermissionDecodePage() {
       await navigator.clipboard.writeText(output);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
+      toast.success('Copied output to clipboard');
     } catch (err) {
       console.error('Failed to copy:', err);
     }
@@ -157,9 +161,14 @@ export default function ScreenPermissionDecodePage() {
     a.href = url;
     a.download = filename;
     document.body.appendChild(a);
-    a.click();
+    linkClick(a);
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
+    toast.success(`Downloaded ${filename}`);
+  };
+
+  const linkClick = (element: HTMLAnchorElement) => {
+    element.click();
   };
 
   const handleClear = () => {
@@ -170,96 +179,79 @@ export default function ScreenPermissionDecodePage() {
   };
 
   return (
-    <div className="flex h-screen overflow-hidden">
+    <div className="flex h-screen overflow-hidden bg-[#fafafa] dark:bg-[#09090b]">
       <Sidebar />
 
       <main
-        className="flex-1 flex flex-col h-full bg-slate-50 dark:bg-slate-950 transition-all duration-300"
+        className="flex-1 flex flex-col h-full overflow-hidden transition-[margin] duration-200"
         style={{ marginLeft: width }}
       >
-        {/* Header */}
-        <header className="flex items-center justify-between px-6 py-4 border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-slate-900 shadow-sm z-10">
-          <div className="flex items-center gap-3">
-            <div className="p-2.5 rounded-xl bg-teal-500/10 text-teal-600 dark:text-teal-400 border border-teal-500/20">
-              <ShieldCheck className="w-6 h-6" />
-            </div>
-            <div>
-              <h1 className="text-xl font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
-                Screen Permission Decode
-                <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-teal-100 dark:bg-teal-900/40 text-teal-700 dark:text-teal-300 border border-teal-200 dark:border-teal-800">
-                  Gzip Online
-                </span>
-              </h1>
-              <p className="text-xs text-slate-500 dark:text-slate-400">
-                Decompress and compress Gzip Base64 screen permission payloads with instant JSON formatting.
-              </p>
-            </div>
+        <PageHeader
+          icon={ShieldCheck}
+          title="Screen Permission Decode"
+          description="Decompress and compress Gzip Base64 screen permission payloads with instant JSON formatting."
+          badge="Gzip Online"
+        >
+          <AutoToggle
+            enabled={isAutoConvert}
+            onChange={setIsAutoConvert}
+          />
+
+          {/* Mode Switcher */}
+          <div className="flex p-0.5 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-zinc-100 dark:bg-zinc-900">
+            <button
+              onClick={() => handleModeChange('decompress')}
+              className={`px-3 py-1 rounded-md text-xs font-medium transition-colors ${
+                mode === 'decompress'
+                  ? 'bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 shadow-sm'
+                  : 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200'
+              }`}
+            >
+              Decompress (Gzip → JSON)
+            </button>
+            <button
+              onClick={() => handleModeChange('compress')}
+              className={`px-3 py-1 rounded-md text-xs font-medium transition-colors ${
+                mode === 'compress'
+                  ? 'bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 shadow-sm'
+                  : 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200'
+              }`}
+            >
+              Compress (JSON → Gzip)
+            </button>
           </div>
+        </PageHeader>
 
-          <div className="flex items-center gap-4">
-            <AutoToggle
-              enabled={isAutoConvert}
-              onChange={setIsAutoConvert}
-              activeColorClass="bg-teal-600"
-              activeTextClass="text-teal-500 fill-teal-500"
-            />
-
-            <div className="flex bg-slate-100 dark:bg-slate-800 p-1 rounded-lg border border-slate-200 dark:border-slate-700">
-              <button
-                onClick={() => handleModeChange('decompress')}
-                className={`px-4 py-1.5 rounded-md text-xs font-semibold transition-all ${
-                  mode === 'decompress'
-                    ? 'bg-white dark:bg-slate-700 text-teal-600 dark:text-teal-400 shadow-sm'
-                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
-                }`}
-              >
-                Decompress (Gzip → JSON)
-              </button>
-              <button
-                onClick={() => handleModeChange('compress')}
-                className={`px-4 py-1.5 rounded-md text-xs font-semibold transition-all ${
-                  mode === 'compress'
-                    ? 'bg-white dark:bg-slate-700 text-teal-600 dark:text-teal-400 shadow-sm'
-                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
-                }`}
-              >
-                Compress (JSON → Gzip)
-              </button>
-            </div>
-          </div>
-        </header>
-
-        {/* Main Content Area */}
-        <div className="flex-1 flex flex-col p-6 gap-6 overflow-auto">
-          {/* Controls Row */}
-          <div className="flex flex-wrap items-center justify-between gap-4">
-            <div className="flex items-center gap-3">
+        {/* Toolbar & Controls */}
+        <div className="flex-1 flex flex-col p-4 gap-3 overflow-hidden">
+          <div className="flex flex-wrap items-center justify-between gap-2 shrink-0">
+            <div className="flex items-center gap-2">
               <button
                 onClick={handleLoadSample}
-                className="flex items-center gap-2 px-3.5 py-1.5 bg-teal-50 hover:bg-teal-100 dark:bg-teal-900/20 dark:hover:bg-teal-900/40 text-teal-700 dark:text-teal-300 border border-teal-200 dark:border-teal-800 rounded-lg text-xs font-bold transition-all"
+                className="btn btn-secondary btn-sm"
               >
-                <Sparkles className="w-3.5 h-3.5 text-teal-500" />
-                Load Sample {mode === 'decompress' ? 'Base64 Gzip' : 'JSON'}
+                <Sparkles size={13} className="text-zinc-400" />
+                <span>Load Sample {mode === 'decompress' ? 'Base64 Gzip' : 'JSON'}</span>
               </button>
 
               {mode === 'decompress' && stats?.isJson && (
-                <div className="flex items-center bg-slate-100 dark:bg-slate-800 p-0.5 rounded-lg border border-slate-200 dark:border-slate-700">
+                <div className="flex p-0.5 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-zinc-100 dark:bg-zinc-900">
                   <button
                     onClick={() => setViewFormat('pretty')}
-                    className={`px-3 py-1 text-xs font-bold rounded-md transition-all ${
+                    className={`px-2.5 py-1 text-xs font-medium rounded-md transition-colors ${
                       viewFormat === 'pretty'
-                        ? 'bg-white dark:bg-slate-700 text-teal-600 dark:text-teal-300 shadow-sm'
-                        : 'text-slate-500 dark:text-slate-400'
+                        ? 'bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 shadow-sm'
+                        : 'text-zinc-500 dark:text-zinc-400'
                     }`}
                   >
                     Pretty JSON
                   </button>
                   <button
                     onClick={() => setViewFormat('raw')}
-                    className={`px-3 py-1 text-xs font-bold rounded-md transition-all ${
+                    className={`px-2.5 py-1 text-xs font-medium rounded-md transition-colors ${
                       viewFormat === 'raw'
-                        ? 'bg-white dark:bg-slate-700 text-teal-600 dark:text-teal-300 shadow-sm'
-                        : 'text-slate-500 dark:text-slate-400'
+                        ? 'bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 shadow-sm'
+                        : 'text-zinc-500 dark:text-zinc-400'
                     }`}
                   >
                     Raw Text
@@ -270,78 +262,83 @@ export default function ScreenPermissionDecodePage() {
 
             {/* Stats Bar */}
             {stats && (
-              <div className="flex items-center gap-3 text-xs bg-white dark:bg-slate-900 px-4 py-1.5 rounded-lg border border-slate-200 dark:border-slate-800 shadow-sm">
-                <span className="text-slate-500 dark:text-slate-400">
-                  Input: <strong className="text-slate-800 dark:text-slate-200">{stats.inputSize} B</strong>
+              <div className="flex items-center gap-2.5 text-xs bg-white dark:bg-zinc-900 px-3 py-1.5 rounded-lg border border-zinc-200 dark:border-zinc-800 font-mono">
+                <span className="text-zinc-500">
+                  In: <strong className="text-zinc-800 dark:text-zinc-200">{stats.inputSize} B</strong>
                 </span>
-                <span className="text-slate-300 dark:text-slate-700">|</span>
-                <span className="text-slate-500 dark:text-slate-400">
-                  Output: <strong className="text-slate-800 dark:text-slate-200">{stats.outputSize} B</strong>
+                <span className="text-zinc-300 dark:text-zinc-700">|</span>
+                <span className="text-zinc-500">
+                  Out: <strong className="text-zinc-800 dark:text-zinc-200">{stats.outputSize} B</strong>
                 </span>
                 {stats.ratio && (
                   <>
-                    <span className="text-slate-300 dark:text-slate-700">|</span>
-                    <span className="text-teal-600 dark:text-teal-400 font-bold">{stats.ratio}</span>
+                    <span className="text-zinc-300 dark:text-zinc-700">|</span>
+                    <span className="text-emerald-600 dark:text-emerald-400 font-medium">
+                      {stats.ratio} compression savings
+                    </span>
                   </>
                 )}
                 {stats.isJson && (
                   <>
-                    <span className="text-slate-300 dark:text-slate-700">|</span>
-                    <span className="flex items-center gap-1 text-emerald-600 dark:text-emerald-400 font-bold">
-                      <FileCode className="w-3.5 h-3.5" /> Valid JSON
+                    <span className="text-zinc-300 dark:text-zinc-700">|</span>
+                    <span className="flex items-center gap-1 text-emerald-600 dark:text-emerald-400 font-medium">
+                      <FileCode size={12} /> Valid JSON
                     </span>
                   </>
                 )}
               </div>
             )}
 
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2">
               <button
                 onClick={handleSwap}
                 disabled={!output}
-                className="flex items-center gap-1.5 px-3 py-1.5 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg text-xs font-semibold transition-all disabled:opacity-30"
+                className="btn btn-secondary btn-sm"
                 title="Swap Input & Output"
               >
-                <ArrowLeftRight className="w-3.5 h-3.5" />
-                Swap
+                <ArrowLeftRight size={13} />
+                <span>Swap</span>
               </button>
 
               <button
                 onClick={() => handleProcess(input, mode, viewFormat)}
-                className="px-5 py-2 bg-teal-600 hover:bg-teal-700 text-white rounded-lg text-sm font-bold hover:scale-[1.02] active:scale-[0.98] transition-all shadow-md shadow-teal-500/20"
+                className="btn btn-primary"
               >
                 {mode === 'decompress' ? 'Decompress Now' : 'Compress Now'}
               </button>
 
               <button
                 onClick={handleClear}
-                className="p-2 text-slate-400 hover:text-red-500 transition-colors"
+                disabled={!input && !output}
+                className="btn btn-secondary btn-sm"
                 title="Clear all"
               >
-                <Trash2 className="w-5 h-5" />
+                <Trash2 size={13} />
               </button>
             </div>
           </div>
 
           {/* Error Message */}
           {error && (
-            <div className="p-3 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900/50 rounded-xl text-xs text-red-600 dark:text-red-400 flex items-start gap-2 animate-in fade-in">
-              <Info className="w-4 h-4 mt-0.5 flex-shrink-0" />
+            <div className="p-3 bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-900/50 rounded-lg text-xs text-red-700 dark:text-red-400 flex items-center gap-2 shrink-0">
+              <Info size={14} className="shrink-0" />
               <span>{error}</span>
             </div>
           )}
 
-          {/* Editor Grid */}
-          <div className="flex-1 grid grid-cols-1 lg:grid-cols-2 gap-6 min-h-[420px]">
+          {/* Dual Editors */}
+          <div className="flex-1 grid grid-cols-1 lg:grid-cols-2 gap-4 min-h-0">
             {/* Input Card */}
-            <div className="flex flex-col bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xl overflow-hidden group">
-              <div className="px-5 py-3 border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/50 flex justify-between items-center">
-                <span className="text-xs font-black uppercase tracking-widest text-slate-400">
+            <div className="card p-0 flex flex-col overflow-hidden">
+              <div className="px-4 py-2 border-b border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/50 flex items-center justify-between shrink-0">
+                <span className="text-xs font-medium text-zinc-600 dark:text-zinc-400 font-mono">
                   {mode === 'decompress'
-                    ? 'Input: Base64 Gzip (Screen Permission Payload)'
-                    : 'Input: JSON or Text to Compress'}
+                    ? 'Input: Base64 Gzip'
+                    : 'Input: JSON / Text to Compress'}
                 </span>
-                <span className="text-[10px] font-mono text-slate-400">{input.length} characters</span>
+                <span className="text-[11px] font-mono text-zinc-400">
+                  {input.length.toLocaleString()} chars
+                </span>
               </div>
               <textarea
                 value={input}
@@ -351,45 +348,36 @@ export default function ScreenPermissionDecodePage() {
                     ? 'Paste Base64-encoded Gzip screen permission payload here (e.g. H4sIAAAAA...)...'
                     : 'Paste screen permission JSON or plain text here...'
                 }
-                className="flex-1 w-full p-6 bg-transparent text-slate-900 dark:text-slate-100 font-mono text-xs md:text-sm leading-relaxed focus:outline-none resize-none placeholder:text-slate-300 dark:placeholder:text-slate-700"
+                className="flex-1 w-full p-4 bg-transparent text-zinc-900 dark:text-zinc-100 font-mono text-xs leading-relaxed focus:outline-none resize-none placeholder:text-zinc-400 dark:placeholder:text-zinc-600"
                 spellCheck={false}
               />
             </div>
 
             {/* Output Card */}
-            <div className="flex flex-col bg-slate-900 dark:bg-slate-950 rounded-2xl border border-slate-800 shadow-2xl overflow-hidden relative group">
-              <div className="px-5 py-3 border-b border-slate-800 bg-slate-900/50 flex justify-between items-center">
-                <span className="text-xs font-black uppercase tracking-widest text-slate-400">
+            <div className="card p-0 flex flex-col overflow-hidden">
+              <div className="px-4 py-2 border-b border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/50 flex items-center justify-between shrink-0">
+                <span className="text-xs font-medium text-zinc-600 dark:text-zinc-400 font-mono">
                   {mode === 'decompress'
-                    ? 'Output: Decompressed Screen Permission'
-                    : 'Output: Base64 Gzip Payload'}
+                    ? 'Output: Decompressed Result'
+                    : 'Output: Base64 Gzip'}
                 </span>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1.5">
                   <button
                     onClick={handleDownload}
                     disabled={!output}
-                    className="flex items-center gap-1.5 px-3 py-1 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-md text-[11px] font-semibold transition-all disabled:opacity-20"
+                    className="btn btn-secondary btn-sm"
                     title="Download output file"
                   >
-                    <Download className="w-3.5 h-3.5" />
-                    Download
+                    <Download size={12} />
+                    <span>Download</span>
                   </button>
                   <button
                     onClick={handleCopy}
                     disabled={!output}
-                    className="flex items-center gap-1.5 px-3 py-1 bg-teal-600 hover:bg-teal-500 text-white rounded-md text-[11px] font-semibold transition-all disabled:opacity-20"
+                    className="btn btn-secondary btn-sm"
                   >
-                    {copied ? (
-                      <>
-                        <Check className="w-3.5 h-3.5" />
-                        Copied!
-                      </>
-                    ) : (
-                      <>
-                        <Copy className="w-3.5 h-3.5" />
-                        Copy
-                      </>
-                    )}
+                    {copied ? <Check size={12} className="text-emerald-500" /> : <Copy size={12} />}
+                    <span>{copied ? 'Copied' : 'Copy'}</span>
                   </button>
                 </div>
               </div>
@@ -398,10 +386,10 @@ export default function ScreenPermissionDecodePage() {
                 value={output}
                 placeholder={
                   mode === 'decompress'
-                    ? 'Decompressed JSON / readable screen permission will appear here...'
+                    ? 'Decompressed JSON or readable screen permission will appear here...'
                     : 'Compressed Base64 Gzip string will appear here...'
                 }
-                className="flex-1 w-full p-6 bg-transparent text-emerald-400 font-mono text-xs md:text-sm leading-relaxed focus:outline-none resize-none placeholder:text-slate-700 selection:bg-teal-500/30"
+                className="flex-1 w-full p-4 bg-zinc-50/50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 font-mono text-xs leading-relaxed focus:outline-none resize-none placeholder:text-zinc-400 dark:placeholder:text-zinc-600"
                 spellCheck={false}
               />
             </div>

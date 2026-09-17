@@ -1,25 +1,38 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { toast } from 'react-hot-toast';
 import { Sidebar } from '@/components/Sidebar';
 import { useSidebar } from '@/components/SidebarContext';
+import { PageHeader } from '@/components/PageHeader';
 import { Person, generatePeople } from '@/utils/saudiDataGenerator';
 import { InteractiveJson } from '@/components/InteractiveJson';
 import { CustomSelect } from '@/components/CustomSelect';
 import { AutoToggle } from '@/components/AutoToggle';
-import { Database, Download, Copy, RefreshCw, Table as TableIcon, FileJson, Users } from 'lucide-react';
+import {
+  Database,
+  Download,
+  Copy,
+  RefreshCw,
+  Table as TableIcon,
+  FileCode,
+  ChevronLeft,
+  ChevronRight,
+  Check
+} from 'lucide-react';
 
 export default function SaudiDataGeneratorPage() {
   const { width } = useSidebar();
   const [count, setCount] = useState<number>(5);
   const [countInput, setCountInput] = useState<string>('5');
   const [people, setPeople] = useState<Person[]>([]);
-  const [outputFormat, setOutputFormat] = useState<'json' | 'table'>('table');
+  const [outputFormat, setOutputFormat] = useState<'table' | 'json'>('table');
   const [loading, setLoading] = useState<boolean>(false);
   const [nationality, setNationality] = useState<'Saudi' | 'Non-Saudi'>('Saudi');
   const [idType, setIdType] = useState<'NID' | 'Iqama' | 'Passport'>('NID');
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [autoGenerate, setAutoGenerate] = useState<boolean>(true);
+  const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
   const rowsPerPage = 10;
 
   useEffect(() => {
@@ -77,7 +90,7 @@ export default function SaudiDataGeneratorPage() {
         const generatedPeople = generatePeople(count, nationality, idType);
         setPeople(generatedPeople);
         setLoading(false);
-      }, 100);
+      }, 50);
     } else {
       const allPeople: Person[] = [];
       for (let i = 0; i < chunks; i++) {
@@ -98,7 +111,14 @@ export default function SaudiDataGeneratorPage() {
   const handleCopyToClipboard = () => {
     const jsonData = JSON.stringify(people, null, 2);
     navigator.clipboard.writeText(jsonData);
-    // Simple toast would be better but keeping it simple for now
+    toast.success('Copied all profiles as JSON');
+  };
+
+  const handleCopySingle = (text: string, idx: number) => {
+    navigator.clipboard.writeText(text);
+    setCopiedIndex(idx);
+    setTimeout(() => setCopiedIndex(null), 1500);
+    toast.success('Copied to clipboard');
   };
 
   const handleExport = (format: 'json' | 'csv') => {
@@ -126,6 +146,8 @@ export default function SaudiDataGeneratorPage() {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+    toast.success(`Exported ${fileName}`);
   };
 
   const totalPages = Math.ceil(people.length / rowsPerPage);
@@ -134,153 +156,256 @@ export default function SaudiDataGeneratorPage() {
   const currentPageData = people.slice(startIndex, endIndex);
 
   return (
-    <div className="flex h-screen overflow-hidden">
+    <div className="flex h-screen overflow-hidden bg-[#fafafa] dark:bg-[#09090b]">
       <Sidebar />
 
-      <main 
-        className="flex-1 flex flex-col h-full bg-slate-50 dark:bg-slate-950 transition-all duration-300"
+      <main
+        className="flex-1 flex flex-col h-full overflow-hidden transition-[margin] duration-200"
         style={{ marginLeft: width }}
       >
-        {/* Header */}
-        <header className="flex items-center justify-between px-8 py-4 border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-slate-900 shadow-sm z-10 transition-colors">
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-indigo-100 dark:bg-indigo-900/30 rounded-lg text-indigo-600 dark:text-indigo-400">
-              <Database size={20} />
-            </div>
-            <div>
-              <h1 className="text-xl font-bold text-slate-900 dark:text-slate-100">Saudi Data Generator</h1>
-              <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">Valid ID checksums & realistic test profiles.</p>
-            </div>
-          </div>
-          <div className="flex items-center gap-4">
-            <AutoToggle enabled={autoGenerate} onChange={setAutoGenerate} activeColorClass="bg-indigo-600" activeTextClass="text-indigo-500 fill-indigo-500" />
-            <button
-              onClick={() => handleGenerate()}
-              disabled={loading || count < 1}
-              className="group relative px-6 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-sm font-bold transition-all shadow-lg shadow-indigo-500/20 active:scale-95 disabled:opacity-50"
-            >
-              <div className="flex items-center gap-2">
-                <RefreshCw size={16} className={loading ? 'animate-spin' : 'group-hover:rotate-180 transition-transform duration-500'} />
-                {loading ? 'Generating...' : 'Regenerate'}
-              </div>
-            </button>
-          </div>
-        </header>
+        <PageHeader
+          icon={Database}
+          title="Saudi Fake Data Generator"
+          description="Generate mock individual profiles with valid Saudi checksums and formats."
+          badge="RFC Checksum"
+        >
+          <AutoToggle
+            enabled={autoGenerate}
+            onChange={setAutoGenerate}
+          />
+          <button
+            onClick={() => handleGenerate()}
+            disabled={loading || count < 1}
+            className="btn btn-primary"
+          >
+            <RefreshCw size={13} className={loading ? 'animate-spin' : ''} />
+            <span>{loading ? 'Generating...' : 'Regenerate'}</span>
+          </button>
+        </PageHeader>
 
         {/* Scrollable Content */}
-        <div className="flex-1 overflow-auto p-8 space-y-8 scrollbar-thin scrollbar-thumb-slate-300 dark:scrollbar-thumb-slate-800">
-          {/* Settings Grid */}
-          <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
-            <div className="stat-card group hover:border-indigo-500/50 transition-colors">
-              <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 group-hover:text-indigo-500 transition-colors">Records</label>
-              <input
-                type="text"
-                value={countInput}
-                onChange={(e) => handleCountChange(e.target.value)}
-                onBlur={handleCountBlur}
-                className="w-full mt-1 bg-transparent text-2xl font-black text-slate-900 dark:text-white outline-none"
-              />
+        <div className="flex-1 overflow-auto p-6 space-y-6">
+          {/* Controls Card */}
+          <div className="card p-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+              {/* Record Count */}
+              <div>
+                <label className="block text-[11px] font-medium text-zinc-500 dark:text-zinc-400 mb-1.5">
+                  Record Count
+                </label>
+                <div className="flex items-center gap-1.5">
+                  <input
+                    type="text"
+                    value={countInput}
+                    onChange={(e) => handleCountChange(e.target.value)}
+                    onBlur={handleCountBlur}
+                    placeholder="e.g. 5"
+                    className="input font-mono text-sm py-1.5"
+                  />
+                  <div className="flex gap-1 shrink-0">
+                    {[5, 20, 50].map((preset) => (
+                      <button
+                        key={preset}
+                        type="button"
+                        onClick={() => {
+                          setCount(preset);
+                          setCountInput(preset.toString());
+                        }}
+                        className={`px-2 py-1.5 text-xs rounded-lg border transition-colors ${
+                          count === preset
+                            ? 'bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900 border-zinc-900 dark:border-zinc-100 font-medium'
+                            : 'bg-white dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 border-zinc-200 dark:border-zinc-700 hover:bg-zinc-50'
+                        }`}
+                      >
+                        {preset}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* Nationality */}
+              <div>
+                <label className="block text-[11px] font-medium text-zinc-500 dark:text-zinc-400 mb-1.5">
+                  Nationality
+                </label>
+                <CustomSelect
+                  value={nationality}
+                  onChange={(val) => handleNationalityChange(val as any)}
+                  options={['Saudi', 'Non-Saudi']}
+                />
+              </div>
+
+              {/* ID Type */}
+              <div>
+                <label className="block text-[11px] font-medium text-zinc-500 dark:text-zinc-400 mb-1.5">
+                  ID Type
+                </label>
+                <CustomSelect
+                  value={idType}
+                  disabled={nationality === 'Saudi'}
+                  onChange={(val) => setIdType(val as any)}
+                  options={nationality === 'Saudi' ? ['NID'] : ['Passport', 'Iqama']}
+                />
+              </div>
+
+              {/* View Format */}
+              <div>
+                <label className="block text-[11px] font-medium text-zinc-500 dark:text-zinc-400 mb-1.5">
+                  View Format
+                </label>
+                <div className="grid grid-cols-2 p-0.5 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900">
+                  <button
+                    type="button"
+                    onClick={() => setOutputFormat('table')}
+                    className={`flex items-center justify-center gap-1.5 py-1.5 text-xs rounded-md transition-colors ${
+                      outputFormat === 'table'
+                        ? 'bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 shadow-sm font-medium'
+                        : 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-800 dark:hover:text-zinc-200'
+                    }`}
+                  >
+                    <TableIcon size={13} />
+                    <span>Table</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setOutputFormat('json')}
+                    className={`flex items-center justify-center gap-1.5 py-1.5 text-xs rounded-md transition-colors ${
+                      outputFormat === 'json'
+                        ? 'bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 shadow-sm font-medium'
+                        : 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-800 dark:hover:text-zinc-200'
+                    }`}
+                  >
+                    <FileCode size={13} />
+                    <span>JSON</span>
+                  </button>
+                </div>
+              </div>
             </div>
-            
-            <SettingCard 
-              label="Nationality" 
-              value={nationality} 
-              onChange={(val) => handleNationalityChange(val as any)}
-              options={['Saudi', 'Non-Saudi']}
-            />
-
-            <SettingCard 
-              label="ID Type" 
-              value={idType} 
-              disabled={nationality === 'Saudi'}
-              onChange={(val) => setIdType(val as any)}
-              options={nationality === 'Saudi' ? ['NID'] : ['Passport', 'Iqama']}
-            />
-
-            <SettingCard 
-              label="View Mode" 
-              value={outputFormat} 
-              onChange={(val) => setOutputFormat(val as any)}
-              options={['table', 'json']}
-            />
           </div>
 
-          {/* Results Table/JSON */}
+          {/* Results Container */}
           {people.length > 0 && (
-            <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-xl overflow-hidden transition-all duration-500 animate-in fade-in zoom-in-95">
-              <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-slate-50/50 dark:bg-slate-800/50">
-                <div className="flex items-center gap-4">
-                  <div className="flex items-center gap-2 text-xs font-bold text-slate-500">
-                    <Users size={14} />
-                    <span>{people.length} Profiles Generated</span>
-                  </div>
-                </div>
+            <div className="card p-0 overflow-hidden">
+              <div className="px-4 py-2.5 border-b border-zinc-200 dark:border-zinc-800 flex flex-wrap items-center justify-between gap-2 bg-zinc-50/50 dark:bg-zinc-900/50">
+                <span className="text-xs font-medium text-zinc-600 dark:text-zinc-400 font-mono">
+                  {people.length.toLocaleString()} profiles generated
+                </span>
                 <div className="flex items-center gap-2">
-                  <ActionButton icon={<Copy size={14} />} onClick={handleCopyToClipboard} label="Copy JSON" />
-                  <ActionButton icon={<Download size={14} />} onClick={() => handleExport('csv')} label="Export CSV" />
+                  <button
+                    onClick={handleCopyToClipboard}
+                    className="btn btn-secondary btn-sm"
+                  >
+                    <Copy size={12} />
+                    <span>Copy JSON</span>
+                  </button>
+                  <button
+                    onClick={() => handleExport('csv')}
+                    className="btn btn-secondary btn-sm"
+                  >
+                    <Download size={12} />
+                    <span>Export CSV</span>
+                  </button>
                 </div>
               </div>
 
-              <div className="p-0">
-                {outputFormat === 'table' ? (
-                  <div className="overflow-x-auto min-h-[400px]">
-                    <table className="w-full text-left border-collapse">
-                      <thead className="bg-slate-50 dark:bg-slate-950/50 border-b border-slate-100 dark:border-slate-800">
-                        <tr>
-                          <Th>ID Type</Th>
-                          <Th>ID Number</Th>
-                          <Th>Name</Th>
-                          <Th>Phone</Th>
-                          <Th>Gender</Th>
-                          <Th>DOB</Th>
-                          <Th>Nationality</Th>
+              {outputFormat === 'table' ? (
+                <div className="overflow-x-auto">
+                  <table className="modern-table">
+                    <thead>
+                      <tr>
+                        <th>ID Type</th>
+                        <th>ID Number</th>
+                        <th>Name (EN / AR)</th>
+                        <th>Phone</th>
+                        <th>Gender</th>
+                        <th>DOB</th>
+                        <th>Nationality</th>
+                        <th className="text-right">Action</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-zinc-200/60 dark:divide-zinc-800/60">
+                      {currentPageData.map((person, idx) => (
+                        <tr
+                          key={idx}
+                          className="hover:bg-zinc-50/80 dark:hover:bg-zinc-850/50 transition-colors"
+                        >
+                          <td>
+                            <span className="inline-block px-1.5 py-0.5 rounded text-[10px] font-mono font-medium bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 border border-zinc-200 dark:border-zinc-700">
+                              {person.idType}
+                            </span>
+                          </td>
+                          <td className="font-mono text-xs font-semibold text-zinc-900 dark:text-zinc-100">
+                            {person.idNumber}
+                          </td>
+                          <td>
+                            <div className="flex flex-col">
+                              <span className="text-xs font-medium text-zinc-900 dark:text-zinc-100">
+                                {person.englishName}
+                              </span>
+                              <span className="text-[11px] text-zinc-400 dark:text-zinc-500 font-arabic">
+                                {person.arabicName}
+                              </span>
+                            </div>
+                          </td>
+                          <td className="font-mono text-xs text-zinc-600 dark:text-zinc-400">
+                            {person.phoneNumber}
+                          </td>
+                          <td className="capitalize text-xs text-zinc-500 dark:text-zinc-400">
+                            {person.gender}
+                          </td>
+                          <td className="text-xs text-zinc-500 dark:text-zinc-400 font-mono">
+                            {person.dateOfBirth}
+                          </td>
+                          <td className="text-xs text-zinc-600 dark:text-zinc-300">
+                            {person.nationality}
+                          </td>
+                          <td className="text-right">
+                            <button
+                              onClick={() => handleCopySingle(JSON.stringify(person, null, 2), idx)}
+                              className="p-1 rounded text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
+                              title="Copy profile JSON"
+                            >
+                              {copiedIndex === idx ? (
+                                <Check size={13} className="text-emerald-500" />
+                              ) : (
+                                <Copy size={13} />
+                              )}
+                            </button>
+                          </td>
                         </tr>
-                      </thead>
-                      <tbody className="divide-y divide-slate-50 dark:divide-slate-800/50">
-                        {currentPageData.map((person, idx) => (
-                          <tr key={idx} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors group">
-                            <Td><span className="px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-[10px] font-bold text-slate-500 uppercase">{person.idType}</span></Td>
-                            <Td className="font-mono font-bold text-indigo-600 dark:text-indigo-400">{person.idNumber}</Td>
-                            <Td>
-                              <div className="flex flex-col">
-                                <span className="font-bold text-slate-900 dark:text-slate-100">{person.englishName}</span>
-                                <span className="text-xs text-slate-400 font-arabic leading-relaxed">{person.arabicName}</span>
-                              </div>
-                            </Td>
-                            <Td className="font-mono text-xs font-bold text-slate-600 dark:text-slate-300">{person.phoneNumber}</Td>
-                            <Td className="capitalize text-xs font-medium text-slate-500">{person.gender}</Td>
-                            <Td className="text-xs text-slate-500">{person.dateOfBirth}</Td>
-                            <Td><span className="text-xs font-bold text-slate-600 dark:text-slate-300">{person.nationality}</span></Td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                ) : (
-                  <div className="p-6">
-                    <InteractiveJson data={people} editable={true} onEdit={setPeople} />
-                  </div>
-                )}
-              </div>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              ) : (
+                <div className="p-4">
+                  <InteractiveJson data={people} editable={true} onEdit={setPeople} />
+                </div>
+              )}
 
               {/* Pagination */}
               {outputFormat === 'table' && totalPages > 1 && (
-                <div className="px-6 py-4 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between bg-slate-50/30 dark:bg-slate-800/20">
-                  <button
-                    onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-                    disabled={currentPage === 1}
-                    className="p-2 hover:bg-white dark:hover:bg-slate-700 rounded-xl transition-all disabled:opacity-20"
-                  >
-                    <RefreshCw size={14} className="-scale-x-100" />
-                  </button>
-                  <div className="text-xs font-black text-slate-400">PAGE {currentPage} OF {totalPages}</div>
-                  <button
-                    onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
-                    disabled={currentPage === totalPages}
-                    className="p-2 hover:bg-white dark:hover:bg-slate-700 rounded-xl transition-all disabled:opacity-20"
-                  >
-                    <RefreshCw size={14} />
-                  </button>
+                <div className="px-4 py-2.5 border-t border-zinc-200 dark:border-zinc-800 flex items-center justify-between text-xs text-zinc-500 bg-zinc-50/50 dark:bg-zinc-900/50 font-mono">
+                  <span>Page {currentPage} of {totalPages}</span>
+                  <div className="flex items-center gap-1">
+                    <button
+                      onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                      disabled={currentPage === 1}
+                      className="p-1 rounded hover:bg-zinc-100 dark:hover:bg-zinc-800 disabled:opacity-30 transition-colors"
+                      title="Previous Page"
+                    >
+                      <ChevronLeft size={15} />
+                    </button>
+                    <button
+                      onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                      disabled={currentPage === totalPages}
+                      className="p-1 rounded hover:bg-zinc-100 dark:hover:bg-zinc-800 disabled:opacity-30 transition-colors"
+                      title="Next Page"
+                    >
+                      <ChevronRight size={15} />
+                    </button>
+                  </div>
                 </div>
               )}
             </div>
@@ -289,36 +414,4 @@ export default function SaudiDataGeneratorPage() {
       </main>
     </div>
   );
-}
-
-function SettingCard({ label, value, onChange, options, disabled = false }: { label: string, value: string, onChange: (v: string) => void, options: string[], disabled?: boolean }) {
-  return (
-    <div className={`stat-card group hover:border-indigo-500/50 transition-all ${disabled ? 'opacity-30 grayscale' : ''}`}>
-      <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 group-hover:text-indigo-500 transition-colors block mb-1">{label}</label>
-      <CustomSelect 
-        value={value} 
-        onChange={onChange}
-        disabled={disabled}
-        options={options}
-        className="bg-transparent text-xl font-black text-slate-900 dark:text-white"
-      />
-    </div>
-  );
-}
-
-function ActionButton({ icon, onClick, label }: { icon: React.ReactNode, onClick: () => void, label: string }) {
-  return (
-    <button onClick={onClick} className="flex items-center gap-2 px-3 py-1.5 hover:bg-white dark:hover:bg-slate-700 rounded-xl border border-transparent hover:border-slate-200 dark:hover:border-slate-600 transition-all text-xs font-bold text-slate-600 dark:text-slate-300">
-      {icon}
-      <span>{label}</span>
-    </button>
-  );
-}
-
-function Th({ children }: { children: React.ReactNode }) {
-  return <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400">{children}</th>;
-}
-
-function Td({ children, className = "" }: { children: React.ReactNode, className?: string }) {
-  return <td className={`px-6 py-4 ${className}`}>{children}</td>;
 }
