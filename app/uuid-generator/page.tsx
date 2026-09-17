@@ -95,7 +95,7 @@ export default function UuidGenerator() {
                         className={`px-2.5 py-1 text-xs rounded-lg border transition-colors ${
                           count === num
                             ? 'bg-neutral-900 text-white dark:bg-neutral-100 dark:text-neutral-900 border-neutral-900 dark:border-neutral-100 font-medium'
-                            : 'bg-white dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 border-neutral-200 dark:border-neutral-700 hover:bg-neutral-50'
+                            : 'bg-white dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 border-neutral-200 dark:border-neutral-700 hover:bg-neutral-100 dark:hover:bg-neutral-700 hover:text-neutral-900 dark:hover:text-white'
                         }`}
                       >
                         {num}
@@ -140,13 +140,13 @@ export default function UuidGenerator() {
                 {uuids.map((uuid, i) => (
                   <div
                     key={`${uuid}-${i}`}
-                    className="flex items-center justify-between px-4 py-2.5 hover:bg-neutral-50/80 dark:hover:bg-neutral-800/40 transition-colors group"
+                    className="flex items-center justify-between px-4 py-2.5 hover:bg-neutral-100/70 dark:hover:bg-neutral-800/60 transition-colors group"
                   >
                     <div className="flex items-center gap-3 min-w-0">
-                      <span className="text-[11px] font-mono text-neutral-400 select-none w-5 text-right">
+                      <span className="text-[11px] font-mono text-neutral-400 group-hover:text-neutral-600 dark:group-hover:text-neutral-300 select-none w-5 text-right transition-colors">
                         {i + 1}
                       </span>
-                      <span className="font-mono text-xs text-neutral-800 dark:text-neutral-200 truncate select-all">
+                      <span className="font-mono text-xs text-neutral-800 dark:text-neutral-200 group-hover:text-black dark:group-hover:text-white truncate select-all transition-colors">
                         {uuid}
                       </span>
                     </div>
