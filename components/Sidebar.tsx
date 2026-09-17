@@ -17,7 +17,8 @@ import {
   Binary,
   Globe,
   ShieldCheck,
-  Terminal
+  Terminal,
+  GitCompare
 } from 'lucide-react';
 
 export function Sidebar() {
@@ -48,6 +49,7 @@ export function Sidebar() {
     { name: 'Saudi Fake Data', path: '/saudi-data-generator', icon: Database },
     { name: 'Feature Toggle Diff', path: '/json-comparator', icon: Diff },
     { name: 'JSON Comparison', path: '/json-comparison', icon: Binary },
+    { name: 'List Compare', path: '/list-compare', icon: GitCompare },
     { name: 'JSON Formatter', path: '/json-formatter', icon: FileJson },
     { name: 'Screen Permission', path: '/screen-permission-decode', icon: ShieldCheck },
     { name: 'Base64 Image', path: '/base64-viewer', icon: ImageIcon },

@@ -14,7 +14,8 @@ import {
   Globe,
   ShieldCheck,
   Search,
-  ArrowRight
+  ArrowRight,
+  GitCompare
 } from 'lucide-react';
 
 interface Tool {
@@ -50,6 +51,14 @@ const TOOLS: Tool[] = [
     category: 'JSON & Diff',
     icon: Binary,
     tags: ['json', 'diff', 'compare', 'viewer', 'syntax']
+  },
+  {
+    title: 'List Compare & Formatter',
+    desc: 'Compare two lists (common, unique to A, unique to B), deduplicate, and format with single or double quotes for SQL and code.',
+    href: '/list-compare',
+    category: 'JSON & Diff',
+    icon: GitCompare,
+    tags: ['list', 'compare', 'diff', 'set', 'intersection', 'comma separated', 'single quote', 'double quote', 'sql in']
   },
   {
     title: 'JSON Formatter',
