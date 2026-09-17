@@ -53,6 +53,14 @@ const TOOLS: Tool[] = [
     tags: ['json', 'diff', 'compare', 'viewer', 'syntax']
   },
   {
+    title: 'JSON Diff v2',
+    desc: 'Semantic JSON comparison tool matching jsondiff.com — compares values, types, and properties independent of key ordering.',
+    href: '/json-diff-v2',
+    category: 'JSON & Diff',
+    icon: Binary,
+    tags: ['json', 'diff', 'semantic', 'compare', 'jsondiff', 'jdd', 'types', 'missing']
+  },
+  {
     title: 'List Compare & Formatter',
     desc: 'Compare two lists (common, unique to A, unique to B), deduplicate, and format with single or double quotes for SQL and code.',
     href: '/list-compare',
