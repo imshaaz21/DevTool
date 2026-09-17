@@ -10,6 +10,7 @@ import {
   convertToTimezone,
   parseDateTimeLocalInput,
   getTimezoneOffsetMs,
+  getUnixEpoch,
   TIME_ZONES,
   TimeZoneId,
 } from '@/utils/timezoneConverter';
@@ -38,6 +39,8 @@ export default function TimeZoneConverterPage() {
     time: string;
     diff: string;
     abbreviation: string;
+    epochSeconds: number;
+    epochMs: number;
   }[]>([]);
   const [error, setError] = useState('');
   const [copiedTz, setCopiedTz] = useState<string | null>(null);
@@ -62,6 +65,7 @@ export default function TimeZoneConverterPage() {
     }
 
     const sourceOffset = getTimezoneOffsetMs(sourceTimezone);
+    const epochInfo = getUnixEpoch(parsedDate!);
     const results = TIME_ZONES.map((tz) => {
       const targetOffset = getTimezoneOffsetMs(tz.id);
       const diffHours = (targetOffset - sourceOffset) / (1000 * 60 * 60);
@@ -73,6 +77,8 @@ export default function TimeZoneConverterPage() {
         abbreviation: tz.abbreviation,
         time: convertToTimezone(parsedDate!, tz.id),
         diff: diffString,
+        epochSeconds: epochInfo.seconds,
+        epochMs: epochInfo.milliseconds,
       };
     });
 
@@ -83,11 +89,11 @@ export default function TimeZoneConverterPage() {
     handleConvert();
   }, [handleConvert]);
 
-  const handleCopy = (text: string, tz: string) => {
+  const handleCopy = (text: string, tz: string, label = 'Timestamp') => {
     navigator.clipboard.writeText(text);
     setCopiedTz(tz);
     setTimeout(() => setCopiedTz(null), 1500);
-    toast.success('Time copied to clipboard');
+    toast.success(`${label} copied to clipboard`);
   };
 
   const handleUseNow = () => {
@@ -231,14 +237,63 @@ export default function TimeZoneConverterPage() {
                           </span>
                         </div>
 
-                        <div className="py-3 font-mono text-sm font-semibold text-neutral-900 dark:text-neutral-100 select-all">
+                        <div className="py-2.5 font-mono text-sm font-semibold text-neutral-900 dark:text-neutral-100 select-all">
                           {tz.time}
+                        </div>
+
+                        {/* Unix Epoch Display */}
+                        <div className="mt-2 pt-2.5 border-t border-neutral-100 dark:border-neutral-800/80 space-y-1.5">
+                          <div className="flex items-center justify-between text-xs">
+                            <span className="text-[10px] uppercase font-mono tracking-wider text-neutral-400">
+                              Epoch (s)
+                            </span>
+                            <div className="flex items-center gap-1.5">
+                              <span className="font-mono text-xs text-neutral-700 dark:text-neutral-300 select-all">
+                                {tz.epochSeconds}
+                              </span>
+                              <button
+                                type="button"
+                                onClick={() => handleCopy(tz.epochSeconds.toString(), `${tz.timezone}-sec`, 'Epoch (seconds)')}
+                                className="p-1 rounded hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 transition-colors"
+                                title="Copy Epoch in seconds"
+                              >
+                                {copiedTz === `${tz.timezone}-sec` ? (
+                                  <Check size={11} className="text-emerald-500" />
+                                ) : (
+                                  <Copy size={11} />
+                                )}
+                              </button>
+                            </div>
+                          </div>
+
+                          <div className="flex items-center justify-between text-xs">
+                            <span className="text-[10px] uppercase font-mono tracking-wider text-neutral-400">
+                              Epoch (ms)
+                            </span>
+                            <div className="flex items-center gap-1.5">
+                              <span className="font-mono text-xs text-neutral-700 dark:text-neutral-300 select-all">
+                                {tz.epochMs}
+                              </span>
+                              <button
+                                type="button"
+                                onClick={() => handleCopy(tz.epochMs.toString(), `${tz.timezone}-ms`, 'Epoch (milliseconds)')}
+                                className="p-1 rounded hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 transition-colors"
+                                title="Copy Epoch in milliseconds"
+                              >
+                                {copiedTz === `${tz.timezone}-ms` ? (
+                                  <Check size={11} className="text-emerald-500" />
+                                ) : (
+                                  <Copy size={11} />
+                                )}
+                              </button>
+                            </div>
+                          </div>
                         </div>
                       </div>
 
                       <button
-                        onClick={() => handleCopy(tz.time, tz.timezone)}
-                        className="btn btn-secondary btn-sm w-full mt-2"
+                        onClick={() => handleCopy(tz.time, tz.timezone, 'Timestamp')}
+                        className="btn btn-secondary btn-sm w-full mt-3"
                       >
                         {copiedTz === tz.timezone ? (
                           <Check size={12} className="text-emerald-500" />

@@ -201,3 +201,15 @@ export function parseDateTimeLocalInput(value: string, timezone: TimeZoneId): Da
     
     return new Date(tempDate.getTime() - offsetMs);
 }
+
+/**
+ * Returns Unix Epoch in seconds and milliseconds
+ */
+export function getUnixEpoch(date: Date): { seconds: number; milliseconds: number } {
+    const ms = date.getTime();
+    return {
+        seconds: Math.floor(ms / 1000),
+        milliseconds: ms,
+    };
+}
+
