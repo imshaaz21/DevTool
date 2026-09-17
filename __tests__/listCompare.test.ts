@@ -72,6 +72,17 @@ describe('listCompare utility', () => {
       expect(resultAsc.common).toEqual(['M', 'Z']);
       expect(resultAsc.onlyA).toEqual(['A']);
     });
+
+    it('removes duplicates by default and preserves them when removeDuplicates is false', () => {
+      const listA = ['A', 'A', 'B', 'C'];
+      const listB = ['C', 'D'];
+
+      const defaultResult = compareLists(listA, listB);
+      expect(defaultResult.onlyA).toEqual(['A', 'B']);
+
+      const keepDupesResult = compareLists(listA, listB, { removeDuplicates: false });
+      expect(keepDupesResult.onlyA).toEqual(['A', 'A', 'B']);
+    });
   });
 
   describe('formatListOutput', () => {

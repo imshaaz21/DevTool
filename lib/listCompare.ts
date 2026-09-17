@@ -24,6 +24,7 @@ export interface ListAnalysis {
 export interface CompareOptions {
   caseSensitive?: boolean;
   sort?: SortOption;
+  removeDuplicates?: boolean;
 }
 
 export interface CompareResult {
@@ -135,7 +136,7 @@ export function compareLists(
   listB: string[],
   options: CompareOptions = {}
 ): CompareResult {
-  const { caseSensitive = true, sort = 'none' } = options;
+  const { caseSensitive = true, sort = 'none', removeDuplicates = true } = options;
 
   const analysisA = analyzeList(listA, caseSensitive);
   const analysisB = analyzeList(listB, caseSensitive);
@@ -145,17 +146,20 @@ export function compareLists(
   const setBKeys = new Set(analysisB.unique.map(keyFn));
   const setAKeys = new Set(analysisA.unique.map(keyFn));
 
+  const baseA = removeDuplicates ? analysisA.unique : listA;
+  const baseB = removeDuplicates ? analysisB.unique : listB;
+
   // Common: in both A and B
-  const common = analysisA.unique.filter((item) => setBKeys.has(keyFn(item)));
+  const common = baseA.filter((item) => setBKeys.has(keyFn(item)));
 
   // Only in A: in A not in B
-  const onlyA = analysisA.unique.filter((item) => !setBKeys.has(keyFn(item)));
+  const onlyA = baseA.filter((item) => !setBKeys.has(keyFn(item)));
 
   // Only in B: in B not in A
-  const onlyB = analysisB.unique.filter((item) => !setAKeys.has(keyFn(item)));
+  const onlyB = baseB.filter((item) => !setAKeys.has(keyFn(item)));
 
   // Union: unique in A plus only in B
-  const union = [...analysisA.unique, ...onlyB];
+  const union = removeDuplicates ? [...analysisA.unique, ...onlyB] : [...listA, ...onlyB];
 
   // Symmetric Difference: (only in A) + (only in B)
   const symmetricDiff = [...onlyA, ...onlyB];

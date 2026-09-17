@@ -65,6 +65,7 @@ export default function ListComparePage() {
   const [trimWhitespace, setTrimWhitespace] = useState(true);
   const [stripQuotes, setStripQuotes] = useState(false);
   const [caseSensitive, setCaseSensitive] = useState(true);
+  const [removeDuplicates, setRemoveDuplicates] = useState(true);
   const [sortOption, setSortOption] = useState<SortOption>('none');
 
   // Output formatting options
@@ -105,8 +106,9 @@ export default function ListComparePage() {
     return compareLists(parsedA, parsedB, {
       caseSensitive,
       sort: sortOption,
+      removeDuplicates,
     });
-  }, [parsedA, parsedB, caseSensitive, sortOption]);
+  }, [parsedA, parsedB, caseSensitive, sortOption, removeDuplicates]);
 
   // Determine items for current tab
   const currentTabItems = useMemo(() => {
@@ -250,17 +252,17 @@ export default function ListComparePage() {
               </span>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
               {/* Quote Style */}
-              <div className="space-y-1.5">
-                <label className="text-[11px] font-medium text-neutral-600 dark:text-neutral-400 flex items-center gap-1">
+              <div className="space-y-1.5 flex flex-col justify-start">
+                <label className="h-4 flex items-center text-[11px] font-medium text-neutral-600 dark:text-neutral-400">
                   Quote Style
                 </label>
-                <div className="grid grid-cols-4 gap-1 p-0.5 bg-neutral-100 dark:bg-neutral-900 rounded-lg border border-neutral-200 dark:border-neutral-800 text-xs">
+                <div className="h-9 grid grid-cols-4 gap-1 p-0.5 bg-neutral-100 dark:bg-neutral-900 rounded-lg border border-neutral-200 dark:border-neutral-800 text-xs items-center">
                   <button
                     type="button"
                     onClick={() => setQuoteStyle('none')}
-                    className={`py-1 rounded font-mono text-[11px] transition-colors ${
+                    className={`h-full flex items-center justify-center rounded font-mono text-[11px] transition-colors ${
                       quoteStyle === 'none'
                         ? 'bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white shadow-xs font-semibold'
                         : 'text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-200'
@@ -272,7 +274,7 @@ export default function ListComparePage() {
                   <button
                     type="button"
                     onClick={() => setQuoteStyle('single')}
-                    className={`py-1 rounded font-mono text-[11px] transition-colors ${
+                    className={`h-full flex items-center justify-center rounded font-mono text-[11px] transition-colors ${
                       quoteStyle === 'single'
                         ? 'bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white shadow-xs font-semibold'
                         : 'text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-200'
@@ -284,7 +286,7 @@ export default function ListComparePage() {
                   <button
                     type="button"
                     onClick={() => setQuoteStyle('double')}
-                    className={`py-1 rounded font-mono text-[11px] transition-colors ${
+                    className={`h-full flex items-center justify-center rounded font-mono text-[11px] transition-colors ${
                       quoteStyle === 'double'
                         ? 'bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white shadow-xs font-semibold'
                         : 'text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-200'
@@ -296,7 +298,7 @@ export default function ListComparePage() {
                   <button
                     type="button"
                     onClick={() => setQuoteStyle('backtick')}
-                    className={`py-1 rounded font-mono text-[11px] transition-colors ${
+                    className={`h-full flex items-center justify-center rounded font-mono text-[11px] transition-colors ${
                       quoteStyle === 'backtick'
                         ? 'bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white shadow-xs font-semibold'
                         : 'text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-200'
@@ -309,11 +311,12 @@ export default function ListComparePage() {
               </div>
 
               {/* Output Delimiter */}
-              <div className="space-y-1.5">
-                <label className="text-[11px] font-medium text-neutral-600 dark:text-neutral-400">
+              <div className="space-y-1.5 flex flex-col justify-start">
+                <label className="h-4 flex items-center text-[11px] font-medium text-neutral-600 dark:text-neutral-400">
                   Delimiter
                 </label>
                 <CustomSelect
+                  className="h-9 py-0"
                   value={outputDelimiter}
                   onChange={(val) => setOutputDelimiter(val)}
                   options={[
@@ -328,11 +331,12 @@ export default function ListComparePage() {
               </div>
 
               {/* Wrapper / SQL IN clause */}
-              <div className="space-y-1.5">
-                <label className="text-[11px] font-medium text-neutral-600 dark:text-neutral-400">
+              <div className="space-y-1.5 flex flex-col justify-start">
+                <label className="h-4 flex items-center text-[11px] font-medium text-neutral-600 dark:text-neutral-400">
                   Enclosure Wrapper
                 </label>
                 <CustomSelect
+                  className="h-9 py-0"
                   value={wrapper}
                   onChange={(val) => setWrapper(val as WrapperOption)}
                   options={[
@@ -345,11 +349,12 @@ export default function ListComparePage() {
               </div>
 
               {/* Sorting */}
-              <div className="space-y-1.5">
-                <label className="text-[11px] font-medium text-neutral-600 dark:text-neutral-400">
+              <div className="space-y-1.5 flex flex-col justify-start">
+                <label className="h-4 flex items-center text-[11px] font-medium text-neutral-600 dark:text-neutral-400">
                   Sorting
                 </label>
                 <CustomSelect
+                  className="h-9 py-0"
                   value={sortOption}
                   onChange={(val) => setSortOption(val as SortOption)}
                   options={[
@@ -360,38 +365,69 @@ export default function ListComparePage() {
                   ]}
                 />
               </div>
+            </div>
 
-              {/* Options & Flags */}
-              <div className="space-y-1.5">
-                <label className="text-[11px] font-medium text-neutral-600 dark:text-neutral-400">
-                  Comparison Settings
-                </label>
-                <div className="flex items-center gap-2 pt-1">
-                  <button
-                    type="button"
-                    onClick={() => setCaseSensitive(!caseSensitive)}
-                    className={`px-2.5 py-1.5 rounded-lg border text-xs font-medium transition-colors ${
-                      caseSensitive
-                        ? 'bg-neutral-900 text-white dark:bg-white dark:text-neutral-900 border-neutral-900 dark:border-white'
-                        : 'bg-white dark:bg-neutral-900 text-neutral-600 dark:text-neutral-400 border-neutral-200 dark:border-neutral-800 hover:bg-neutral-100 dark:hover:bg-neutral-800'
-                    }`}
-                    title="Toggle case-sensitive comparison (e.g. ABC vs abc)"
-                  >
-                    {caseSensitive ? 'Case: Sensitive' : 'Case: Insensitive'}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setStripQuotes(!stripQuotes)}
-                    className={`px-2.5 py-1.5 rounded-lg border text-xs font-medium transition-colors ${
-                      stripQuotes
-                        ? 'bg-neutral-900 text-white dark:bg-white dark:text-neutral-900 border-neutral-900 dark:border-white'
-                        : 'bg-white dark:bg-neutral-900 text-neutral-600 dark:text-neutral-400 border-neutral-200 dark:border-neutral-800 hover:bg-neutral-100 dark:hover:bg-neutral-800'
-                    }`}
-                    title="Automatically strip quotes from inputs when pasting"
-                  >
-                    Strip Input Quotes
-                  </button>
-                </div>
+            {/* Comparison & Parsing Settings Bar */}
+            <div className="pt-3 border-t border-neutral-100 dark:border-neutral-800/80 flex flex-wrap items-center justify-between gap-3">
+              <div className="flex items-center gap-2">
+                <SlidersHorizontal size={12} className="text-neutral-400" />
+                <span className="text-[11px] font-medium text-neutral-500 uppercase tracking-wider">
+                  Comparison Rules
+                </span>
+              </div>
+              <div className="flex items-center gap-2 flex-wrap">
+                <button
+                  type="button"
+                  onClick={() => setRemoveDuplicates(!removeDuplicates)}
+                  className={`h-8 px-3 rounded-lg border text-xs font-medium transition-colors flex items-center gap-1.5 ${
+                    removeDuplicates
+                      ? 'bg-neutral-900 text-white dark:bg-white dark:text-neutral-900 border-neutral-900 dark:border-white shadow-xs'
+                      : 'bg-white dark:bg-neutral-900 text-neutral-600 dark:text-neutral-400 border-neutral-200 dark:border-neutral-800 hover:bg-neutral-100 dark:hover:bg-neutral-800'
+                  }`}
+                  title="Toggle duplicate removal (default: enabled)"
+                >
+                  <span className={`w-1.5 h-1.5 rounded-full ${removeDuplicates ? 'bg-emerald-400 dark:bg-emerald-600' : 'bg-neutral-400'}`} />
+                  <span>{removeDuplicates ? 'Duplicates: Remove' : 'Duplicates: Keep'}</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setCaseSensitive(!caseSensitive)}
+                  className={`h-8 px-3 rounded-lg border text-xs font-medium transition-colors flex items-center gap-1.5 ${
+                    caseSensitive
+                      ? 'bg-neutral-900 text-white dark:bg-white dark:text-neutral-900 border-neutral-900 dark:border-white shadow-xs'
+                      : 'bg-white dark:bg-neutral-900 text-neutral-600 dark:text-neutral-400 border-neutral-200 dark:border-neutral-800 hover:bg-neutral-100 dark:hover:bg-neutral-800'
+                  }`}
+                  title="Toggle case-sensitive comparison (e.g. ABC vs abc)"
+                >
+                  <span className={`w-1.5 h-1.5 rounded-full ${caseSensitive ? 'bg-emerald-400 dark:bg-emerald-600' : 'bg-neutral-400'}`} />
+                  <span>{caseSensitive ? 'Case: Sensitive' : 'Case: Insensitive'}</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setStripQuotes(!stripQuotes)}
+                  className={`h-8 px-3 rounded-lg border text-xs font-medium transition-colors flex items-center gap-1.5 ${
+                    stripQuotes
+                      ? 'bg-neutral-900 text-white dark:bg-white dark:text-neutral-900 border-neutral-900 dark:border-white shadow-xs'
+                      : 'bg-white dark:bg-neutral-900 text-neutral-600 dark:text-neutral-400 border-neutral-200 dark:border-neutral-800 hover:bg-neutral-100 dark:hover:bg-neutral-800'
+                  }`}
+                  title="Automatically strip quotes from inputs when pasting"
+                >
+                  <span className={`w-1.5 h-1.5 rounded-full ${stripQuotes ? 'bg-emerald-400 dark:bg-emerald-600' : 'bg-neutral-400'}`} />
+                  <span>Strip Input Quotes</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setTrimWhitespace(!trimWhitespace)}
+                  className={`h-8 px-3 rounded-lg border text-xs font-medium transition-colors flex items-center gap-1.5 ${
+                    trimWhitespace
+                      ? 'bg-neutral-900 text-white dark:bg-white dark:text-neutral-900 border-neutral-900 dark:border-white shadow-xs'
+                      : 'bg-white dark:bg-neutral-900 text-neutral-600 dark:text-neutral-400 border-neutral-200 dark:border-neutral-800 hover:bg-neutral-100 dark:hover:bg-neutral-800'
+                  }`}
+                  title="Automatically trim whitespace around items"
+                >
+                  <span className={`w-1.5 h-1.5 rounded-full ${trimWhitespace ? 'bg-emerald-400 dark:bg-emerald-600' : 'bg-neutral-400'}`} />
+                  <span>Trim Whitespace</span>
+                </button>
               </div>
             </div>
           </section>
@@ -730,62 +766,8 @@ export default function ListComparePage() {
                   readOnly
                   value={formattedOutput}
                   placeholder="Formatted output will appear here..."
-                  className="w-full h-24 p-3 text-xs font-mono bg-neutral-50 dark:bg-[#070709] border border-neutral-200 dark:border-neutral-800 rounded-lg outline-none resize-y text-neutral-800 dark:text-neutral-200 focus:border-neutral-400 dark:focus:border-neutral-600 leading-relaxed"
+                  className="w-full h-72 p-3.5 text-xs font-mono bg-neutral-50 dark:bg-[#070709] border border-neutral-200 dark:border-neutral-800 rounded-lg outline-none resize-y text-neutral-800 dark:text-neutral-200 focus:border-neutral-400 dark:focus:border-neutral-600 leading-relaxed"
                 />
-              </div>
-
-              {/* Table List of Items */}
-              <div className="border border-neutral-200 dark:border-neutral-800 rounded-lg overflow-hidden">
-                <div className="max-h-72 overflow-y-auto">
-                  <table className="w-full text-left modern-table">
-                    <thead className="bg-neutral-100/70 dark:bg-neutral-900 text-[11px] font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wider sticky top-0 z-10">
-                      <tr>
-                        <th className="py-2 px-3 w-16 text-center">#</th>
-                        <th className="py-2 px-3">Item Value</th>
-                        <th className="py-2 px-3 w-20 text-right">Action</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-neutral-200 dark:divide-neutral-800 text-xs">
-                      {filteredTabItems.length === 0 ? (
-                        <tr>
-                          <td colSpan={3} className="py-8 text-center text-neutral-400 font-mono text-xs">
-                            {currentTabItems.length === 0
-                              ? 'No items found for this comparison filter.'
-                              : 'No items match your search filter.'}
-                          </td>
-                        </tr>
-                      ) : (
-                        filteredTabItems.map((item, idx) => (
-                          <tr
-                            key={`${item}-${idx}`}
-                            className="group hover:bg-neutral-100/70 dark:hover:bg-neutral-800/60 transition-colors"
-                          >
-                            <td className="py-2 px-3 text-center font-mono text-[11px] text-neutral-400 group-hover:text-neutral-600 dark:group-hover:text-neutral-300">
-                              {idx + 1}
-                            </td>
-                            <td className="py-2 px-3 font-mono font-medium text-neutral-900 dark:text-neutral-100 group-hover:text-black dark:group-hover:text-white select-all">
-                              {item}
-                            </td>
-                            <td className="py-2 px-3 text-right">
-                              <button
-                                type="button"
-                                onClick={() => handleCopy(item, `item-${idx}`)}
-                                className="p-1 rounded hover:bg-neutral-200 dark:hover:bg-neutral-700 text-neutral-400 hover:text-neutral-800 dark:hover:text-neutral-200 transition-colors"
-                                title="Copy single item"
-                              >
-                                {copiedKey === `item-${idx}` ? (
-                                  <Check size={12} className="text-emerald-500" />
-                                ) : (
-                                  <Copy size={12} />
-                                )}
-                              </button>
-                            </td>
-                          </tr>
-                        ))
-                      )}
-                    </tbody>
-                  </table>
-                </div>
               </div>
             </div>
           </div>

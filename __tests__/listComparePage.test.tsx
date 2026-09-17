@@ -40,9 +40,10 @@ describe('ListComparePage', () => {
     // Click Load Sample
     fireEvent.click(screen.getByText('Load Sample'));
 
-    // Check that common items are detected
-    expect(screen.getByText('INV-S2026082569839346983934')).toBeInTheDocument();
-    expect(screen.getByText('INV-S2026081165646936564693')).toBeInTheDocument();
+    // Check that common items are detected in output textarea
+    const textarea = screen.getByPlaceholderText('Formatted output will appear here...') as HTMLTextAreaElement;
+    expect(textarea.value).toContain('INV-S2026082569839346983934');
+    expect(textarea.value).toContain('INV-S2026081165646936564693');
 
     // Check duplicate badge detected in List A
     expect(screen.getAllByText(/dupes/i).length).toBeGreaterThan(0);
@@ -59,8 +60,9 @@ describe('ListComparePage', () => {
 
     // Switch to 'Only in List A'
     fireEvent.click(screen.getByText('Only in List A (A \\ B)'));
-    expect(screen.getByText('INV-S2026082369196656919665')).toBeInTheDocument();
-    expect(screen.getByText('INV-S2026082770727072704')).toBeInTheDocument();
+    const textarea = screen.getByPlaceholderText('Formatted output will appear here...') as HTMLTextAreaElement;
+    expect(textarea.value).toContain('INV-S2026082369196656919665');
+    expect(textarea.value).toContain('INV-S2026082770727072704');
   });
 
   it('formats output with single and double quotes', () => {
@@ -98,5 +100,18 @@ describe('ListComparePage', () => {
 
     const textarea = screen.getByPlaceholderText('Formatted output will appear here...') as HTMLTextAreaElement;
     expect(textarea.value).toBe('');
+  });
+
+  it('toggles duplicate removal with default ON', () => {
+    render(
+      <SidebarProvider>
+        <ListComparePage />
+      </SidebarProvider>
+    );
+
+    expect(screen.getByText('Duplicates: Remove')).toBeInTheDocument();
+
+    fireEvent.click(screen.getByText('Duplicates: Remove'));
+    expect(screen.getByText('Duplicates: Keep')).toBeInTheDocument();
   });
 });
