@@ -2,295 +2,300 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import dynamic from 'next/dynamic';
+import { toast } from 'react-hot-toast';
 import { Sidebar } from '@/components/Sidebar';
 import { useSidebar } from '@/components/SidebarContext';
+import { PageHeader } from '@/components/PageHeader';
 import { AutoToggle } from '@/components/AutoToggle';
 import { CustomSelect } from '@/components/CustomSelect';
 const JsonEditorComponent = dynamic(() => import('@/components/JsonEditorComponent').then(mod => ({ default: mod.JsonEditorComponent })), { ssr: false });
 import {
-    parseStringifiedJSON,
-    formatJSON,
-    minifyJSON,
-    FormatterResult
+  parseStringifiedJSON,
+  formatJSON,
+  minifyJSON,
+  FormatterResult
 } from '@/utils/jsonFormatter';
-import { Copy, Wand2, Minimize2, FileJson, Trash2, Zap } from 'lucide-react';
+import {
+  Copy,
+  Wand2,
+  Minimize2,
+  FileJson,
+  Trash2,
+  Check,
+  AlertCircle
+} from 'lucide-react';
 
 type ActionMode = 'parse' | 'format' | 'minify';
 type EditorMode = 'tree' | 'code' | 'view' | 'form' | 'text';
 
 export default function JsonFormatterPage() {
-    const { width } = useSidebar();
-    const [input, setInput] = useState('');
-    const [output, setOutput] = useState('');
-    const [outputJson, setOutputJson] = useState<any>(null);
-    const [error, setError] = useState('');
-    const [mode, setMode] = useState<ActionMode>('format'); // Default to format
-    const [iterations, setIterations] = useState<number | undefined>();
-    const [indentSize, setIndentSize] = useState(2);
-    const [editorMode, setEditorMode] = useState<EditorMode>('code');
-    const [isAutoFormat, setIsAutoFormat] = useState(true);
+  const { width } = useSidebar();
+  const [input, setInput] = useState('');
+  const [output, setOutput] = useState('');
+  const [outputJson, setOutputJson] = useState<any>(null);
+  const [error, setError] = useState('');
+  const [mode, setMode] = useState<ActionMode>('format');
+  const [iterations, setIterations] = useState<number | undefined>();
+  const [indentSize, setIndentSize] = useState(2);
+  const [editorMode, setEditorMode] = useState<EditorMode>('code');
+  const [isAutoFormat, setIsAutoFormat] = useState(true);
+  const [copied, setCopied] = useState(false);
 
-    const handleAction = useCallback(() => {
-        if (!input.trim()) {
-            setOutput('');
-            setOutputJson(null);
-            setError('');
-            setIterations(undefined);
-            return;
-        }
+  const handleAction = useCallback(() => {
+    if (!input.trim()) {
+      setOutput('');
+      setOutputJson(null);
+      setError('');
+      setIterations(undefined);
+      return;
+    }
 
-        setError('');
-        setIterations(undefined);
+    setError('');
+    setIterations(undefined);
 
-        let result: FormatterResult;
+    let result: FormatterResult;
 
-        switch (mode) {
-            case 'parse':
-                result = parseStringifiedJSON(input);
-                break;
-            case 'format':
-                result = formatJSON(input, indentSize);
-                break;
-            case 'minify':
-                result = minifyJSON(input);
-                break;
-            default:
-                result = { success: false, error: 'Unknown mode' };
-        }
+    switch (mode) {
+      case 'parse':
+        result = parseStringifiedJSON(input);
+        break;
+      case 'format':
+        result = formatJSON(input, indentSize);
+        break;
+      case 'minify':
+        result = minifyJSON(input);
+        break;
+      default:
+        result = { success: false, error: 'Unknown mode' };
+    }
 
-        if (result.success && result.formatted) {
-            setOutput(result.formatted);
-            try {
-                const jsonObj = JSON.parse(result.formatted);
-                setOutputJson(jsonObj);
-            } catch (e) {
-                setOutputJson(null);
-            }
-            if (result.iterations) {
-                setIterations(result.iterations);
-            }
-        } else {
-            setError(result.error || 'An error occurred');
-            setOutput('');
-            setOutputJson(null);
-        }
-    }, [input, mode, indentSize]);
-
-    // Automatically trigger action when mode or input changes with debounce
-    useEffect(() => {
-        if (!isAutoFormat) return;
-
-        const timer = setTimeout(() => {
-            handleAction();
-        }, 300);
-
-        return () => clearTimeout(timer);
-    }, [input, mode, isAutoFormat, handleAction]);
-
-    const handleCopy = async () => {
-        try {
-            await navigator.clipboard.writeText(output);
-        } catch (err) {
-            console.error('Failed to copy:', err);
-        }
-    };
-
-    const handleClear = () => {
-        setInput('');
-        setOutput('');
+    if (result.success && result.formatted) {
+      setOutput(result.formatted);
+      try {
+        const jsonObj = JSON.parse(result.formatted);
+        setOutputJson(jsonObj);
+      } catch (e) {
         setOutputJson(null);
-        setError('');
-        setIterations(undefined);
-    };
+      }
+      if (result.iterations) {
+        setIterations(result.iterations);
+      }
+    } else {
+      setError(result.error || 'An error occurred');
+      setOutput('');
+      setOutputJson(null);
+    }
+  }, [input, mode, indentSize]);
 
-    const getActionButtonText = () => {
-        switch (mode) {
-            case 'parse': return 'Parse Now';
-            case 'format': return 'Format Now';
-            case 'minify': return 'Minify Now';
-            default: return 'Process';
-        }
-    };
+  useEffect(() => {
+    if (!isAutoFormat) return;
+    const timer = setTimeout(() => {
+      handleAction();
+    }, 250);
+    return () => clearTimeout(timer);
+  }, [input, mode, isAutoFormat, handleAction]);
 
-    const getActionIcon = () => {
-        switch (mode) {
-            case 'parse': return <Wand2 className="w-4 h-4" />;
-            case 'format': return <FileJson className="w-4 h-4" />;
-            case 'minify': return <Minimize2 className="w-4 h-4" />;
-            default: return null;
-        }
-    };
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(output);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+      toast.success('Copied JSON to clipboard');
+    } catch (err) {
+      console.error('Failed to copy:', err);
+    }
+  };
 
-    return (
-        <div className="flex h-screen overflow-hidden">
-            <Sidebar />
+  const handleClear = () => {
+    setInput('');
+    setOutput('');
+    setOutputJson(null);
+    setError('');
+    setIterations(undefined);
+  };
 
-            <main 
-                className="flex-1 flex flex-col h-full bg-slate-50 dark:bg-slate-950 transition-all duration-300"
-                style={{ marginLeft: width }}
+  const getActionButtonText = () => {
+    switch (mode) {
+      case 'parse': return 'Unescape & Parse';
+      case 'format': return 'Format JSON';
+      case 'minify': return 'Minify JSON';
+      default: return 'Process';
+    }
+  };
+
+  return (
+    <div className="flex h-screen overflow-hidden bg-[#fafafa] dark:bg-[#09090b]">
+      <Sidebar />
+
+      <main
+        className="flex-1 flex flex-col h-full overflow-hidden transition-[margin] duration-200"
+        style={{ marginLeft: width }}
+      >
+        <PageHeader
+          icon={FileJson}
+          title="JSON Formatter & Parser"
+          description="Beautify, unescape stringified objects, or minify payloads."
+          badge="JSON 2.0"
+        >
+          <AutoToggle
+            enabled={isAutoFormat}
+            onChange={setIsAutoFormat}
+          />
+
+          {/* Mode Switcher */}
+          <div className="flex p-0.5 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-zinc-100 dark:bg-zinc-900">
+            <button
+              type="button"
+              onClick={() => setMode('format')}
+              className={`px-3 py-1 text-xs font-medium rounded-md transition-colors ${
+                mode === 'format'
+                  ? 'bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 shadow-sm'
+                  : 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200'
+              }`}
             >
-                {/* Compact Header */}
-                <header className="flex items-center justify-between px-6 py-3 border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-slate-900 shadow-sm z-10 transition-colors">
-                    <div className="flex items-center gap-4">
-                        <div className="flex items-center gap-2">
-                            <FileJson className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
-                            <h1 className="text-lg font-bold text-slate-900 dark:text-slate-100 whitespace-nowrap">
-                                JSON Formatter
-                            </h1>
-                        </div>
-                        <div className="h-6 w-[1px] bg-slate-300 dark:bg-slate-700 hidden sm:block"></div>
-                        
-                        {/* Auto-Format Toggle */}
-                        <AutoToggle 
-                           enabled={isAutoFormat} 
-                           onChange={setIsAutoFormat} 
-                           activeColorClass="bg-indigo-600" 
-                           activeTextClass="text-yellow-500 fill-yellow-500" 
-                        />
+              Format
+            </button>
+            <button
+              type="button"
+              onClick={() => setMode('parse')}
+              className={`px-3 py-1 text-xs font-medium rounded-md transition-colors ${
+                mode === 'parse'
+                  ? 'bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 shadow-sm'
+                  : 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200'
+              }`}
+            >
+              Stringified
+            </button>
+            <button
+              type="button"
+              onClick={() => setMode('minify')}
+              className={`px-3 py-1 text-xs font-medium rounded-md transition-colors ${
+                mode === 'minify'
+                  ? 'bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 shadow-sm'
+                  : 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200'
+              }`}
+            >
+              Minify
+            </button>
+          </div>
 
-                        {/* Mode Bar */}
-                        <div className="flex bg-slate-100 dark:bg-slate-800 p-1 rounded-lg">
-                            <button
-                                onClick={() => setMode('parse')}
-                                className={`px-4 py-1.5 rounded-md text-xs font-semibold transition-all ${mode === 'parse'
-                                    ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-sm'
-                                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
-                                    }`}
-                            >
-                                Stringified
-                            </button>
-                            <button
-                                onClick={() => setMode('format')}
-                                className={`px-4 py-1.5 rounded-md text-xs font-semibold transition-all ${mode === 'format'
-                                    ? 'bg-white dark:bg-slate-700 text-green-600 dark:text-green-400 shadow-sm'
-                                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
-                                    }`}
-                            >
-                                Format
-                            </button>
-                            <button
-                                onClick={() => setMode('minify')}
-                                className={`px-4 py-1.5 rounded-md text-xs font-semibold transition-all ${mode === 'minify'
-                                    ? 'bg-white dark:bg-slate-700 text-blue-600 dark:text-blue-400 shadow-sm'
-                                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
-                                    }`}
-                            >
-                                Minify
-                            </button>
-                        </div>
-                    </div>
+          {!isAutoFormat && (
+            <button
+              onClick={handleAction}
+              disabled={!input.trim()}
+              className="btn btn-primary"
+            >
+              {getActionButtonText()}
+            </button>
+          )}
 
-                    <div className="flex items-center gap-3">
-                        {iterations && (
-                            <span className="text-[10px] uppercase tracking-wider font-bold text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/20 px-2 py-1 rounded">
-                                {iterations} Iterations
-                            </span>
-                        )}
-                        {!isAutoFormat && (
-                            <button
-                                onClick={handleAction}
-                                disabled={!input.trim()}
-                                className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-1.5 rounded-md text-xs font-bold transition-all disabled:opacity-50 flex items-center gap-2 shadow-md shadow-indigo-500/20 active:scale-95"
-                            >
-                                {getActionIcon()}
-                                {getActionButtonText()}
-                            </button>
-                        )}
-                        <button
-                            onClick={handleClear}
-                            className="text-slate-400 hover:text-red-500 dark:hover:text-red-400 p-1.5 rounded-md transition-colors"
-                            title="Clear All"
-                        >
-                            <Trash2 className="w-5 h-5" />
-                        </button>
-                    </div>
-                </header>
+          <button
+            onClick={handleClear}
+            disabled={!input && !output}
+            className="btn btn-secondary btn-sm"
+            title="Clear all"
+          >
+            <Trash2 size={13} />
+            <span>Clear</span>
+          </button>
+        </PageHeader>
 
-                {/* Main Content - Full Height Flex */}
-                <div className="flex-1 flex overflow-hidden p-4 gap-4 bg-slate-50 dark:bg-slate-950">
-                    {/* Input Editor */}
-                    <div className="flex-1 flex flex-col bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xl overflow-hidden transition-all duration-300">
-                        <div className="px-4 py-2 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-slate-50/50 dark:bg-slate-800/50">
-                            <h2 className="text-[10px] font-black uppercase tracking-widest text-slate-400">
-                                Input JSON
-                            </h2>
-                            <span className="text-[10px] font-mono text-slate-400">
-                                {input.length.toLocaleString()} chars
-                            </span>
-                        </div>
-                        <textarea
-                            value={input}
-                            onChange={(e) => setInput(e.target.value)}
-                            placeholder='Paste or type JSON here...'
-                            className="flex-1 w-full p-6 bg-transparent text-slate-900 dark:text-slate-100 font-mono text-sm focus:outline-none resize-none placeholder:text-slate-300 dark:placeholder:text-slate-700"
-                            spellCheck={false}
-                        />
-                    </div>
+        {/* Editors Layout */}
+        <div className="flex-1 flex flex-col p-4 gap-4 overflow-hidden">
+          <div className="flex-1 grid grid-cols-1 lg:grid-cols-2 gap-4 min-h-0">
+            {/* Input Editor */}
+            <div className="card p-0 flex flex-col overflow-hidden">
+              <div className="px-4 py-2 border-b border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/50 flex items-center justify-between shrink-0">
+                <span className="text-xs font-medium text-zinc-600 dark:text-zinc-400 font-mono">
+                  Input JSON
+                </span>
+                <span className="text-[11px] font-mono text-zinc-400">
+                  {input.length.toLocaleString()} chars
+                </span>
+              </div>
+              <textarea
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                placeholder="Paste or type raw, minified, or stringified JSON here..."
+                className="flex-1 w-full p-4 bg-transparent text-zinc-900 dark:text-zinc-100 font-mono text-xs leading-relaxed focus:outline-none resize-none placeholder:text-zinc-400 dark:placeholder:text-zinc-600"
+                spellCheck={false}
+              />
+            </div>
 
-                    {/* Output Editor */}
-                    <div className="flex-1 flex flex-col bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xl overflow-hidden transition-all duration-300">
-                        <div className="px-4 py-2 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-slate-50/50 dark:bg-slate-800/50">
-                            <h2 className="text-[10px] font-black uppercase tracking-widest text-slate-400">
-                                Result
-                            </h2>
-                            <div className="flex items-center gap-3">
-                                {outputJson && mode === 'format' && (
-                                    <div className="w-24">
-                                        <CustomSelect
-                                            value={editorMode}
-                                            onChange={(val) => setEditorMode(val as EditorMode)}
-                                            options={[
-                                                { label: 'Tree', value: 'tree' },
-                                                { label: 'Code', value: 'code' },
-                                                { label: 'View', value: 'view' },
-                                                { label: 'Form', value: 'form' }
-                                            ]}
-                                            className="w-full px-2 py-0.5 border border-slate-200 dark:border-slate-700 rounded bg-white dark:bg-slate-800 text-[10px] font-bold uppercase outline-none"
-                                        />
-                                    </div>
-                                )}
-                                <div className="h-3 w-[1px] bg-slate-200 dark:bg-slate-700 mx-1"></div>
-                                <button
-                                    onClick={handleCopy}
-                                    disabled={!output}
-                                    className="px-3 py-1 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-indigo-600 dark:text-indigo-400 rounded-md text-[10px] font-black uppercase transition-all disabled:opacity-20 flex items-center gap-2"
-                                >
-                                    <Copy className="w-3 h-3" />
-                                    Copy Result
-                                </button>
-                            </div>
-                        </div>
-                        <div className="flex-1 relative overflow-hidden bg-white dark:bg-slate-900">
-                            {outputJson && (mode === 'parse' || mode === 'format') ? (
-                                <JsonEditorComponent
-                                    json={outputJson}
-                                    onChange={() => { }} // Read-only
-                                    mode={mode === 'format' ? editorMode : 'code'}
-                                    height="100%"
-                                    readOnly={true}
-                                />
-                            ) : output ? (
-                                <pre className="absolute inset-0 p-6 font-mono text-sm overflow-auto bg-slate-950 text-indigo-300 scrollbar-thin scrollbar-thumb-slate-800">
-                                    <code className="language-json">{output}</code>
-                                </pre>
-                            ) : (
-                                <div className="absolute inset-0 flex flex-col items-center justify-center text-slate-300 dark:text-slate-700 bg-slate-50/10 gap-4">
-                                    <FileJson size={48} className="opacity-10" />
-                                    <span className="text-xs font-black uppercase tracking-widest opacity-30">Waiting for input...</span>
-                                </div>
-                            )}
-                        </div>
-                    </div>
+            {/* Output Editor */}
+            <div className="card p-0 flex flex-col overflow-hidden">
+              <div className="px-4 py-2 border-b border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/50 flex items-center justify-between shrink-0">
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-medium text-zinc-600 dark:text-zinc-400 font-mono">
+                    Formatted Result
+                  </span>
+                  {iterations && (
+                    <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800">
+                      {iterations}x unescaped
+                    </span>
+                  )}
                 </div>
 
-                {/* Error Banner */}
-                {error && (
-                    <div className="mx-4 mb-4 p-4 bg-red-500/10 border border-red-500/20 text-red-500 text-xs font-bold rounded-2xl flex items-center gap-3 animate-in fade-in slide-in-from-bottom-2">
-                        <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse" />
-                        {error}
+                <div className="flex items-center gap-2">
+                  {outputJson && mode === 'format' && (
+                    <div className="w-24">
+                      <CustomSelect
+                        value={editorMode}
+                        onChange={(val) => setEditorMode(val as EditorMode)}
+                        options={[
+                          { label: 'Code', value: 'code' },
+                          { label: 'Tree', value: 'tree' },
+                          { label: 'View', value: 'view' },
+                          { label: 'Form', value: 'form' }
+                        ]}
+                      />
                     </div>
+                  )}
+                  <button
+                    onClick={handleCopy}
+                    disabled={!output}
+                    className="btn btn-secondary btn-sm"
+                  >
+                    {copied ? <Check size={12} className="text-emerald-500" /> : <Copy size={12} />}
+                    <span>{copied ? 'Copied' : 'Copy'}</span>
+                  </button>
+                </div>
+              </div>
+
+              <div className="flex-1 relative overflow-hidden bg-white dark:bg-zinc-950">
+                {outputJson && (mode === 'parse' || mode === 'format') ? (
+                  <div className="h-full p-1">
+                    <JsonEditorComponent
+                      json={outputJson}
+                      onChange={() => { }}
+                      mode={mode === 'format' ? editorMode : 'code'}
+                      height="100%"
+                      readOnly={true}
+                    />
+                  </div>
+                ) : output ? (
+                  <pre className="absolute inset-0 p-4 font-mono text-xs leading-relaxed overflow-auto bg-zinc-900 text-zinc-100 dark:bg-zinc-950 dark:text-zinc-200">
+                    <code>{output}</code>
+                  </pre>
+                ) : (
+                  <div className="absolute inset-0 flex flex-col items-center justify-center text-zinc-400 gap-2 p-4">
+                    <FileJson size={32} className="text-zinc-300 dark:text-zinc-700" />
+                    <span className="text-xs text-zinc-400">Waiting for valid JSON input...</span>
+                  </div>
                 )}
-            </main>
+              </div>
+            </div>
+          </div>
+
+          {/* Error Banner */}
+          {error && (
+            <div className="p-3 bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-900/50 text-red-700 dark:text-red-400 text-xs font-medium rounded-lg flex items-center gap-2">
+              <AlertCircle size={14} className="shrink-0" />
+              <span>{error}</span>
+            </div>
+          )}
         </div>
-    );
+      </main>
+    </div>
+  );
 }

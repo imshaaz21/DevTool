@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { ChevronDown } from 'lucide-react';
+import { ChevronDown, Check } from 'lucide-react';
 
 export interface SelectOption {
   label: string;
@@ -11,19 +11,27 @@ interface CustomSelectProps {
   options: (string | SelectOption)[];
   onChange: (value: string) => void;
   disabled?: boolean;
-  className?: string; // Additional classes for the trigger button
-  dropdownClassName?: string; // Additional classes for the dropdown menu
+  className?: string;
+  dropdownClassName?: string;
 }
 
-export function CustomSelect({ value, options, onChange, disabled = false, className = '', dropdownClassName = '' }: CustomSelectProps) {
+export function CustomSelect({
+  value,
+  options,
+  onChange,
+  disabled = false,
+  className = '',
+  dropdownClassName = ''
+}: CustomSelectProps) {
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  const formattedOptions: SelectOption[] = options.map(opt => 
+  const formattedOptions: SelectOption[] = options.map(opt =>
     typeof opt === 'string' ? { label: opt, value: opt } : opt
   );
 
-  const selectedLabel = formattedOptions.find(o => o.value === value)?.label || value;
+  const selectedOption = formattedOptions.find(o => o.value === value);
+  const selectedLabel = selectedOption?.label || value;
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
@@ -36,32 +44,49 @@ export function CustomSelect({ value, options, onChange, disabled = false, class
   }, []);
 
   return (
-    <div className="relative w-full h-full" ref={containerRef}>
+    <div className="relative w-full" ref={containerRef}>
       <button
         type="button"
         disabled={disabled}
         onClick={() => setIsOpen(!isOpen)}
-        className={`w-full h-full flex items-center justify-between text-left outline-none ${className} ${disabled ? 'opacity-30 cursor-not-allowed grayscale' : 'cursor-pointer'}`}
+        className={`w-full flex items-center justify-between gap-2 px-3 py-2 text-xs font-medium rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 hover:border-zinc-300 dark:hover:border-zinc-700 transition-colors focus:outline-none focus:ring-1 focus:ring-zinc-400 dark:focus:ring-zinc-600 ${
+          disabled ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer'
+        } ${className}`}
       >
         <span className="truncate">{selectedLabel}</span>
-        <ChevronDown size={16} className={`transition-transform duration-200 opacity-50 ${isOpen ? 'rotate-180' : ''}`} />
+        <ChevronDown
+          size={14}
+          className={`shrink-0 text-zinc-400 transition-transform duration-150 ${
+            isOpen ? 'rotate-180' : ''
+          }`}
+        />
       </button>
 
       {isOpen && !disabled && (
-        <div className={`absolute z-50 w-full mt-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-2xl py-2 animate-in fade-in zoom-in-95 duration-200 max-h-60 overflow-auto overflow-x-hidden ${dropdownClassName}`}>
-          {formattedOptions.map(opt => (
-            <button
-              key={opt.value}
-              type="button"
-              onClick={() => {
-                onChange(opt.value);
-                setIsOpen(false);
-              }}
-              className={`w-full text-left px-4 py-2 text-sm font-bold transition-colors ${value === opt.value ? 'bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400' : 'text-slate-700 hover:bg-slate-50 dark:text-slate-300 dark:hover:bg-slate-700/50'}`}
-            >
-              {opt.label}
-            </button>
-          ))}
+        <div
+          className={`absolute z-50 w-full mt-1.5 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg shadow-lg py-1 max-h-60 overflow-y-auto overflow-x-hidden ${dropdownClassName}`}
+        >
+          {formattedOptions.map(opt => {
+            const isSelected = value === opt.value;
+            return (
+              <button
+                key={opt.value}
+                type="button"
+                onClick={() => {
+                  onChange(opt.value);
+                  setIsOpen(false);
+                }}
+                className={`w-full flex items-center justify-between px-3 py-1.5 text-xs text-left transition-colors ${
+                  isSelected
+                    ? 'bg-zinc-100 dark:bg-zinc-800 font-semibold text-zinc-900 dark:text-zinc-100'
+                    : 'text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-800/60 font-normal'
+                }`}
+              >
+                <span className="truncate">{opt.label}</span>
+                {isSelected && <Check size={12} className="shrink-0 text-zinc-600 dark:text-zinc-400 ml-2" />}
+              </button>
+            );
+          })}
         </div>
       )}
     </div>

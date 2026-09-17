@@ -2,32 +2,36 @@
 
 import { useTheme } from 'next-themes';
 import { useEffect, useState } from 'react';
-import { SunIcon, MoonIcon } from '@heroicons/react/24/outline';
+import { Sun, Moon } from 'lucide-react';
 
 export function ThemeToggle() {
   const [mounted, setMounted] = useState(false);
-  const { theme, setTheme } = useTheme();
+  const { resolvedTheme, setTheme } = useTheme();
 
-  // useEffect only runs on the client, so now we can safely show the UI
   useEffect(() => {
     setMounted(true);
   }, []);
 
   if (!mounted) {
-    return null;
+    return (
+      <div className="w-8 h-8 rounded-lg border border-transparent" />
+    );
   }
+
+  const isDark = resolvedTheme === 'dark';
 
   return (
     <button
-      aria-label="Toggle Dark Mode"
+      aria-label="Toggle theme"
       type="button"
-      className="p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700"
-      onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+      className="inline-flex items-center justify-center w-8 h-8 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-zinc-400"
+      onClick={() => setTheme(isDark ? 'light' : 'dark')}
+      title={isDark ? 'Switch to light theme' : 'Switch to dark theme'}
     >
-      {theme === 'dark' ? (
-        <SunIcon className="h-5 w-5 text-yellow-500" />
+      {isDark ? (
+        <Sun className="w-4 h-4 text-zinc-300" />
       ) : (
-        <MoonIcon className="h-5 w-5 text-gray-700" />
+        <Moon className="w-4 h-4 text-zinc-600" />
       )}
     </button>
   );

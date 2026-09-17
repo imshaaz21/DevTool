@@ -1,103 +1,242 @@
 'use client';
 
+import { useState, useMemo } from 'react';
 import Link from 'next/link';
 import { Sidebar } from '@/components/Sidebar';
 import { useSidebar } from '@/components/SidebarContext';
+import {
+  Database,
+  Diff,
+  Binary,
+  FileJson,
+  Image as ImageIcon,
+  Fingerprint,
+  Globe,
+  ShieldCheck,
+  Search,
+  ArrowRight,
+  Sparkles,
+  Command
+} from 'lucide-react';
+
+interface Tool {
+  title: string;
+  desc: string;
+  href: string;
+  category: 'Data & Security' | 'JSON & Diff' | 'Encoders' | 'Utilities';
+  icon: any;
+  tags: string[];
+}
+
+const TOOLS: Tool[] = [
+  {
+    title: 'Saudi Fake Data',
+    desc: 'Generate mock individual profiles with valid Saudi National ID, Iqama checksums, and localized formats.',
+    href: '/saudi-data-generator',
+    category: 'Data & Security',
+    icon: Database,
+    tags: ['saudi', 'national id', 'iqama', 'fake data', 'generator', 'mock']
+  },
+  {
+    title: 'Feature Toggle Diff',
+    desc: 'Compare configValue.release toggle flags between Ops, Staging, and Release environments.',
+    href: '/json-comparator',
+    category: 'JSON & Diff',
+    icon: Diff,
+    tags: ['toggle', 'diff', 'feature flags', 'release', 'comparator']
+  },
+  {
+    title: 'JSON Comparison',
+    desc: 'Structural side-by-side visual diff viewer highlighting mismatched keys and values between two JSON payloads.',
+    href: '/json-comparison',
+    category: 'JSON & Diff',
+    icon: Binary,
+    tags: ['json', 'diff', 'compare', 'viewer', 'syntax']
+  },
+  {
+    title: 'JSON Formatter',
+    desc: 'Beautify, parse recursively stringified JSON strings, or minify payloads for production APIs.',
+    href: '/json-formatter',
+    category: 'JSON & Diff',
+    icon: FileJson,
+    tags: ['json', 'beautify', 'format', 'minify', 'unescape', 'stringified']
+  },
+  {
+    title: 'Screen Permission Decode',
+    desc: 'Decompress and compress Gzip Base64 screen permission payloads with automatic JSON structure detection.',
+    href: '/screen-permission-decode',
+    category: 'Data & Security',
+    icon: ShieldCheck,
+    tags: ['screen', 'permission', 'gzip', 'base64', 'decompress', 'compress']
+  },
+  {
+    title: 'Base64 Image Viewer',
+    desc: 'Decode, preview, inspect dimensions and download images from Base64 encoded strings or data URIs.',
+    href: '/base64-viewer',
+    category: 'Utilities',
+    icon: ImageIcon,
+    tags: ['base64', 'image', 'preview', 'decode', 'data uri', 'png']
+  },
+  {
+    title: 'UUID Generator',
+    desc: 'Bulk generate RFC-4122 compliant Version 4 (random) UUIDs with instant copy and range selection.',
+    href: '/uuid-generator',
+    category: 'Utilities',
+    icon: Fingerprint,
+    tags: ['uuid', 'guid', 'v4', 'random', 'generator', 'tokens']
+  },
+  {
+    title: 'Encoder / Decoder',
+    desc: 'Convert text to/from Base64 or compute cryptographic checksums (MD5, SHA-1, SHA-256, SHA-512).',
+    href: '/encoder-decoder',
+    category: 'Encoders',
+    icon: Binary,
+    tags: ['base64', 'encode', 'decode', 'hash', 'sha256', 'md5', 'sha512']
+  },
+  {
+    title: 'Time Zone Converter',
+    desc: 'Convert timestamps between UTC, Saudi Arabia (AST), and Sri Lanka (IST) with live offset calculation.',
+    href: '/timezone-converter',
+    category: 'Utilities',
+    icon: Globe,
+    tags: ['time', 'timezone', 'utc', 'ast', 'ist', 'clock', 'date']
+  },
+];
+
+const CATEGORIES = ['All', 'Data & Security', 'JSON & Diff', 'Encoders', 'Utilities'] as const;
 
 export default function Home() {
   const { width } = useSidebar();
+  const [search, setSearch] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState<typeof CATEGORIES[number]>('All');
+
+  const filteredTools = useMemo(() => {
+    return TOOLS.filter(tool => {
+      const matchesCategory = selectedCategory === 'All' || tool.category === selectedCategory;
+      const q = search.toLowerCase().trim();
+      const matchesSearch = !q ||
+        tool.title.toLowerCase().includes(q) ||
+        tool.desc.toLowerCase().includes(q) ||
+        tool.tags.some(tag => tag.includes(q));
+      return matchesCategory && matchesSearch;
+    });
+  }, [search, selectedCategory]);
 
   return (
-    <div className="flex bg-slate-50 dark:bg-slate-950 min-h-screen">
+    <div className="flex bg-[#fafafa] dark:bg-[#09090b] min-h-screen text-zinc-900 dark:text-zinc-100">
       <Sidebar />
 
-      {/* Main content */}
-      <main 
-        className="flex-1 p-8 transition-all duration-300"
+      <main
+        className="flex-1 p-6 md:p-10 transition-[margin] duration-200"
         style={{ marginLeft: width }}
       >
-        <div className="max-w-6xl mx-auto">
-          <header className="mb-12 animate-in fade-in slide-in-from-top-4 duration-700">
-            <h1 className="text-4xl font-black tracking-tight text-slate-900 dark:text-white mb-2">
-              DevTools <span className="text-indigo-600">Suite</span>
-            </h1>
-            <p className="text-slate-500 dark:text-slate-400 font-medium">
-              Internal utility hub for Saudi and global developer workflows.
-            </p>
-          </header>
+        <div className="max-w-5xl mx-auto space-y-8">
+          {/* Header */}
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <div>
+                <h1 className="text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50">
+                  Developer Utilities
+                </h1>
+                <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-0.5">
+                  Internal engineering suite for data generation, JSON diffing, cryptography, and formatting.
+                </p>
+              </div>
+              <div className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-full border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-xs text-zinc-500 font-mono">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                {TOOLS.length} utilities ready
+              </div>
+            </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <ToolCard 
-              title="Saudi Fake Data" 
-              desc="Generate test data for Saudi & non-Saudi individuals with valid ID/Phone formats." 
-              href="/saudi-data-generator"
-              color="bg-emerald-500"
-            />
-            <ToolCard 
-              title="Feature Toggle Diff" 
-              desc="Instantly compare feature toggles between operations and release environments." 
-              href="/json-comparator"
-              color="bg-orange-500"
-            />
-            <ToolCard 
-              title="JSON Comparison" 
-              desc="Professional side-by-side diff viewer for any two JSON objects." 
-              href="/json-comparison"
-              color="bg-blue-500"
-            />
-            <ToolCard 
-              title="Base64 Image" 
-              desc="Decode and preview Base64 encoded images with instant rendering." 
-              href="/base64-viewer"
-              color="bg-pink-500"
-            />
-            <ToolCard 
-              title="JSON Formatter" 
-              desc="Full-screen parser for stringified, nested, or messy JSON data." 
-              href="/json-formatter"
-              color="bg-indigo-500"
-            />
-            <ToolCard 
-              title="Screen Permission Decode" 
-              desc="Decompress and compress Gzip Base64 screen permissions with instant JSON formatting." 
-              href="/screen-permission-decode"
-              color="bg-teal-500"
-            />
-            <ToolCard 
-              title="Encoder/Decoder" 
-              desc="Instant Base64 & Hash generation (MD5, SHA-256) with auto-convert." 
-              href="/encoder-decoder"
-              color="bg-violet-500"
-            />
-            <ToolCard 
-              title="UUID Generator" 
-              desc="Bulk generate Version 4 UUIDs for your databases and API tests." 
-              href="/uuid-generator"
-              color="bg-cyan-500"
-            />
-            <ToolCard 
-              title="Time Zone Converter" 
-              desc="Convert between UTC, Saudi Arabia (AST), and Sri Lanka (IST)." 
-              href="/timezone-converter"
-              color="bg-amber-500"
-            />
+            {/* Filter Bar */}
+            <div className="flex flex-col sm:flex-row gap-3 pt-2">
+              <div className="relative flex-1">
+                <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400" />
+                <input
+                  type="text"
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  placeholder="Search utilities by name or keyword..."
+                  className="w-full pl-9 pr-4 py-2 text-xs rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-400 focus:outline-none focus:ring-1 focus:ring-zinc-400 dark:focus:ring-zinc-600 transition-colors"
+                />
+                {search && (
+                  <button
+                    onClick={() => setSearch('')}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200"
+                  >
+                    Clear
+                  </button>
+                )}
+              </div>
+
+              <div className="flex items-center gap-1 overflow-x-auto pb-1 sm:pb-0 scrollbar-none">
+                {CATEGORIES.map(category => (
+                  <button
+                    key={category}
+                    onClick={() => setSelectedCategory(category)}
+                    className={`px-3 py-1.5 rounded-lg text-xs whitespace-nowrap transition-colors ${
+                      selectedCategory === category
+                        ? 'bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900 font-medium'
+                        : 'bg-white dark:bg-zinc-900 text-zinc-600 dark:text-zinc-400 border border-zinc-200 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-800'
+                    }`}
+                  >
+                    {category}
+                  </button>
+                ))}
+              </div>
+            </div>
           </div>
+
+          {/* Tools Grid */}
+          {filteredTools.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {filteredTools.map((tool) => {
+                const Icon = tool.icon;
+                return (
+                  <Link
+                    key={tool.href}
+                    href={tool.href}
+                    className="group flex flex-col justify-between p-4 rounded-xl border border-zinc-200/80 dark:border-zinc-800/80 bg-white dark:bg-zinc-900/60 hover:border-zinc-300 dark:hover:border-zinc-700 hover:bg-zinc-50/50 dark:hover:bg-zinc-900 transition-all shadow-[0_1px_2px_rgba(0,0,0,0.02)]"
+                  >
+                    <div>
+                      <div className="flex items-start justify-between gap-2 mb-3">
+                        <div className="w-8 h-8 rounded-lg bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 flex items-center justify-center border border-zinc-200/60 dark:border-zinc-700/60 group-hover:bg-zinc-900 group-hover:text-white dark:group-hover:bg-zinc-100 dark:group-hover:text-zinc-900 transition-colors">
+                          <Icon size={16} strokeWidth={1.8} />
+                        </div>
+                        <span className="text-[10px] font-mono text-zinc-400 dark:text-zinc-500 bg-zinc-50 dark:bg-zinc-800/60 px-2 py-0.5 rounded border border-zinc-100 dark:border-zinc-800">
+                          {tool.category}
+                        </span>
+                      </div>
+
+                      <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100 group-hover:text-zinc-950 dark:group-hover:text-white transition-colors">
+                        {tool.title}
+                      </h2>
+                      <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1 line-clamp-2 leading-relaxed">
+                        {tool.desc}
+                      </p>
+                    </div>
+
+                    <div className="mt-4 pt-3 border-t border-zinc-100 dark:border-zinc-800/80 flex items-center justify-between text-xs text-zinc-400 dark:text-zinc-500 font-medium group-hover:text-zinc-700 dark:group-hover:text-zinc-300 transition-colors">
+                      <span>Open tool</span>
+                      <ArrowRight size={13} className="transition-transform group-hover:translate-x-0.5" />
+                    </div>
+                  </Link>
+                );
+              })}
+            </div>
+          ) : (
+            <div className="p-12 text-center border border-dashed border-zinc-200 dark:border-zinc-800 rounded-xl bg-white dark:bg-zinc-900/30">
+              <p className="text-xs text-zinc-500">No utilities match &ldquo;{search}&rdquo;</p>
+              <button
+                onClick={() => { setSearch(''); setSelectedCategory('All'); }}
+                className="mt-2 text-xs font-medium text-zinc-900 dark:text-zinc-100 underline hover:no-underline"
+              >
+                Reset filters
+              </button>
+            </div>
+          )}
         </div>
       </main>
     </div>
-  );
-}
-
-function ToolCard({ title, desc, href, color }: { title: string, desc: string, href: string, color: string }) {
-  return (
-    <Link href={href} className="group flex flex-col bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 hover:shadow-2xl hover:-translate-y-1 transition-all duration-300">
-      <div className={`w-10 h-1 rounded-full ${color} mb-4 group-hover:w-20 transition-all duration-500`}></div>
-      <h2 className="text-xl font-bold text-slate-900 dark:text-white mb-2 group-hover:text-indigo-600 transition-colors">{title}</h2>
-      <p className="text-slate-500 dark:text-slate-400 text-sm leading-relaxed flex-grow">{desc}</p>
-      <div className="mt-6 flex items-center text-xs font-bold uppercase tracking-widest text-indigo-600 dark:text-indigo-400 group-hover:gap-2 transition-all">
-        Open Tool
-        <span className="opacity-0 group-hover:opacity-100 transition-opacity">→</span>
-      </div>
-    </Link>
   );
 }
