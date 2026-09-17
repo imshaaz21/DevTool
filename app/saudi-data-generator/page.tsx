@@ -214,7 +214,7 @@ export default function SaudiDataGeneratorPage() {
                         className={`px-2 py-1.5 text-xs rounded-lg border transition-colors ${
                           count === preset
                             ? 'bg-neutral-900 text-white dark:bg-neutral-100 dark:text-neutral-900 border-neutral-900 dark:border-neutral-100 font-medium'
-                            : 'bg-white dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 border-neutral-200 dark:border-neutral-700 hover:bg-neutral-50'
+                            : 'bg-white dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 border-neutral-200 dark:border-neutral-700 hover:bg-neutral-100 dark:hover:bg-neutral-700 hover:text-neutral-900 dark:hover:text-white'
                         }`}
                       >
                         {preset}
@@ -328,36 +328,36 @@ export default function SaudiDataGeneratorPage() {
                       {currentPageData.map((person, idx) => (
                         <tr
                           key={idx}
-                          className="hover:bg-neutral-50/80 dark:hover:bg-neutral-800/40 transition-colors"
+                          className="group hover:bg-neutral-100/70 dark:hover:bg-neutral-800/60 transition-colors"
                         >
                           <td>
-                            <span className="inline-block px-1.5 py-0.5 rounded text-[10px] font-mono font-medium bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 border border-neutral-200 dark:border-neutral-700">
+                            <span className="inline-block px-1.5 py-0.5 rounded text-[10px] font-mono font-medium bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-300 group-hover:bg-white dark:group-hover:bg-neutral-700 group-hover:text-neutral-900 dark:group-hover:text-white border border-neutral-200 dark:border-neutral-700 transition-colors">
                               {person.idType}
                             </span>
                           </td>
-                          <td className="font-mono text-xs font-semibold text-neutral-900 dark:text-neutral-100">
+                          <td className="font-mono text-xs font-semibold text-neutral-900 dark:text-neutral-100 group-hover:text-black dark:group-hover:text-white transition-colors">
                             {person.idNumber}
                           </td>
                           <td>
                             <div className="flex flex-col">
-                              <span className="text-xs font-medium text-neutral-900 dark:text-neutral-100">
+                              <span className="text-xs font-medium text-neutral-900 dark:text-neutral-100 group-hover:text-black dark:group-hover:text-white transition-colors">
                                 {person.englishName}
                               </span>
-                              <span className="text-[11px] text-neutral-400 dark:text-neutral-500 font-arabic">
+                              <span className="text-[11px] text-neutral-400 dark:text-neutral-400 group-hover:text-neutral-600 dark:group-hover:text-neutral-200 font-arabic transition-colors">
                                 {person.arabicName}
                               </span>
                             </div>
                           </td>
-                          <td className="font-mono text-xs text-neutral-600 dark:text-neutral-400">
+                          <td className="font-mono text-xs text-neutral-600 dark:text-neutral-300 group-hover:text-neutral-900 dark:group-hover:text-white transition-colors">
                             {person.phoneNumber}
                           </td>
-                          <td className="capitalize text-xs text-neutral-500 dark:text-neutral-400">
+                          <td className="capitalize text-xs text-neutral-600 dark:text-neutral-300 group-hover:text-neutral-900 dark:group-hover:text-white transition-colors">
                             {person.gender}
                           </td>
-                          <td className="text-xs text-neutral-500 dark:text-neutral-400 font-mono">
+                          <td className="text-xs text-neutral-600 dark:text-neutral-300 group-hover:text-neutral-900 dark:group-hover:text-white font-mono transition-colors">
                             {person.dateOfBirth}
                           </td>
-                          <td className="text-xs text-neutral-600 dark:text-neutral-300">
+                          <td className="text-xs text-neutral-600 dark:text-neutral-300 group-hover:text-neutral-900 dark:group-hover:text-white transition-colors">
                             {person.nationality}
                           </td>
                           <td className="text-right">

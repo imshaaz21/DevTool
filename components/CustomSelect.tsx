@@ -79,7 +79,7 @@ export function CustomSelect({
                 className={`w-full flex items-center justify-between px-3 py-1.5 text-xs text-left transition-colors ${
                   isSelected
                     ? 'bg-neutral-100 dark:bg-neutral-800 font-semibold text-neutral-900 dark:text-neutral-100'
-                    : 'text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-800/60 font-normal'
+                    : 'text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 hover:text-neutral-950 dark:hover:text-white font-normal'
                 }`}
               >
                 <span className="truncate">{opt.label}</span>

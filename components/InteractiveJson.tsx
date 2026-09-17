@@ -112,7 +112,7 @@ export function InteractiveJson({ data, editable = false, onEdit }: JsonViewerPr
     if (value === null) {
       return canEdit ? (
         <span
-          className="text-neutral-400 cursor-pointer hover:bg-neutral-200 dark:hover:bg-neutral-800 px-1 rounded"
+          className="text-neutral-400 cursor-pointer hover:bg-neutral-200 dark:hover:bg-neutral-800 hover:text-neutral-900 dark:hover:text-white px-1 rounded"
           onClick={() => {
             const newValue = prompt('Edit value:', 'null');
             if (newValue !== null) {

@@ -68,7 +68,7 @@
   }
 
   .btn-secondary {
-    @apply bg-white dark:bg-neutral-900 text-neutral-700 dark:text-neutral-300 border border-neutral-200 dark:border-neutral-800 hover:bg-neutral-50 dark:hover:bg-neutral-800/80 active:scale-[0.99];
+    @apply bg-white dark:bg-neutral-900 text-neutral-700 dark:text-neutral-300 border border-neutral-200 dark:border-neutral-800 hover:bg-neutral-50 dark:hover:bg-neutral-800/80 hover:text-neutral-900 dark:hover:text-white active:scale-[0.99];
   }
 
   .btn-sm {
@@ -90,7 +90,19 @@
   }
 
   .modern-table td {
-    @apply px-4 py-2.5 whitespace-nowrap text-neutral-700 dark:text-neutral-300;
+    @apply px-4 py-2.5 whitespace-nowrap text-neutral-700 dark:text-neutral-300 transition-colors;
+  }
+
+  .modern-table tbody tr {
+    @apply transition-colors;
+  }
+
+  .modern-table tbody tr:hover {
+    @apply bg-neutral-100/70 dark:bg-neutral-800/60;
+  }
+
+  .modern-table tbody tr:hover td {
+    @apply text-neutral-950 dark:text-neutral-50;
   }
 }
 
