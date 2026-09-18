@@ -116,6 +116,95 @@ export function minifyHtml(html: string): string {
 }
 
 /**
+ * Dummy HTML with Lorem Ipsum text for quick previews.
+ */
+export const LOREM_DUMMY_HTML = `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lorem Ipsum Preview</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      color: #1f2937;
+      background-color: #f9fafb;
+      margin: 0;
+      padding: 32px 20px;
+    }
+    .card {
+      max-width: 680px;
+      margin: 0 auto;
+      background: #ffffff;
+      padding: 36px;
+      border-radius: 12px;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+      border: 1px solid #e5e7eb;
+    }
+    h1 {
+      font-size: 24px;
+      font-weight: 700;
+      margin-top: 0;
+      color: #111827;
+      border-bottom: 2px solid #f3f4f6;
+      padding-bottom: 12px;
+    }
+    h2 {
+      font-size: 18px;
+      font-weight: 600;
+      margin-top: 24px;
+      color: #374151;
+    }
+    p {
+      margin: 14px 0;
+      color: #4b5563;
+    }
+    ul {
+      padding-left: 20px;
+      color: #4b5563;
+    }
+    li {
+      margin-bottom: 8px;
+    }
+    .btn {
+      display: inline-block;
+      margin-top: 16px;
+      padding: 10px 20px;
+      background-color: #111827;
+      color: #ffffff;
+      text-decoration: none;
+      border-radius: 6px;
+      font-size: 14px;
+      font-weight: 500;
+      transition: background-color 0.2s;
+    }
+    .btn:hover {
+      background-color: #374151;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>Lorem Ipsum Dolor Sit Amet</h1>
+    <p>
+      Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer nec odio. Praesent libero. Sed cursus ante dapibus diam. Sed nisi. Nulla quis sem at nibh elementum imperdiet.
+    </p>
+    <h2>Curabitur Sodales Ligula</h2>
+    <p>
+      Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+    </p>
+    <ul>
+      <li>Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere.</li>
+      <li>Curabitur non nulla sit amet nisl tempus convallis quis ac lectus.</li>
+      <li>Mauris blandit aliquet elit, eget tincidunt nibh pulvinar a elementum.</li>
+    </ul>
+    <a href="#" class="btn">Read More</a>
+  </div>
+</body>
+</html>`;
+
+/**
  * Sample HTML templates for rapid testing.
  */
 export const SAMPLE_HTML_TEMPLATES = [

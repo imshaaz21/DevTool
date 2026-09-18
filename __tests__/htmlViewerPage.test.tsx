@@ -79,4 +79,18 @@ describe('HtmlViewerPage', () => {
     fireEvent.click(copyBtn);
     expect(navigator.clipboard.writeText).toHaveBeenCalled();
   });
+
+  it('loads sample Lorem Ipsum HTML when Sample HTML button is clicked', () => {
+    render(
+      <SidebarProvider>
+        <HtmlViewerPage />
+      </SidebarProvider>
+    );
+
+    const sampleBtn = screen.getByTitle(/Load sample Lorem Ipsum HTML/i);
+    fireEvent.click(sampleBtn);
+
+    const editor = screen.getByPlaceholderText(/Type or paste HTML code here\.\.\./i) as HTMLTextAreaElement;
+    expect(editor.value).toContain('Lorem Ipsum Dolor Sit Amet');
+  });
 });
