@@ -84,11 +84,14 @@ export function Sidebar() {
                 <span className="text-[10px] font-mono px-1.5 py-0.2 bg-neutral-100 dark:bg-neutral-800 text-neutral-500 dark:text-neutral-400 rounded">
                   Suite
                 </span>
+                <span className="text-[10px] font-mono font-medium px-1.5 py-0.2 bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800/60 rounded">
+                  v2
+                </span>
               </div>
             </div>
           </Link>
         ) : (
-          <Link href="/" className="mx-auto" title="DevTools Suite">
+          <Link href="/" className="mx-auto" title="DevTools Suite v2">
             <div className="w-7 h-7 rounded-lg bg-neutral-900 dark:bg-white text-white dark:text-neutral-950 flex items-center justify-center shrink-0">
               <Terminal size={15} strokeWidth={2.5} />
             </div>
