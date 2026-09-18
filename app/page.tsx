@@ -17,7 +17,8 @@ import {
   ArrowRight,
   GitCompare,
   Calculator,
-  Code2
+  Code2,
+  KeyRound
 } from 'lucide-react';
 
 interface Tool {
@@ -125,6 +126,14 @@ const TOOLS: Tool[] = [
     category: 'Encoders',
     icon: Binary,
     tags: ['base64', 'encode', 'decode', 'hash', 'sha256', 'md5', 'sha512']
+  },
+  {
+    title: 'JWT Decoder',
+    desc: 'Decode JSON Web Tokens (with or without Bearer prefix), inspect algorithms, payload claims, and expiry dates.',
+    href: '/jwt-decoder',
+    category: 'Data & Security',
+    icon: KeyRound,
+    tags: ['jwt', 'token', 'decode', 'bearer', 'claims', 'auth', 'security', 'expiration', 'header']
   },
   {
     title: 'Time Zone Converter',
