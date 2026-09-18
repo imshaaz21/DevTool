@@ -15,7 +15,8 @@ import {
   ShieldCheck,
   Search,
   ArrowRight,
-  GitCompare
+  GitCompare,
+  Calculator
 } from 'lucide-react';
 
 interface Tool {
@@ -67,6 +68,14 @@ const TOOLS: Tool[] = [
     category: 'JSON & Diff',
     icon: GitCompare,
     tags: ['list', 'compare', 'diff', 'set', 'intersection', 'comma separated', 'single quote', 'double quote', 'sql in']
+  },
+  {
+    title: 'JSON Path & Sum',
+    desc: 'Extract list items, filter properties, and calculate sum, average, min, max from nested arrays with wildcard patterns.',
+    href: '/json-path-aggregator',
+    category: 'JSON & Diff',
+    icon: Calculator,
+    tags: ['json', 'path', 'sum', 'aggregate', 'calculator', 'filter', 'extract', 'list', 'wildcard', 'array']
   },
   {
     title: 'JSON Formatter',
