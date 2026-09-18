@@ -14,7 +14,7 @@ jest.mock('next/navigation', () => ({
 }));
 
 describe('JsonDiffV2Page', () => {
-  it('renders header, sample data, and diff view by default', () => {
+  it('renders with clean empty inputs by default (no dummy data loaded)', () => {
     render(
       <SidebarProvider>
         <JsonDiffV2Page />
@@ -23,29 +23,30 @@ describe('JsonDiffV2Page', () => {
 
     expect(screen.getAllByText('JSON Diff v2').length).toBeGreaterThan(0);
     expect(screen.getByText('Sample Data')).toBeInTheDocument();
-    expect(screen.getByText(/Found 20 semantic differences/i)).toBeInTheDocument();
-    expect(screen.getByText('Left (Original)')).toBeInTheDocument();
-    expect(screen.getByText('Right (Modified)')).toBeInTheDocument();
+    expect(screen.getByText('Left JSON (Original)')).toBeInTheDocument();
+    expect(screen.getByText('Right JSON (Modified)')).toBeInTheDocument();
+    expect(screen.getByText('Compare Semantic Diff')).toBeInTheDocument();
+
+    const leftTextarea = screen.getByPlaceholderText('Enter left JSON to compare...') as HTMLTextAreaElement;
+    const rightTextarea = screen.getByPlaceholderText('Enter right JSON to compare...') as HTMLTextAreaElement;
+    expect(leftTextarea.value).toBe('');
+    expect(rightTextarea.value).toBe('');
   });
 
-  it('toggles edit inputs and diff view', () => {
+  it('loads sample data when Sample Data button is clicked', () => {
     render(
       <SidebarProvider>
         <JsonDiffV2Page />
       </SidebarProvider>
     );
 
-    // Click Edit Inputs
-    const editBtn = screen.getByText('Edit Inputs');
-    fireEvent.click(editBtn);
+    // Click Sample Data
+    const sampleBtn = screen.getByText('Sample Data');
+    fireEvent.click(sampleBtn);
 
-    expect(screen.getByText('Left JSON (Original)')).toBeInTheDocument();
-    expect(screen.getByText('Right JSON (Modified)')).toBeInTheDocument();
-    expect(screen.getByText('Compare Semantic Diff')).toBeInTheDocument();
-
-    // Click Compare Semantic Diff
-    fireEvent.click(screen.getByText('Compare Semantic Diff'));
     expect(screen.getByText(/Found 20 semantic differences/i)).toBeInTheDocument();
+    expect(screen.getByText('Left (Original)')).toBeInTheDocument();
+    expect(screen.getByText('Right (Modified)')).toBeInTheDocument();
   });
 
   it('allows navigating differences with next and prev buttons', () => {
@@ -54,6 +55,8 @@ describe('JsonDiffV2Page', () => {
         <JsonDiffV2Page />
       </SidebarProvider>
     );
+
+    fireEvent.click(screen.getByText('Sample Data'));
 
     expect(screen.getByText('1 of 20')).toBeInTheDocument();
     const nextBtn = screen.getByTitle('Next difference (Right Arrow)');
@@ -71,6 +74,8 @@ describe('JsonDiffV2Page', () => {
         <JsonDiffV2Page />
       </SidebarProvider>
     );
+
+    fireEvent.click(screen.getByText('Sample Data'));
 
     // Initial 20
     expect(screen.getByText('1 of 20')).toBeInTheDocument();
