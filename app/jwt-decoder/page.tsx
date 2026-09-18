@@ -27,7 +27,6 @@ import {
   Info,
   Layers,
   Code2,
-  FileCheck,
 } from 'lucide-react';
 
 export default function JwtDecoderPage() {
@@ -121,7 +120,7 @@ export default function JwtDecoderPage() {
           <div className="max-w-7xl mx-auto space-y-6">
             {/* Status & Summary Cards */}
             {result.valid && (
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 {/* Prefix Status */}
                 <div className="card p-4 flex items-center gap-3">
                   <div className="w-8 h-8 rounded-lg bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0 border border-blue-200 dark:border-blue-900/50">
@@ -189,21 +188,6 @@ export default function JwtDecoderPage() {
                     </span>
                     <span className="text-xs font-semibold text-neutral-900 dark:text-neutral-100 font-mono">
                       {result.algorithm} ({result.tokenType})
-                    </span>
-                  </div>
-                </div>
-
-                {/* Privacy & Security */}
-                <div className="card p-4 flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-lg bg-purple-50 dark:bg-purple-950/40 text-purple-600 dark:text-purple-400 flex items-center justify-center shrink-0 border border-purple-200 dark:border-purple-900/50">
-                    <FileCheck size={16} />
-                  </div>
-                  <div className="min-w-0">
-                    <span className="text-[11px] font-medium text-neutral-400 block uppercase tracking-wider">
-                      Data Privacy
-                    </span>
-                    <span className="text-xs font-semibold text-purple-600 dark:text-purple-400">
-                      100% In-Browser Decoded
                     </span>
                   </div>
                 </div>
