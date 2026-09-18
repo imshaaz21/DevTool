@@ -5,6 +5,7 @@ import {
   SAMPLE_ACTIVE_JWT,
   SAMPLE_BEARER_JWT,
   SAMPLE_EXPIRED_JWT,
+  isTimestampClaim,
 } from '@/lib/jwtDecoder';
 
 describe('jwtDecoder utility', () => {
@@ -80,6 +81,22 @@ describe('jwtDecoder utility', () => {
       const res = decodeJwt('invalidHeader.invalidPayload.sig');
       expect(res.valid).toBe(false);
       expect(res.error).toBeTruthy();
+    });
+
+    it('formats timestamps with specified timezone', () => {
+      const res = decodeJwt(SAMPLE_ACTIVE_JWT, 'Asia/Kolkata');
+      expect(res.valid).toBe(true);
+      expect(res.expiresInText).toContain('Asia/Kolkata');
+    });
+  });
+
+  describe('isTimestampClaim', () => {
+    it('identifies standard timestamp claims', () => {
+      expect(isTimestampClaim('exp', 1994972800)).toBe(true);
+      expect(isTimestampClaim('iat', 1742555200)).toBe(true);
+      expect(isTimestampClaim('nbf', 1742555200)).toBe(true);
+      expect(isTimestampClaim('sub', '12345')).toBe(false);
+      expect(isTimestampClaim('roles', ['admin'])).toBe(false);
     });
   });
 });

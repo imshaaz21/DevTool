@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback, useEffect } from 'react';
 import { toast } from 'react-hot-toast';
 import { Sidebar } from '@/components/Sidebar';
 import { useSidebar } from '@/components/SidebarContext';
@@ -8,6 +8,8 @@ import { PageHeader } from '@/components/PageHeader';
 import {
   decodeJwt,
   getClaimDescription,
+  isTimestampClaim,
+  formatTimestamp,
   SAMPLE_ACTIVE_JWT,
   SAMPLE_BEARER_JWT,
   SAMPLE_EXPIRED_JWT,
@@ -23,7 +25,6 @@ import {
   Clock,
   CheckCircle2,
   XCircle,
-  ShieldAlert,
   Info,
   Layers,
   Code2,
@@ -33,11 +34,21 @@ export default function JwtDecoderPage() {
   const { isCollapsed } = useSidebar();
   const [tokenInput, setTokenInput] = useState<string>(SAMPLE_BEARER_JWT);
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
+  const [browserTz, setBrowserTz] = useState<string>('UTC');
+
+  useEffect(() => {
+    try {
+      const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+      if (tz) setBrowserTz(tz);
+    } catch {
+      // fallback to UTC
+    }
+  }, []);
 
   // Decode and analyze token
   const result: DecodedJwtResult = useMemo(() => {
-    return decodeJwt(tokenInput);
-  }, [tokenInput]);
+    return decodeJwt(tokenInput, browserTz);
+  }, [tokenInput, browserTz]);
 
   // Copy helper
   const handleCopy = useCallback((text: string, key: string, label: string = 'Copied') => {
@@ -354,11 +365,14 @@ export default function JwtDecoderPage() {
                     {/* Standard Claims Human Breakdown */}
                     {result.payload && (
                       <div className="card p-4 space-y-3">
-                        <div className="flex items-center justify-between pb-2 border-b border-neutral-100 dark:border-neutral-800">
+                        <div className="flex flex-wrap items-center justify-between gap-2 pb-2 border-b border-neutral-100 dark:border-neutral-800">
                           <div className="flex items-center gap-2">
                             <Clock size={14} className="text-neutral-500" />
                             <span className="text-xs font-semibold text-neutral-900 dark:text-neutral-100">
                               Claim Insights & Timestamps
+                            </span>
+                            <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-300 border border-neutral-200 dark:border-neutral-700/60 font-medium">
+                              Zone: {browserTz}
                             </span>
                           </div>
                           {result.expiresInText && (
@@ -375,33 +389,78 @@ export default function JwtDecoderPage() {
                         </div>
 
                         <div className="space-y-2 text-xs">
-                          {Object.entries(result.payload).map(([key, val]) => (
-                            <div
-                              key={key}
-                              className="flex flex-col sm:flex-row sm:items-center justify-between py-1.5 border-b border-neutral-100 dark:border-neutral-800/60 last:border-0 gap-1"
-                            >
-                              <div className="flex items-center gap-2">
-                                <span className="font-mono font-semibold text-purple-600 dark:text-purple-400">
-                                  {key}
-                                </span>
-                                <span className="text-[11px] text-neutral-400">
-                                  ({getClaimDescription(key)})
-                                </span>
+                          {Object.entries(result.payload).map(([key, val]) => {
+                            const isTs = isTimestampClaim(key, val);
+                            const tsInfo = isTs ? formatTimestamp(val, browserTz) : null;
+
+                            return (
+                              <div
+                                key={key}
+                                className="py-2 border-b border-neutral-100 dark:border-neutral-800/60 last:border-0 space-y-1.5"
+                              >
+                                <div className="flex items-center justify-between gap-2">
+                                  <div className="flex items-center gap-2 min-w-0">
+                                    <span className="font-mono font-semibold text-purple-600 dark:text-purple-400">
+                                      {key}
+                                    </span>
+                                    <span className="text-[11px] text-neutral-400 truncate">
+                                      ({getClaimDescription(key)})
+                                    </span>
+                                  </div>
+                                  <div className="flex items-center gap-2 shrink-0">
+                                    {!isTs && (
+                                      <span className="font-mono text-neutral-800 dark:text-neutral-200 font-medium text-xs">
+                                        {typeof val === 'object' ? JSON.stringify(val) : String(val)}
+                                      </span>
+                                    )}
+                                    {isTs && (
+                                      <span className="font-mono text-neutral-400 text-[11px]">
+                                        Unix: {val}
+                                      </span>
+                                    )}
+                                    <button
+                                      onClick={() => handleCopy(typeof val === 'object' ? JSON.stringify(val) : String(val), `claim_${key}`, key)}
+                                      className="text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 p-0.5"
+                                      title={`Copy ${key}`}
+                                    >
+                                      {copiedKey === `claim_${key}` ? <Check size={11} /> : <Copy size={11} />}
+                                    </button>
+                                  </div>
+                                </div>
+
+                                {/* Rich timestamp breakdown if claim represents time */}
+                                {isTs && tsInfo && (
+                                  <div className="bg-neutral-50/80 dark:bg-neutral-900/50 p-2.5 rounded-lg border border-neutral-200/60 dark:border-neutral-800/80 flex flex-wrap items-center justify-between gap-2 text-[11px]">
+                                    <div className="flex items-center gap-1.5">
+                                      <Clock size={12} className="text-purple-500 shrink-0" />
+                                      <span className="font-medium text-neutral-800 dark:text-neutral-200 font-mono">
+                                        {tsInfo.formatted}
+                                      </span>
+                                      <span className="text-[10px] font-mono px-1.5 py-0.2 bg-purple-50 dark:bg-purple-950/60 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-800/50 rounded font-semibold">
+                                        {browserTz}
+                                      </span>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                      <span className="text-neutral-400 font-mono text-[10px]">
+                                        {tsInfo.utcFormatted}
+                                      </span>
+                                      <span
+                                        className={`px-1.5 py-0.5 rounded text-[10px] font-mono font-medium ${
+                                          key === 'exp'
+                                            ? tsInfo.isPast
+                                              ? 'bg-red-100 dark:bg-red-950 text-red-700 dark:text-red-300'
+                                              : 'bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300'
+                                            : 'bg-neutral-200 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300'
+                                        }`}
+                                      >
+                                        {tsInfo.relative}
+                                      </span>
+                                    </div>
+                                  </div>
+                                )}
                               </div>
-                              <div className="flex items-center gap-2">
-                                <span className="font-mono text-neutral-800 dark:text-neutral-200 font-medium">
-                                  {typeof val === 'object' ? JSON.stringify(val) : String(val)}
-                                </span>
-                                <button
-                                  onClick={() => handleCopy(typeof val === 'object' ? JSON.stringify(val) : String(val), `claim_${key}`, key)}
-                                  className="text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 p-0.5"
-                                  title={`Copy ${key}`}
-                                >
-                                  {copiedKey === `claim_${key}` ? <Check size={11} /> : <Copy size={11} />}
-                                </button>
-                              </div>
-                            </div>
-                          ))}
+                            );
+                          })}
                         </div>
                       </div>
                     )}
@@ -427,12 +486,6 @@ export default function JwtDecoderPage() {
                       <p className="font-mono text-[11px] text-cyan-700 dark:text-cyan-400 break-all bg-neutral-50 dark:bg-neutral-900/60 p-2.5 rounded-lg border border-neutral-200/60 dark:border-neutral-800">
                         {result.signature || '(No signature provided / Unsecured JWT)'}
                       </p>
-                      <div className="flex items-center gap-2 pt-1 text-[11px] text-neutral-500">
-                        <ShieldAlert size={13} className="text-amber-500 shrink-0" />
-                        <span>
-                          Decoded client-side only. Signature verification requires your private/secret key which should never be pasted into public websites.
-                        </span>
-                      </div>
                     </div>
                   </>
                 ) : (
