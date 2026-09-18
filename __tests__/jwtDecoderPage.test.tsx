@@ -2,6 +2,7 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import JwtDecoderPage from '@/app/jwt-decoder/page';
 import { SidebarProvider } from '@/components/SidebarContext';
+import { SAMPLE_KEYCLOAK_JWT, SAMPLE_EXPIRED_JWT } from '@/lib/jwtDecoder';
 
 // Mock next/navigation
 jest.mock('next/navigation', () => ({
@@ -45,24 +46,24 @@ describe('JwtDecoderPage', () => {
     expect(screen.getByText('Bearer (Stripped)')).toBeInTheDocument();
   });
 
-  it('switches between sample tokens', () => {
+  it('displays expired status when expired token is pasted and resets on Sample Bearer click', () => {
     render(
       <SidebarProvider>
         <JwtDecoderPage />
       </SidebarProvider>
     );
 
-    // Click Expired Sample
-    const expiredBtn = screen.getByTitle(/Load sample expired token to test expiry indicator/i);
-    fireEvent.click(expiredBtn);
+    // Paste expired token
+    const textarea = screen.getByPlaceholderText(/Paste JWT here/i);
+    fireEvent.change(textarea, { target: { value: SAMPLE_EXPIRED_JWT } });
 
     expect(screen.getByText('Expired')).toBeInTheDocument();
 
-    // Click Raw Sample without Bearer
-    const rawBtn = screen.getByTitle(/Load sample clean token without Bearer prefix/i);
-    fireEvent.click(rawBtn);
+    // Click Sample Bearer
+    const bearerBtn = screen.getByTitle(/Load sample token with 'Bearer ' prefix/i);
+    fireEvent.click(bearerBtn);
 
-    expect(screen.getByText('Direct Token (No Bearer)')).toBeInTheDocument();
+    expect(screen.getByText('Bearer (Stripped)')).toBeInTheDocument();
   });
 
   it('clears token input on clear button click', () => {
@@ -95,15 +96,15 @@ describe('JwtDecoderPage', () => {
     expect(navigator.clipboard.writeText).toHaveBeenCalled();
   });
 
-  it('renders Keycloak realm roles and resource access when loading Keycloak sample', () => {
+  it('renders Keycloak realm roles and resource access when pasting Keycloak token', () => {
     render(
       <SidebarProvider>
         <JwtDecoderPage />
       </SidebarProvider>
     );
 
-    const keycloakBtn = screen.getByTitle(/Load sample Keycloak token with realm_access and resource_access roles/i);
-    fireEvent.click(keycloakBtn);
+    const textarea = screen.getByPlaceholderText(/Paste JWT here/i);
+    fireEvent.change(textarea, { target: { value: SAMPLE_KEYCLOAK_JWT } });
 
     expect(screen.getByText(/Realm Roles \(12\)/i)).toBeInTheDocument();
     expect(screen.getByText('hhc doctor')).toBeInTheDocument();
