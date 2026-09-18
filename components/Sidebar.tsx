@@ -18,13 +18,14 @@ import {
   Globe,
   ShieldCheck,
   Terminal,
-  GitCompare
+  GitCompare,
+  Calculator
 } from 'lucide-react';
 
 export function Sidebar() {
   const pathname = usePathname();
-  const { isCollapsed, toggleSidebar } = useSidebar();
   const [currentTime, setCurrentTime] = useState('');
+  const { isCollapsed, toggleSidebar } = useSidebar();
 
   const isActive = (path: string) => pathname === path;
 
@@ -51,6 +52,7 @@ export function Sidebar() {
     { name: 'JSON Comparison', path: '/json-comparison', icon: Binary },
     { name: 'JSON Diff v2', path: '/json-diff-v2', icon: Binary },
     { name: 'List Compare', path: '/list-compare', icon: GitCompare },
+    { name: 'JSON Path & Sum', path: '/json-path-aggregator', icon: Calculator },
     { name: 'JSON Formatter', path: '/json-formatter', icon: FileJson },
     { name: 'Screen Permission', path: '/screen-permission-decode', icon: ShieldCheck },
     { name: 'Base64 Image', path: '/base64-viewer', icon: ImageIcon },
