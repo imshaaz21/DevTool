@@ -12,10 +12,7 @@ import {
   formatTimestamp,
   isKeycloakRealmAccess,
   isKeycloakResourceAccess,
-  SAMPLE_ACTIVE_JWT,
   SAMPLE_BEARER_JWT,
-  SAMPLE_EXPIRED_JWT,
-  SAMPLE_KEYCLOAK_JWT,
   DecodedJwtResult,
 } from '@/lib/jwtDecoder';
 import {
@@ -68,20 +65,8 @@ export default function JwtDecoderPage() {
     setTokenInput('');
   };
 
-  const loadSampleActive = () => {
-    setTokenInput(SAMPLE_ACTIVE_JWT);
-  };
-
   const loadSampleBearer = () => {
     setTokenInput(SAMPLE_BEARER_JWT);
-  };
-
-  const loadSampleExpired = () => {
-    setTokenInput(SAMPLE_EXPIRED_JWT);
-  };
-
-  const loadSampleKeycloak = () => {
-    setTokenInput(SAMPLE_KEYCLOAK_JWT);
   };
 
   return (
@@ -106,30 +91,6 @@ export default function JwtDecoderPage() {
           >
             <Sparkles size={12} />
             <span>Sample (Bearer)</span>
-          </button>
-          <button
-            onClick={loadSampleActive}
-            className="btn btn-secondary btn-sm flex items-center gap-1 text-xs shrink-0"
-            title="Load sample clean token without Bearer prefix"
-          >
-            <Sparkles size={12} />
-            <span>Sample (Raw JWT)</span>
-          </button>
-          <button
-            onClick={loadSampleKeycloak}
-            className="btn btn-secondary btn-sm flex items-center gap-1 text-xs shrink-0 text-purple-700 dark:text-purple-300"
-            title="Load sample Keycloak token with realm_access and resource_access roles"
-          >
-            <ShieldCheck size={12} />
-            <span>Sample (Keycloak Roles)</span>
-          </button>
-          <button
-            onClick={loadSampleExpired}
-            className="btn btn-secondary btn-sm flex items-center gap-1 text-xs shrink-0"
-            title="Load sample expired token to test expiry indicator"
-          >
-            <Clock size={12} />
-            <span>Expired Sample</span>
           </button>
           <button
             onClick={handleClear}
