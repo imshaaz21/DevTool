@@ -58,18 +58,12 @@ export function getValueType(value: any): string {
 }
 
 /**
- * Unescapes special characters for formatted output so generated JSON remains valid.
+ * Escapes special characters for formatted output so generated JSON remains valid.
+ * Uses JSON.stringify to guarantee standard RFC-8259 escaping without regex word-boundary artifacts.
  */
 export function unescapeString(val: string): string {
   if (!val) return val;
-  return val
-    .replace(/\\/g, '\\\\')
-    .replace(/"/g, '\\"')
-    .replace(/\n/g, '\\n')
-    .replace(/\b/g, '\\b')
-    .replace(/\f/g, '\\f')
-    .replace(/\r/g, '\\r')
-    .replace(/\t/g, '\\t');
+  return JSON.stringify(val).slice(1, -1);
 }
 
 /**
