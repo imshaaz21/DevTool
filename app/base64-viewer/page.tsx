@@ -35,6 +35,7 @@ const SAMPLE_PDF_BASE64 = 'data:application/pdf;base64,JVBERi0xLjQKJeLjz9MKMSAwI
 
 export default function Base64ViewerPage() {
   const { width } = useSidebar();
+  const [mediaType, setMediaType] = useState<'image' | 'pdf'>('image');
   const [base64Input, setBase64Input] = useState<string>('');
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [metadata, setMetadata] = useState<ImageMetadata | null>(null);
@@ -43,29 +44,57 @@ export default function Base64ViewerPage() {
   const [showModal, setShowModal] = useState(false);
   const [isAutoConvert, setIsAutoConvert] = useState(true);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const currentBlobUrlRef = useRef<string | null>(null);
+  const lastProcessedRef = useRef<string>('');
 
-  const handleDecode = useCallback(async (inputBase64?: string) => {
-    let base64 = inputBase64 !== undefined ? inputBase64 : base64Input;
-    base64 = base64.trim();
+  const handleDecode = useCallback(async (inputBase64?: string, targetType?: 'image' | 'pdf') => {
+    const activeType = targetType || mediaType;
+    const raw = inputBase64 !== undefined ? inputBase64 : base64Input;
+    let base64 = raw.trim();
     if (base64.startsWith('"') && base64.endsWith('"')) base64 = base64.slice(1, -1);
     if (!base64.trim()) {
-      setError('Enter Base64 data or upload an image/PDF');
+      setError(activeType === 'pdf' ? 'Enter Base64 data or upload a PDF' : 'Enter Base64 data or upload an image');
       return;
     }
 
+    lastProcessedRef.current = raw;
     setLoading(true);
     setError('');
     try {
-      if (imageUrl && imageUrl.startsWith('blob:')) URL.revokeObjectURL(imageUrl);
-      const mimeType = extractMimeType(base64);
-      if (!mimeType.startsWith('image/') && mimeType !== 'application/pdf') {
-        throw new Error('Data does not appear to be a valid image or PDF');
+      if (currentBlobUrlRef.current && currentBlobUrlRef.current.startsWith('blob:')) {
+        URL.revokeObjectURL(currentBlobUrlRef.current);
+        currentBlobUrlRef.current = null;
       }
+
+      let mimeType: string;
+      if (activeType === 'pdf') {
+        mimeType = 'application/pdf';
+      } else {
+        // Default is ALWAYS image
+        const detected = extractMimeType(base64);
+        mimeType = detected.startsWith('image/') ? detected : 'image/png';
+      }
+
       const normalizedBase64 = normalizeBase64(base64, mimeType);
       const blobUrl = createBlobUrl(normalizedBase64, mimeType);
+      currentBlobUrlRef.current = blobUrl;
       setImageUrl(blobUrl);
-      const fileMetadata = await getImageMetadata(normalizedBase64);
-      setMetadata(fileMetadata);
+
+      if (activeType === 'pdf') {
+        const base64Data = normalizedBase64.includes('base64,')
+          ? normalizedBase64.split('base64,')[1]
+          : normalizedBase64;
+        const sizeInBytes = Math.floor((base64Data.length * 3) / 4);
+        setMetadata({
+          format: 'PDF',
+          mimeType: 'application/pdf',
+          sizeInBytes,
+          isPdf: true,
+        });
+      } else {
+        const fileMetadata = await getImageMetadata(normalizedBase64);
+        setMetadata({ ...fileMetadata, isPdf: false });
+      }
     } catch (err) {
       setError((err as Error).message);
       setImageUrl(null);
@@ -73,14 +102,21 @@ export default function Base64ViewerPage() {
     } finally {
       setLoading(false);
     }
-  }, [base64Input, imageUrl]);
+  }, [base64Input, mediaType]);
 
   useEffect(() => {
     if (!isAutoConvert) return;
+    if (base64Input === lastProcessedRef.current) return;
+
     const timer = setTimeout(() => {
       if (base64Input.trim()) {
         handleDecode(base64Input);
       } else {
+        lastProcessedRef.current = '';
+        if (currentBlobUrlRef.current && currentBlobUrlRef.current.startsWith('blob:')) {
+          URL.revokeObjectURL(currentBlobUrlRef.current);
+          currentBlobUrlRef.current = null;
+        }
         setImageUrl(null);
         setMetadata(null);
         setError('');
@@ -91,27 +127,41 @@ export default function Base64ViewerPage() {
 
   useEffect(() => {
     return () => {
-      if (imageUrl && imageUrl.startsWith('blob:')) {
-        URL.revokeObjectURL(imageUrl);
+      if (currentBlobUrlRef.current && currentBlobUrlRef.current.startsWith('blob:')) {
+        URL.revokeObjectURL(currentBlobUrlRef.current);
       }
     };
-  }, [imageUrl]);
+  }, []);
+
+  const handleMediaTypeChange = (newType: 'image' | 'pdf') => {
+    setMediaType(newType);
+    if (base64Input.trim()) {
+      handleDecode(base64Input, newType);
+    }
+  };
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
-    if (!file.type.startsWith('image/') && file.type !== 'application/pdf') {
+    const isPdf = file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf');
+    if (!file.type.startsWith('image/') && !isPdf) {
       setError('Please select an image or PDF file');
+      if (fileInputRef.current) fileInputRef.current.value = '';
       return;
     }
+    const targetMode: 'image' | 'pdf' = isPdf ? 'pdf' : 'image';
+    setMediaType(targetMode);
+
     const reader = new FileReader();
     reader.onload = (e) => {
       const base64 = e.target?.result as string;
+      if (!base64) return;
       setBase64Input(base64);
-      handleDecode(base64);
-      toast.success(file.type === 'application/pdf' ? 'PDF loaded and converted to Base64' : 'Image loaded and converted to Base64');
+      handleDecode(base64, targetMode);
+      toast.success(isPdf ? 'PDF loaded and converted to Base64' : 'Image loaded and converted to Base64');
     };
     reader.readAsDataURL(file);
+    if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
   const handleDownload = () => {
@@ -125,6 +175,11 @@ export default function Base64ViewerPage() {
   };
 
   const handleClear = () => {
+    if (currentBlobUrlRef.current && currentBlobUrlRef.current.startsWith('blob:')) {
+      URL.revokeObjectURL(currentBlobUrlRef.current);
+      currentBlobUrlRef.current = null;
+    }
+    lastProcessedRef.current = '';
     setBase64Input('');
     setImageUrl(null);
     setMetadata(null);
@@ -132,13 +187,15 @@ export default function Base64ViewerPage() {
   };
 
   const loadSampleImage = () => {
+    setMediaType('image');
     setBase64Input(SAMPLE_IMAGE_BASE64);
-    handleDecode(SAMPLE_IMAGE_BASE64);
+    handleDecode(SAMPLE_IMAGE_BASE64, 'image');
   };
 
   const loadSamplePdf = () => {
+    setMediaType('pdf');
     setBase64Input(SAMPLE_PDF_BASE64);
-    handleDecode(SAMPLE_PDF_BASE64);
+    handleDecode(SAMPLE_PDF_BASE64, 'pdf');
   };
 
   return (
@@ -155,9 +212,39 @@ export default function Base64ViewerPage() {
           description="Decode, render, inspect dimensions, and download Base64 encoded images and PDF documents."
           badge="Media & PDF Decoder"
         >
+          {/* Format Mode: Default is Image, PDF only when explicitly chosen */}
+          <div className="inline-flex rounded-lg border border-neutral-200 dark:border-neutral-800 bg-neutral-100 dark:bg-neutral-900 p-0.5 text-xs shrink-0">
+            <button
+              type="button"
+              onClick={() => handleMediaTypeChange('image')}
+              className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md font-medium transition-all ${
+                mediaType === 'image'
+                  ? 'bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 shadow-sm'
+                  : 'text-neutral-500 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-200'
+              }`}
+              title="Decode as Image (Default)"
+            >
+              <ImageIcon size={13} />
+              <span>Image</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => handleMediaTypeChange('pdf')}
+              className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md font-medium transition-all ${
+                mediaType === 'pdf'
+                  ? 'bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 shadow-sm'
+                  : 'text-neutral-500 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-200'
+              }`}
+              title="Specifically decode as PDF Document"
+            >
+              <FileText size={13} />
+              <span>PDF</span>
+            </button>
+          </div>
+
           <button
             onClick={loadSampleImage}
-            className="btn btn-secondary btn-sm flex items-center gap-1 text-xs"
+            className={`btn btn-secondary btn-sm flex items-center gap-1 text-xs shrink-0 ${mediaType === 'image' ? 'font-medium' : 'opacity-80'}`}
             title="Load sample Base64 image"
           >
             <Sparkles size={12} />
@@ -165,7 +252,7 @@ export default function Base64ViewerPage() {
           </button>
           <button
             onClick={loadSamplePdf}
-            className="btn btn-secondary btn-sm flex items-center gap-1 text-xs"
+            className={`btn btn-secondary btn-sm flex items-center gap-1 text-xs shrink-0 ${mediaType === 'pdf' ? 'font-medium' : 'opacity-80'}`}
             title="Load sample Base64 PDF document"
           >
             <FileText size={12} />
@@ -177,7 +264,7 @@ export default function Base64ViewerPage() {
           />
           <button
             onClick={() => fileInputRef.current?.click()}
-            className="btn btn-secondary btn-sm flex items-center gap-1 text-xs"
+            className="btn btn-secondary btn-sm flex items-center gap-1 text-xs shrink-0"
           >
             <Upload size={13} />
             <span>Upload File</span>
@@ -186,13 +273,13 @@ export default function Base64ViewerPage() {
             type="file"
             ref={fileInputRef}
             onChange={handleFileUpload}
-            accept="image/*,application/pdf"
+            accept={mediaType === 'pdf' ? 'application/pdf' : 'image/*,application/pdf'}
             className="hidden"
           />
           <button
             onClick={() => handleDecode()}
             disabled={loading || !base64Input.trim()}
-            className="btn btn-primary btn-sm"
+            className="btn btn-primary btn-sm min-w-[88px] justify-center shrink-0"
           >
             {loading ? 'Decoding...' : 'Render'}
           </button>
@@ -207,7 +294,7 @@ export default function Base64ViewerPage() {
                 <div className="card p-0 overflow-hidden flex flex-col min-h-[220px]">
                   <div className="px-4 py-2 border-b border-neutral-200 dark:border-neutral-800 bg-neutral-50/50 dark:bg-neutral-900/50 flex items-center justify-between">
                     <span className="text-xs font-medium text-neutral-600 dark:text-neutral-400 font-mono">
-                      Base64 Input (Image or PDF)
+                      {mediaType === 'pdf' ? 'Base64 Input (PDF Document)' : 'Base64 Input (Image - Default)'}
                     </span>
                     <div className="flex items-center gap-2">
                       <span className="text-[11px] font-mono text-neutral-400">
@@ -226,7 +313,11 @@ export default function Base64ViewerPage() {
                   <textarea
                     value={base64Input}
                     onChange={(e) => setBase64Input(e.target.value)}
-                    placeholder="Paste Base64 encoded image or PDF data here (with or without data: URI prefix)..."
+                    placeholder={
+                      mediaType === 'pdf'
+                        ? 'Paste Base64 encoded PDF data here (with or without data: URI prefix)...'
+                        : 'Paste Base64 encoded image data here (PNG, JPEG, WebP, GIF, SVG)...'
+                    }
                     className="flex-1 p-4 bg-transparent border-0 resize-none font-mono text-xs focus:outline-none min-h-[160px] text-neutral-800 dark:text-neutral-200 placeholder:text-neutral-400"
                     spellCheck={false}
                   />
@@ -321,9 +412,15 @@ export default function Base64ViewerPage() {
                     onClick={() => fileInputRef.current?.click()}
                     className="h-72 rounded-xl border border-dashed border-neutral-300 dark:border-neutral-800 flex flex-col items-center justify-center text-neutral-400 gap-2 cursor-pointer hover:bg-neutral-50 dark:hover:bg-neutral-900/40 transition-colors"
                   >
-                    <FileImage size={32} className="text-neutral-300 dark:text-neutral-700" />
+                    {mediaType === 'pdf' ? (
+                      <FileText size={32} className="text-neutral-300 dark:text-neutral-700" />
+                    ) : (
+                      <FileImage size={32} className="text-neutral-300 dark:text-neutral-700" />
+                    )}
                     <p className="text-xs font-medium text-neutral-500">
-                      No file rendered yet. Paste Base64 or click to upload Image / PDF.
+                      {mediaType === 'pdf'
+                        ? 'No PDF rendered yet. Paste Base64 or click to upload PDF.'
+                        : 'No image rendered yet. Paste Base64 or click to upload Image.'}
                     </p>
                   </div>
                 )}
