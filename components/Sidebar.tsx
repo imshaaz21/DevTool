@@ -20,7 +20,8 @@ import {
   Terminal,
   GitCompare,
   Calculator,
-  Code2
+  Code2,
+  KeyRound
 } from 'lucide-react';
 
 export function Sidebar() {
@@ -60,6 +61,7 @@ export function Sidebar() {
     { name: 'Base64 Media / PDF', path: '/base64-viewer', icon: ImageIcon },
     { name: 'UUID Generator', path: '/uuid-generator', icon: Fingerprint },
     { name: 'Encoder / Decoder', path: '/encoder-decoder', icon: Binary },
+    { name: 'JWT Decoder', path: '/jwt-decoder', icon: KeyRound },
     { name: 'Time Zone', path: '/timezone-converter', icon: Globe },
   ];
 

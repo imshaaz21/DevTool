@@ -1,0 +1,291 @@
+/**
+ * JWT Decoder Utilities
+ * Handles parsing, Base64URL decoding, claims inspection, and timestamp analysis.
+ * Pure client-side execution ensures tokens are never transmitted externally.
+ */
+
+export interface JwtClaimInfo {
+  key: string;
+  value: any;
+  description: string;
+  isStandard: boolean;
+  formattedDate?: string;
+  relativeTime?: string;
+  isExpired?: boolean;
+}
+
+export interface DecodedJwtResult {
+  valid: boolean;
+  error?: string;
+  header: Record<string, any> | null;
+  payload: Record<string, any> | null;
+  signature: string;
+  rawHeader: string;
+  rawPayload: string;
+  rawSignature: string;
+  isExpired: boolean | null;
+  expiresInText: string | null;
+  issuedAtText: string | null;
+  notBeforeNotice: string | null;
+  algorithm: string;
+  tokenType: string;
+  hadBearerPrefix: boolean;
+  cleanedToken: string;
+}
+
+/**
+ * Strips optional "Bearer " prefix (case-insensitive) and cleans outer whitespace / quotes.
+ */
+export function cleanJwtToken(input: string): { cleaned: string; hadBearerPrefix: boolean } {
+  let trimmed = input.trim();
+  
+  // Remove wrapping quotes if present
+  if ((trimmed.startsWith('"') && trimmed.endsWith('"')) || (trimmed.startsWith("'") && trimmed.endsWith("'"))) {
+    trimmed = trimmed.slice(1, -1).trim();
+  }
+
+  // Check for Bearer prefix (case-insensitive)
+  const bearerRegex = /^bearer\s+/i;
+  let hadBearerPrefix = false;
+  if (bearerRegex.test(trimmed)) {
+    hadBearerPrefix = true;
+    trimmed = trimmed.replace(bearerRegex, '').trim();
+  }
+
+  return { cleaned: trimmed, hadBearerPrefix };
+}
+
+/**
+ * Decodes a base64url encoded string to UTF-8 text.
+ */
+export function base64UrlDecode(base64Url: string): string {
+  // Replace base64url characters with base64 standard characters
+  let base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+
+  // Pad with '=' so length is a multiple of 4
+  while (base64.length % 4 !== 0) {
+    base64 += '=';
+  }
+
+  // Decode base64 to binary string then to utf-8
+  const binaryString = atob(base64);
+  const bytes = new Uint8Array(binaryString.length);
+  for (let i = 0; i < binaryString.length; i++) {
+    bytes[i] = binaryString.charCodeAt(i);
+  }
+
+  // Use TextDecoder for full Unicode / UTF-8 compatibility
+  return new TextDecoder('utf-8').decode(bytes);
+}
+
+/**
+ * Standard JWT claim descriptions according to RFC 7519.
+ */
+const STANDARD_CLAIMS_MAP: Record<string, string> = {
+  iss: 'Issuer - Identifies the principal that issued the JWT',
+  sub: 'Subject - Identifies the subject of the JWT (e.g. User ID)',
+  aud: 'Audience - Identifies the recipients that the JWT is intended for',
+  exp: 'Expiration Time - Identifies the expiration time on or after which the JWT MUST NOT be accepted',
+  nbf: 'Not Before - Identifies the time before which the JWT MUST NOT be accepted',
+  iat: 'Issued At - Identifies the time at which the JWT was issued',
+  jti: 'JWT ID - Unique identifier for the JWT',
+  name: 'User Full Name',
+  email: 'User Email Address',
+  preferred_username: 'Username',
+  roles: 'User Access Roles',
+  scope: 'Authorized OAuth Scopes',
+};
+
+export function getClaimDescription(key: string): string {
+  return STANDARD_CLAIMS_MAP[key] || 'Custom application claim';
+}
+
+/**
+ * Formats a Unix timestamp (seconds) into human-readable date and time strings.
+ */
+export function formatTimestamp(timestampInSeconds: number): {
+  formatted: string;
+  relative: string;
+  isPast: boolean;
+} {
+  const date = new Date(timestampInSeconds * 1000);
+  const now = new Date();
+  const diffMs = date.getTime() - now.getTime();
+  const isPast = diffMs < 0;
+
+  const absDiffSeconds = Math.floor(Math.abs(diffMs) / 1000);
+  const days = Math.floor(absDiffSeconds / 86400);
+  const hours = Math.floor((absDiffSeconds % 86400) / 3600);
+  const minutes = Math.floor((absDiffSeconds % 3600) / 60);
+  const seconds = absDiffSeconds % 60;
+
+  let relative = '';
+  if (days > 0) {
+    relative = `${days}d ${hours}h ${isPast ? 'ago' : 'remaining'}`;
+  } else if (hours > 0) {
+    relative = `${hours}h ${minutes}m ${isPast ? 'ago' : 'remaining'}`;
+  } else if (minutes > 0) {
+    relative = `${minutes}m ${seconds}s ${isPast ? 'ago' : 'remaining'}`;
+  } else {
+    relative = `${seconds}s ${isPast ? 'ago' : 'remaining'}`;
+  }
+
+  // Format with date, time, and UTC
+  const formatted = `${date.toLocaleString()} (UTC: ${date.toISOString().replace('T', ' ').slice(0, 19)})`;
+
+  return { formatted, relative, isPast };
+}
+
+/**
+ * Decodes and thoroughly analyzes a JWT string.
+ */
+export function decodeJwt(tokenInput: string): DecodedJwtResult {
+  const { cleaned, hadBearerPrefix } = cleanJwtToken(tokenInput);
+
+  if (!cleaned) {
+    return {
+      valid: false,
+      error: 'Empty token input. Enter or paste a JWT token (with or without Bearer prefix).',
+      header: null,
+      payload: null,
+      signature: '',
+      rawHeader: '',
+      rawPayload: '',
+      rawSignature: '',
+      isExpired: null,
+      expiresInText: null,
+      issuedAtText: null,
+      notBeforeNotice: null,
+      algorithm: 'Unknown',
+      tokenType: 'JWT',
+      hadBearerPrefix,
+      cleanedToken: '',
+    };
+  }
+
+  const parts = cleaned.split('.');
+  if (parts.length < 2 || parts.length > 3) {
+    return {
+      valid: false,
+      error: `Invalid JWT format. Expected 3 segments separated by dots (header.payload.signature), but found ${parts.length} segment(s).`,
+      header: null,
+      payload: null,
+      signature: '',
+      rawHeader: parts[0] || '',
+      rawPayload: parts[1] || '',
+      rawSignature: parts[2] || '',
+      isExpired: null,
+      expiresInText: null,
+      issuedAtText: null,
+      notBeforeNotice: null,
+      algorithm: 'Unknown',
+      tokenType: 'JWT',
+      hadBearerPrefix,
+      cleanedToken: cleaned,
+    };
+  }
+
+  const rawHeader = parts[0];
+  const rawPayload = parts[1];
+  const rawSignature = parts[2] || '';
+
+  let header: Record<string, any> | null = null;
+  let payload: Record<string, any> | null = null;
+
+  try {
+    const decodedHeaderStr = base64UrlDecode(rawHeader);
+    header = JSON.parse(decodedHeaderStr);
+  } catch (err) {
+    return {
+      valid: false,
+      error: `Failed to decode JWT Header: ${(err as Error).message}`,
+      header: null,
+      payload: null,
+      signature: rawSignature,
+      rawHeader,
+      rawPayload,
+      rawSignature,
+      isExpired: null,
+      expiresInText: null,
+      issuedAtText: null,
+      notBeforeNotice: null,
+      algorithm: 'Unknown',
+      tokenType: 'JWT',
+      hadBearerPrefix,
+      cleanedToken: cleaned,
+    };
+  }
+
+  try {
+    const decodedPayloadStr = base64UrlDecode(rawPayload);
+    payload = JSON.parse(decodedPayloadStr);
+  } catch (err) {
+    return {
+      valid: false,
+      error: `Failed to decode JWT Payload / Claims: ${(err as Error).message}`,
+      header,
+      payload: null,
+      signature: rawSignature,
+      rawHeader,
+      rawPayload,
+      rawSignature,
+      isExpired: null,
+      expiresInText: null,
+      issuedAtText: null,
+      notBeforeNotice: null,
+      algorithm: header?.alg || 'Unknown',
+      tokenType: header?.typ || 'JWT',
+      hadBearerPrefix,
+      cleanedToken: cleaned,
+    };
+  }
+
+  // Analyze timestamps
+  let isExpired: boolean | null = null;
+  let expiresInText: string | null = null;
+  let issuedAtText: string | null = null;
+  let notBeforeNotice: string | null = null;
+
+  if (payload && typeof payload.exp === 'number') {
+    const { formatted, relative, isPast } = formatTimestamp(payload.exp);
+    isExpired = isPast;
+    expiresInText = isPast ? `Expired ${relative} (${formatted})` : `Active · ${relative} (${formatted})`;
+  }
+
+  if (payload && typeof payload.iat === 'number') {
+    const { formatted, relative } = formatTimestamp(payload.iat);
+    issuedAtText = `${relative} (${formatted})`;
+  }
+
+  if (payload && typeof payload.nbf === 'number') {
+    const { formatted, isPast } = formatTimestamp(payload.nbf);
+    notBeforeNotice = isPast ? `Active since ${formatted}` : `Not valid until ${formatted}`;
+  }
+
+  return {
+    valid: true,
+    header,
+    payload,
+    signature: rawSignature,
+    rawHeader,
+    rawPayload,
+    rawSignature,
+    isExpired,
+    expiresInText,
+    issuedAtText,
+    notBeforeNotice,
+    algorithm: header?.alg || 'None',
+    tokenType: header?.typ || 'JWT',
+    hadBearerPrefix,
+    cleanedToken: cleaned,
+  };
+}
+
+/**
+ * Sample JWTs for instant user demonstration and testing.
+ */
+export const SAMPLE_ACTIVE_JWT = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkFsaSBBbC1TaGFocmFuaSIsImVtYWlsIjoiYWxpLnNoYWhyYW5pQGNzaS5jb20iLCJyb2xlcyI6WyJBRE1JTiIsIkRFVkVMT1BFUiJdLCJpYXQiOjE3NDI1NTUyMDAsImV4cCI6MTk5NDk3MjgwMCwiaXNzIjoiZGV2dG9vbHMuaW50ZXJuYWwifQ.G3K4D8iZkK8u9K9R8ZfH5N6J1M0L4P9O3Q2S1U0W8Y';
+
+export const SAMPLE_BEARER_JWT = `Bearer ${SAMPLE_ACTIVE_JWT}`;
+
+export const SAMPLE_EXPIRED_JWT = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ1c2VyLTk5NDIxIiwibmFtZSI6IlNhcmFoIEhhc3NhbiIsImVtYWlsIjoic2FyYWguaEBjc2kuY29tIiwicm9sZXMiOlsidmlld2VyIl0sImlhdCI6MTY3MjUyODAwMCwiZXhwIjoxNjc1MTIwMDAwLCJpc3MiOiJkZXZ0b29scy5pbnRlcm5hbCJ9.dGVzdC1zaWduYXR1cmUtZm9yLWV4cGlyZWQtdG9rZW4tc2FtcGxl';
