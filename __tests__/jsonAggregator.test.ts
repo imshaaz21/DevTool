@@ -132,6 +132,21 @@ describe('jsonAggregator library', () => {
       expect(packageDetails).toBeDefined();
       expect(packageDetails?.isArrayField).toBe(true);
     });
+
+    it('filters discovered fields to only those containing amount or price when amountOrPriceOnly is true', () => {
+      const filteredFields = discoverFields(sampleInvoiceData, { amountOrPriceOnly: true });
+      expect(filteredFields.length).toBeGreaterThan(0);
+      for (const field of filteredFields) {
+        const matches = /amount|price/i.test(field.key) || /amount|price/i.test(field.simplifiedPath);
+        expect(matches).toBe(true);
+      }
+      // doctorId or payerId should not be included
+      expect(filteredFields.some(f => f.key === 'doctorId')).toBe(false);
+      expect(filteredFields.some(f => f.key === 'payerId')).toBe(false);
+      // companyShareAmount and grossAmount should be included
+      expect(filteredFields.some(f => f.key === 'companyShareAmount')).toBe(true);
+      expect(filteredFields.some(f => f.key === 'grossAmount')).toBe(true);
+    });
   });
 
   describe('aggregateJson with pattern matching', () => {
