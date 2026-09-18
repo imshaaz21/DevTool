@@ -8,25 +8,30 @@ import { useSidebar } from '@/components/SidebarContext';
 import { PageHeader } from '@/components/PageHeader';
 import { AutoToggle } from '@/components/AutoToggle';
 import { CustomSelect } from '@/components/CustomSelect';
-const JsonEditorComponent = dynamic(() => import('@/components/JsonEditorComponent').then(mod => ({ default: mod.JsonEditorComponent })), { ssr: false });
+const JsonEditorComponent = dynamic(
+  () => import('@/components/JsonEditorComponent').then((mod) => ({ default: mod.JsonEditorComponent })),
+  { ssr: false }
+);
 import {
   parseStringifiedJSON,
   formatJSON,
   minifyJSON,
-  FormatterResult
+  FormatterResult,
 } from '@/utils/jsonFormatter';
 import {
   Copy,
   Wand2,
-  Minimize2,
   FileJson,
   Trash2,
   Check,
-  AlertCircle
+  AlertCircle,
+  Sparkles,
 } from 'lucide-react';
 
-type ActionMode = 'parse' | 'format' | 'minify';
+type ActionMode = 'format' | 'parse' | 'minify';
 type EditorMode = 'tree' | 'code' | 'view' | 'form' | 'text';
+
+const SAMPLE_STRINGIFIED_JSON = `{\n  "event": "order_dispatched",\n  "timestamp": 1726650000,\n  "payload": "{\\"orderId\\":\\"ORD-88219\\",\\"customer\\":\\"{\\\\\\"id\\\\\\":\\\\\\"CUST-99\\\\\\",\\\\\\"name\\\\\\":\\\\\\"Khalid Mansoor\\\\\\"}\\",\\"items\\":\\"[{\\\\\\"sku\\\\\\":\\\\\\"SKU-A1\\\\\\",\\\\\\"qty\\\\\\":2},{\\\\\\"sku\\\\\\":\\\\\\"SKU-B4\\\\\\",\\\\\\"qty\\\\\\":1}]\\"}",\n  "meta": "{\\"service\\":\\"warehouse-edge\\",\\"region\\":\\"me-central-1\\"}"\n}`;
 
 export default function JsonFormatterPage() {
   const { width } = useSidebar();
@@ -35,6 +40,8 @@ export default function JsonFormatterPage() {
   const [outputJson, setOutputJson] = useState<any>(null);
   const [error, setError] = useState('');
   const [mode, setMode] = useState<ActionMode>('format');
+  const [unwrapInner, setUnwrapInner] = useState<boolean>(true);
+  const [unwrappedCount, setUnwrappedCount] = useState<number>(0);
   const [iterations, setIterations] = useState<number | undefined>();
   const [indentSize, setIndentSize] = useState(2);
   const [editorMode, setEditorMode] = useState<EditorMode>('code');
@@ -47,23 +54,25 @@ export default function JsonFormatterPage() {
       setOutputJson(null);
       setError('');
       setIterations(undefined);
+      setUnwrappedCount(0);
       return;
     }
 
     setError('');
     setIterations(undefined);
+    setUnwrappedCount(0);
 
     let result: FormatterResult;
 
     switch (mode) {
       case 'parse':
-        result = parseStringifiedJSON(input);
+        result = parseStringifiedJSON(input, unwrapInner, indentSize);
         break;
       case 'format':
-        result = formatJSON(input, indentSize);
+        result = formatJSON(input, indentSize, unwrapInner);
         break;
       case 'minify':
-        result = minifyJSON(input);
+        result = minifyJSON(input, unwrapInner);
         break;
       default:
         result = { success: false, error: 'Unknown mode' };
@@ -80,12 +89,15 @@ export default function JsonFormatterPage() {
       if (result.iterations) {
         setIterations(result.iterations);
       }
+      if (result.unwrappedCount) {
+        setUnwrappedCount(result.unwrappedCount);
+      }
     } else {
       setError(result.error || 'An error occurred');
       setOutput('');
       setOutputJson(null);
     }
-  }, [input, mode, indentSize]);
+  }, [input, mode, indentSize, unwrapInner]);
 
   useEffect(() => {
     if (!isAutoFormat) return;
@@ -93,7 +105,7 @@ export default function JsonFormatterPage() {
       handleAction();
     }, 250);
     return () => clearTimeout(timer);
-  }, [input, mode, isAutoFormat, handleAction]);
+  }, [input, mode, isAutoFormat, unwrapInner, handleAction]);
 
   const handleCopy = async () => {
     try {
@@ -112,14 +124,23 @@ export default function JsonFormatterPage() {
     setOutputJson(null);
     setError('');
     setIterations(undefined);
+    setUnwrappedCount(0);
+  };
+
+  const handleLoadSample = () => {
+    setInput(SAMPLE_STRINGIFIED_JSON);
   };
 
   const getActionButtonText = () => {
     switch (mode) {
-      case 'parse': return 'Unescape & Parse';
-      case 'format': return 'Format JSON';
-      case 'minify': return 'Minify JSON';
-      default: return 'Process';
+      case 'parse':
+        return 'Unescape & Parse';
+      case 'format':
+        return 'Format JSON';
+      case 'minify':
+        return 'Minify JSON';
+      default:
+        return 'Process';
     }
   };
 
@@ -134,13 +155,40 @@ export default function JsonFormatterPage() {
         <PageHeader
           icon={FileJson}
           title="JSON Formatter & Parser"
-          description="Beautify, unescape stringified objects, or minify payloads."
+          description="Beautify, unescape stringified objects, and unpack inner nested JSON."
           badge="JSON 2.0"
         >
-          <AutoToggle
-            enabled={isAutoFormat}
-            onChange={setIsAutoFormat}
-          />
+          {/* Sample Loader */}
+          <button
+            type="button"
+            onClick={handleLoadSample}
+            className="btn-secondary flex items-center gap-1.5 text-xs py-1.5 px-3 rounded-lg border border-neutral-200 dark:border-neutral-700 font-medium"
+            title="Load sample JSON with multiple inner stringified JSON fields"
+          >
+            <Sparkles size={13} className="text-neutral-500 dark:text-neutral-400" />
+            <span>Sample Inner JSON</span>
+          </button>
+
+          {/* Auto Format Toggle */}
+          <AutoToggle enabled={isAutoFormat} onChange={setIsAutoFormat} />
+
+          {/* Unwrap Inner JSON Toggle */}
+          <button
+            type="button"
+            onClick={() => setUnwrapInner(!unwrapInner)}
+            className={`inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border text-xs font-medium transition-colors ${
+              unwrapInner
+                ? 'bg-neutral-900 text-white dark:bg-white dark:text-neutral-950 border-neutral-900 dark:border-white shadow-xs font-semibold'
+                : 'bg-white dark:bg-neutral-900 text-neutral-600 dark:text-neutral-400 border-neutral-200 dark:border-neutral-800 hover:bg-neutral-100 dark:hover:bg-neutral-800'
+            }`}
+            title="Recursively unpack and format nested stringified JSON fields inside objects and arrays"
+          >
+            <Wand2
+              size={13}
+              className={unwrapInner ? 'text-amber-400 dark:text-amber-600' : 'text-neutral-400'}
+            />
+            <span>Unwrap Inner JSON</span>
+          </button>
 
           {/* Mode Switcher */}
           <div className="flex p-0.5 rounded-lg border border-neutral-200 dark:border-neutral-800 bg-neutral-100 dark:bg-neutral-900">
@@ -216,7 +264,7 @@ export default function JsonFormatterPage() {
               <textarea
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
-                placeholder="Paste or type raw, minified, or stringified JSON here..."
+                placeholder="Paste or type raw, minified, or stringified JSON here (including fields with inner stringified JSON)..."
                 className="flex-1 w-full p-4 bg-transparent text-neutral-900 dark:text-neutral-100 font-mono text-xs leading-relaxed focus:outline-none resize-none placeholder:text-neutral-400 dark:placeholder:text-neutral-600"
                 spellCheck={false}
               />
@@ -229,8 +277,16 @@ export default function JsonFormatterPage() {
                   <span className="text-xs font-medium text-neutral-600 dark:text-neutral-400 font-mono">
                     Formatted Result
                   </span>
-                  {iterations && (
-                    <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800">
+                  {unwrappedCount > 0 && (
+                    <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800/80 flex items-center gap-1">
+                      <Check size={11} className="text-emerald-500" />
+                      <span>
+                        {unwrappedCount} inner JSON{unwrappedCount === 1 ? '' : 's'} unpacked
+                      </span>
+                    </span>
+                  )}
+                  {iterations && iterations > 1 && (
+                    <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 border border-neutral-200 dark:border-neutral-700">
                       {iterations}x unescaped
                     </span>
                   )}
@@ -246,7 +302,7 @@ export default function JsonFormatterPage() {
                           { label: 'Code', value: 'code' },
                           { label: 'Tree', value: 'tree' },
                           { label: 'View', value: 'view' },
-                          { label: 'Form', value: 'form' }
+                          { label: 'Form', value: 'form' },
                         ]}
                       />
                     </div>
@@ -267,7 +323,7 @@ export default function JsonFormatterPage() {
                   <div className="h-full p-1">
                     <JsonEditorComponent
                       json={outputJson}
-                      onChange={() => { }}
+                      onChange={() => {}}
                       mode={mode === 'format' ? editorMode : 'code'}
                       height="100%"
                       readOnly={true}
@@ -280,7 +336,9 @@ export default function JsonFormatterPage() {
                 ) : (
                   <div className="absolute inset-0 flex flex-col items-center justify-center text-neutral-400 gap-2 p-4">
                     <FileJson size={32} className="text-neutral-300 dark:text-neutral-700" />
-                    <span className="text-xs text-neutral-400">Waiting for valid JSON input...</span>
+                    <span className="text-xs text-neutral-400">
+                      Waiting for valid JSON input...
+                    </span>
                   </div>
                 )}
               </div>
