@@ -1,5 +1,21 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24">
-  <rect width="24" height="24" fill="#2563eb" rx="4" />
-  <path d="M7 14.5l3-3-3-3" stroke="white" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" />
-  <path d="M17 14.5l-3-3 3-3" stroke="white" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" />
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32">
+  <style>
+    @media (prefers-color-scheme: light) {
+      .bg { fill: #09090b; }
+      .border { stroke: #27272a; }
+      .prompt { stroke: #ffffff; }
+      .cursor { stroke: #10b981; }
+    }
+    @media (prefers-color-scheme: dark) {
+      .bg { fill: #09090b; }
+      .border { stroke: #3f3f46; }
+      .prompt { stroke: #f4f4f5; }
+      .cursor { stroke: #10b981; }
+    }
+  </style>
+  <rect class="bg" width="32" height="32" rx="8" fill="#09090b" />
+  <rect class="border" x="0.5" y="0.5" width="31" height="31" rx="7.5" fill="none" stroke="#27272a" stroke-width="1" />
+  <!-- Terminal Prompt '> _' matching DevTools brand -->
+  <polyline class="prompt" points="7 22 15 16 7 10" fill="none" stroke="#ffffff" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round" />
+  <line class="cursor" x1="18" y1="22" x2="25" y2="22" stroke="#10b981" stroke-width="2.75" stroke-linecap="round" />
 </svg>

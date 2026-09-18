@@ -8,7 +8,10 @@ export const metadata = {
   title: 'DevTools Suite',
   description: 'Internal company tool with multiple developer utilities',
   icons: {
-    icon: '/favicon.svg',
+    icon: [
+      { url: '/favicon.svg', type: 'image/svg+xml' },
+      { url: '/favicon.ico', sizes: 'any' },
+    ],
   },
 };
 
