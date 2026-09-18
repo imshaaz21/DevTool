@@ -77,13 +77,9 @@ const SAMPLE_RIGHT = {
 export default function JsonDiffV2Page() {
   const { isCollapsed } = useSidebar();
 
-  // Raw text inputs
-  const [leftInput, setLeftInput] = useState<string>(
-    JSON.stringify(SAMPLE_LEFT, null, 2)
-  );
-  const [rightInput, setRightInput] = useState<string>(
-    JSON.stringify(SAMPLE_RIGHT, null, 2)
-  );
+  // Raw text inputs (starts empty, no dummy data loaded by default)
+  const [leftInput, setLeftInput] = useState<string>('');
+  const [rightInput, setRightInput] = useState<string>('');
 
   // Parse errors
   const [leftError, setLeftError] = useState<string | null>(null);
@@ -94,7 +90,7 @@ export default function JsonDiffV2Page() {
 
   // Comparison State
   const [diffSummary, setDiffSummary] = useState<DiffSummary | null>(null);
-  const [isDiffActive, setIsDiffActive] = useState<boolean>(true);
+  const [isDiffActive, setIsDiffActive] = useState<boolean>(false);
   const [currentDiffIndex, setCurrentDiffIndex] = useState<number>(0);
 
   // Filter toggles
@@ -120,20 +116,30 @@ export default function JsonDiffV2Page() {
     let parsedRight: any;
     let hasError = false;
 
-    try {
-      parsedLeft = JSON.parse(leftInput);
-      setLeftError(null);
-    } catch (e: any) {
-      setLeftError(e.message);
+    if (!leftInput.trim()) {
+      setLeftError('Please enter valid JSON for the left document.');
       hasError = true;
+    } else {
+      try {
+        parsedLeft = JSON.parse(leftInput);
+        setLeftError(null);
+      } catch (e: any) {
+        setLeftError(e.message);
+        hasError = true;
+      }
     }
 
-    try {
-      parsedRight = JSON.parse(rightInput);
-      setRightError(null);
-    } catch (e: any) {
-      setRightError(e.message);
+    if (!rightInput.trim()) {
+      setRightError('Please enter valid JSON for the right document.');
       hasError = true;
+    } else {
+      try {
+        parsedRight = JSON.parse(rightInput);
+        setRightError(null);
+      } catch (e: any) {
+        setRightError(e.message);
+        hasError = true;
+      }
     }
 
     if (hasError) return;
@@ -143,18 +149,6 @@ export default function JsonDiffV2Page() {
     setIsDiffActive(true);
     setCurrentDiffIndex(0);
   };
-
-  // Initial computation on mount with sample data
-  useEffect(() => {
-    try {
-      const l = JSON.parse(leftInput);
-      const r = JSON.parse(rightInput);
-      const result = computeSemanticDiff(l, r, indentSize);
-      setDiffSummary(result);
-    } catch (e) {
-      // ignore on initial load
-    }
-  }, []);
 
   // Filtered diffs
   const visibleDiffs = useMemo(() => {
