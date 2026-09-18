@@ -138,6 +138,7 @@ export default function JsonPathAggregatorPage() {
   const [caseSensitive, setCaseSensitive] = useState(false);
   const [parseNumericStrings, setParseNumericStrings] = useState(true);
   const [partialKeyMatch, setPartialKeyMatch] = useState(true);
+  const [amountOrPriceOnly, setAmountOrPriceOnly] = useState(true);
 
   // View & UI state
   const [activeView, setActiveView] = useState<ViewMode>('table');
@@ -167,15 +168,15 @@ export default function JsonPathAggregatorPage() {
     }
   }, [rawInput, parsedJson]);
 
-  // Discover all fields for suggestions
+  // Discover fields for suggestions (filtered by amount/price by default)
   const discoveredFields = useMemo(() => {
     if (!parsedJson) return [];
     try {
-      return discoverFields(parsedJson);
+      return discoverFields(parsedJson, { amountOrPriceOnly });
     } catch {
       return [];
     }
-  }, [parsedJson]);
+  }, [parsedJson, amountOrPriceOnly]);
 
   // Aggregation results
   const aggregationResult = useMemo(() => {
@@ -468,30 +469,71 @@ export default function JsonPathAggregatorPage() {
               </div>
 
               {/* Detected Fields Pill Bar (Clickable Shortcuts) */}
-              {discoveredFields.length > 0 && (
-                <div className="rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-[#0e0e11] p-3.5 shadow-sm space-y-2.5">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs font-semibold uppercase tracking-wider text-neutral-600 dark:text-neutral-400 flex items-center gap-1">
-                        <Layers size={13} />
-                        Auto-Detected Fields ({discoveredFields.length})
-                      </span>
-                      <span className="text-[11px] text-neutral-400">Click any field to calculate</span>
-                    </div>
+              <div className="rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-[#0e0e11] p-3.5 shadow-sm space-y-2.5">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-semibold uppercase tracking-wider text-neutral-600 dark:text-neutral-400 flex items-center gap-1">
+                      <Layers size={13} />
+                      Auto-Detected Fields ({discoveredFields.length})
+                    </span>
 
-                    {discoveredFields.length > 8 && (
-                      <div className="relative w-36">
-                        <input
-                          type="text"
-                          value={fieldFilter}
-                          onChange={(e) => setFieldFilter(e.target.value)}
-                          placeholder="Filter fields..."
-                          className="w-full text-[11px] py-1 px-2 rounded-md border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-900 text-neutral-800 dark:text-neutral-200 focus:outline-none"
-                        />
-                      </div>
-                    )}
+                    {/* Amount / Price Filter Pill Toggle */}
+                    <button
+                      type="button"
+                      onClick={() => setAmountOrPriceOnly(!amountOrPriceOnly)}
+                      className={`text-[11px] font-medium px-2 py-0.5 rounded-md border transition-all flex items-center gap-1 ${
+                        amountOrPriceOnly
+                          ? 'bg-emerald-50 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 border-emerald-300 dark:border-emerald-800'
+                          : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 border-neutral-200 dark:border-neutral-700'
+                      }`}
+                      title={
+                        amountOrPriceOnly
+                          ? "Only showing keys matching 'amount' or 'price'. Click to show all fields."
+                          : 'Showing all fields. Click to filter to amount/price only.'
+                      }
+                    >
+                      <span>Amount / Price only</span>
+                      <span
+                        className={`text-[10px] font-bold ${
+                          amountOrPriceOnly ? 'text-emerald-600 dark:text-emerald-400' : 'text-neutral-400'
+                        }`}
+                      >
+                        {amountOrPriceOnly ? 'ON' : 'OFF'}
+                      </span>
+                    </button>
                   </div>
 
+                  {discoveredFields.length > 6 && (
+                    <div className="relative w-36">
+                      <input
+                        type="text"
+                        value={fieldFilter}
+                        onChange={(e) => setFieldFilter(e.target.value)}
+                        placeholder="Filter fields..."
+                        className="w-full text-[11px] py-1 px-2 rounded-md border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-900 text-neutral-800 dark:text-neutral-200 focus:outline-none"
+                      />
+                    </div>
+                  )}
+                </div>
+
+                {discoveredFields.length === 0 ? (
+                  <div className="text-[11px] text-neutral-400 py-1">
+                    {amountOrPriceOnly ? (
+                      <span>
+                        No fields with &ldquo;amount&rdquo; or &ldquo;price&rdquo; in key name found.{' '}
+                        <button
+                          type="button"
+                          onClick={() => setAmountOrPriceOnly(false)}
+                          className="text-neutral-700 dark:text-neutral-300 underline hover:text-neutral-900"
+                        >
+                          Show all fields
+                        </button>
+                      </span>
+                    ) : (
+                      <span>No fields detected. Paste JSON on the left to discover fields.</span>
+                    )}
+                  </div>
+                ) : (
                   <div className="flex flex-wrap gap-1.5 max-h-36 overflow-y-auto pr-1">
                     {filteredDiscoveredFields.slice(0, 30).map((field) => {
                       const isSelected = patternQuery === field.simplifiedPath || patternQuery === field.key;
@@ -527,8 +569,8 @@ export default function JsonPathAggregatorPage() {
                       );
                     })}
                   </div>
-                </div>
-              )}
+                )}
+              </div>
 
               {/* Aggregation Metrics Cards */}
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">

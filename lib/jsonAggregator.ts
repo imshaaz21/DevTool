@@ -172,10 +172,22 @@ export function indexJsonTree(root: unknown): IndexedNode[] {
   return nodes;
 }
 
+export interface DiscoverFieldsOptions {
+  amountOrPriceOnly?: boolean;
+}
+
+/**
+ * Checks if a key or path contains "amount" or "price" (case-insensitive).
+ */
+export function isAmountOrPriceKey(key: string, path?: string): boolean {
+  return /amount|price/i.test(key) || (path ? /amount|price/i.test(path) : false);
+}
+
 /**
  * Discovers all unique fields in a JSON structure and compiles summary statistics.
  */
-export function discoverFields(root: unknown): DiscoveredField[] {
+export function discoverFields(root: unknown, options: DiscoverFieldsOptions = {}): DiscoveredField[] {
+  const { amountOrPriceOnly = false } = options;
   const nodes = indexJsonTree(root);
   const map = new Map<string, {
     simplifiedPath: string;
@@ -226,6 +238,10 @@ export function discoverFields(root: unknown): DiscoveredField[] {
 
   const result: DiscoveredField[] = [];
   map.forEach((item) => {
+    if (amountOrPriceOnly && !isAmountOrPriceKey(item.key, item.simplifiedPath)) {
+      return;
+    }
+
     let finalType: DiscoveredField['type'] = 'string';
     if (item.types.has('number') && item.types.size === 1) {
       finalType = 'number';
