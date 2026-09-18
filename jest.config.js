@@ -24,6 +24,7 @@ const customJestConfig = {
         '!**/jest.config.js',
     ],
     testPathIgnorePatterns: ['<rootDir>/node_modules/', '<rootDir>/.next/'],
+    modulePathIgnorePatterns: ['<rootDir>/.next/'],
     transformIgnorePatterns: [
         '/node_modules/',
         '^.+\\.module\\.(css|sass|scss)$',
