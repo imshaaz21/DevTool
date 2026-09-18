@@ -5,7 +5,10 @@ import {
   SAMPLE_ACTIVE_JWT,
   SAMPLE_BEARER_JWT,
   SAMPLE_EXPIRED_JWT,
+  SAMPLE_KEYCLOAK_JWT,
   isTimestampClaim,
+  isKeycloakRealmAccess,
+  isKeycloakResourceAccess,
 } from '@/lib/jwtDecoder';
 
 describe('jwtDecoder utility', () => {
@@ -88,6 +91,14 @@ describe('jwtDecoder utility', () => {
       expect(res.valid).toBe(true);
       expect(res.expiresInText).toContain('Asia/Kolkata');
     });
+
+    it('decodes Keycloak token with realm_access, resource_access and roles', () => {
+      const res = decodeJwt(SAMPLE_KEYCLOAK_JWT);
+      expect(res.valid).toBe(true);
+      expect(res.payload?.realm_access?.roles).toContain('hhc doctor');
+      expect(res.payload?.resource_access?.app?.roles).toContain('browser-inspector');
+      expect(res.notBeforeNotice).toContain('Immediately valid');
+    });
   });
 
   describe('isTimestampClaim', () => {
@@ -95,8 +106,24 @@ describe('jwtDecoder utility', () => {
       expect(isTimestampClaim('exp', 1994972800)).toBe(true);
       expect(isTimestampClaim('iat', 1742555200)).toBe(true);
       expect(isTimestampClaim('nbf', 1742555200)).toBe(true);
+      expect(isTimestampClaim('nbf', 0)).toBe(false);
       expect(isTimestampClaim('sub', '12345')).toBe(false);
       expect(isTimestampClaim('roles', ['admin'])).toBe(false);
+    });
+  });
+
+  describe('Keycloak helpers', () => {
+    it('correctly identifies realm_access and resource_access claims', () => {
+      const realmAccess = { roles: ['Doctor', 'Nurse'] };
+      const resourceAccess = { app: { roles: ['editor'] } };
+
+      expect(isKeycloakRealmAccess('realm_access', realmAccess)).toBe(true);
+      expect(isKeycloakRealmAccess('other', realmAccess)).toBe(false);
+      expect(isKeycloakRealmAccess('realm_access', 'invalid')).toBe(false);
+
+      expect(isKeycloakResourceAccess('resource_access', resourceAccess)).toBe(true);
+      expect(isKeycloakResourceAccess('other', resourceAccess)).toBe(false);
+      expect(isKeycloakResourceAccess('resource_access', ['array'])).toBe(false);
     });
   });
 });

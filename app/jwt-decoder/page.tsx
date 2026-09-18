@@ -10,9 +10,12 @@ import {
   getClaimDescription,
   isTimestampClaim,
   formatTimestamp,
+  isKeycloakRealmAccess,
+  isKeycloakResourceAccess,
   SAMPLE_ACTIVE_JWT,
   SAMPLE_BEARER_JWT,
   SAMPLE_EXPIRED_JWT,
+  SAMPLE_KEYCLOAK_JWT,
   DecodedJwtResult,
 } from '@/lib/jwtDecoder';
 import {
@@ -28,6 +31,7 @@ import {
   Info,
   Layers,
   Code2,
+  ShieldCheck,
 } from 'lucide-react';
 
 export default function JwtDecoderPage() {
@@ -76,6 +80,10 @@ export default function JwtDecoderPage() {
     setTokenInput(SAMPLE_EXPIRED_JWT);
   };
 
+  const loadSampleKeycloak = () => {
+    setTokenInput(SAMPLE_KEYCLOAK_JWT);
+  };
+
   return (
     <div className="flex h-screen overflow-hidden bg-[#fafafa] dark:bg-[#09090b]">
       <Sidebar />
@@ -106,6 +114,14 @@ export default function JwtDecoderPage() {
           >
             <Sparkles size={12} />
             <span>Sample (Raw JWT)</span>
+          </button>
+          <button
+            onClick={loadSampleKeycloak}
+            className="btn btn-secondary btn-sm flex items-center gap-1 text-xs shrink-0 text-purple-700 dark:text-purple-300"
+            title="Load sample Keycloak token with realm_access and resource_access roles"
+          >
+            <ShieldCheck size={12} />
+            <span>Sample (Keycloak Roles)</span>
           </button>
           <button
             onClick={loadSampleExpired}
@@ -388,42 +404,91 @@ export default function JwtDecoderPage() {
                           )}
                         </div>
 
-                        <div className="space-y-2 text-xs">
+                        <div className="space-y-3 text-xs">
                           {Object.entries(result.payload).map(([key, val]) => {
                             const isTs = isTimestampClaim(key, val);
                             const tsInfo = isTs ? formatTimestamp(val, browserTz) : null;
+                            const isRealm = isKeycloakRealmAccess(key, val);
+                            const isResource = isKeycloakResourceAccess(key, val);
+                            const isArrayVal = Array.isArray(val);
+                            const isObjectVal = typeof val === 'object' && val !== null && !isArrayVal;
+                            const isZeroNbf = key === 'nbf' && val === 0;
 
                             return (
                               <div
                                 key={key}
-                                className="py-2 border-b border-neutral-100 dark:border-neutral-800/60 last:border-0 space-y-1.5"
+                                className="py-2.5 border-b border-neutral-100 dark:border-neutral-800/60 last:border-0 space-y-2"
                               >
-                                <div className="flex items-center justify-between gap-2">
-                                  <div className="flex items-center gap-2 min-w-0">
-                                    <span className="font-mono font-semibold text-purple-600 dark:text-purple-400">
+                                <div className="flex items-start sm:items-center justify-between gap-2 flex-wrap">
+                                  <div className="flex items-center gap-2 min-w-0 flex-wrap">
+                                    <span className="font-mono font-semibold text-purple-600 dark:text-purple-400 text-xs">
                                       {key}
                                     </span>
-                                    <span className="text-[11px] text-neutral-400 truncate">
+                                    <span className="text-[11px] text-neutral-400">
                                       ({getClaimDescription(key)})
                                     </span>
                                   </div>
-                                  <div className="flex items-center gap-2 shrink-0">
-                                    {!isTs && (
-                                      <span className="font-mono text-neutral-800 dark:text-neutral-200 font-medium text-xs">
-                                        {typeof val === 'object' ? JSON.stringify(val) : String(val)}
+                                  <div className="flex items-center gap-2 shrink-0 ml-auto">
+                                    {!isTs && !isRealm && !isResource && !isArrayVal && !isObjectVal && !isZeroNbf && (
+                                      typeof val === 'boolean' ? (
+                                        <span
+                                          className={`px-2 py-0.5 rounded text-[10px] font-mono font-semibold ${
+                                            val
+                                              ? 'bg-emerald-100 dark:bg-emerald-950/80 text-emerald-700 dark:text-emerald-300'
+                                              : 'bg-neutral-200 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400'
+                                          }`}
+                                        >
+                                          {String(val)}
+                                        </span>
+                                      ) : (
+                                        <span className="font-mono text-neutral-800 dark:text-neutral-200 font-medium text-xs break-all max-w-[260px] sm:max-w-md text-right">
+                                          {String(val)}
+                                        </span>
+                                      )
+                                    )}
+
+                                    {isZeroNbf && (
+                                      <span className="px-2 py-0.5 rounded text-[10px] font-mono font-medium bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/50">
+                                        Immediately valid (0)
                                       </span>
                                     )}
+
                                     {isTs && (
                                       <span className="font-mono text-neutral-400 text-[11px]">
                                         Unix: {val}
                                       </span>
                                     )}
+
+                                    {isRealm && (
+                                      <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-purple-50 dark:bg-purple-950/60 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-800/50 font-medium">
+                                        {val.roles.length} {val.roles.length === 1 ? 'role' : 'roles'}
+                                      </span>
+                                    )}
+
+                                    {isResource && (
+                                      <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-cyan-50 dark:bg-cyan-950/60 text-cyan-700 dark:text-cyan-300 border border-cyan-200 dark:border-cyan-800/50 font-medium">
+                                        {Object.keys(val).length} {Object.keys(val).length === 1 ? 'client' : 'clients'}
+                                      </span>
+                                    )}
+
+                                    {isArrayVal && (
+                                      <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-300 border border-neutral-200 dark:border-neutral-700/60 font-medium">
+                                        {val.length} {val.length === 1 ? 'item' : 'items'}
+                                      </span>
+                                    )}
+
                                     <button
-                                      onClick={() => handleCopy(typeof val === 'object' ? JSON.stringify(val) : String(val), `claim_${key}`, key)}
-                                      className="text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 p-0.5"
+                                      onClick={() =>
+                                        handleCopy(
+                                          typeof val === 'object' ? JSON.stringify(val, null, 2) : String(val),
+                                          `claim_${key}`,
+                                          key
+                                        )
+                                      }
+                                      className="text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 p-1 rounded hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
                                       title={`Copy ${key}`}
                                     >
-                                      {copiedKey === `claim_${key}` ? <Check size={11} /> : <Copy size={11} />}
+                                      {copiedKey === `claim_${key}` ? <Check size={12} /> : <Copy size={12} />}
                                     </button>
                                   </div>
                                 </div>
@@ -456,6 +521,92 @@ export default function JwtDecoderPage() {
                                         {tsInfo.relative}
                                       </span>
                                     </div>
+                                  </div>
+                                )}
+
+                                {/* Keycloak Realm Roles Breakdown */}
+                                {isRealm && (
+                                  <div className="bg-purple-50/40 dark:bg-purple-950/20 p-3 rounded-lg border border-purple-200/60 dark:border-purple-900/40 space-y-2">
+                                    <div className="flex items-center gap-1.5 text-xs font-semibold text-purple-700 dark:text-purple-300">
+                                      <ShieldCheck size={13} className="text-purple-600 dark:text-purple-400 shrink-0" />
+                                      <span>Realm Roles ({val.roles.length})</span>
+                                    </div>
+                                    <div className="flex flex-wrap gap-1.5">
+                                      {val.roles.map((role: string) => (
+                                        <span
+                                          key={role}
+                                          className="px-2.5 py-1 rounded-md text-[11px] font-mono bg-white dark:bg-neutral-900 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-800/60 shadow-xs max-w-full break-all"
+                                        >
+                                          {role}
+                                        </span>
+                                      ))}
+                                    </div>
+                                  </div>
+                                )}
+
+                                {/* Keycloak Resource Access Breakdown */}
+                                {isResource && (
+                                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-0.5">
+                                    {Object.entries(val).map(([clientName, clientData]: [string, any]) => {
+                                      const clientRoles: string[] = Array.isArray(clientData?.roles) ? clientData.roles : [];
+                                      return (
+                                        <div
+                                          key={clientName}
+                                          className="bg-cyan-50/30 dark:bg-cyan-950/20 p-2.5 rounded-lg border border-cyan-200/60 dark:border-cyan-900/40 space-y-1.5"
+                                        >
+                                          <div className="flex items-center justify-between gap-1 text-xs">
+                                            <span className="font-mono font-semibold text-cyan-800 dark:text-cyan-300 flex items-center gap-1.5 truncate">
+                                              <span className="w-1.5 h-1.5 rounded-full bg-cyan-500 shrink-0" />
+                                              {clientName}
+                                            </span>
+                                            <span className="text-[10px] text-cyan-600 dark:text-cyan-400 font-mono shrink-0">
+                                              {clientRoles.length} {clientRoles.length === 1 ? 'role' : 'roles'}
+                                            </span>
+                                          </div>
+                                          {clientRoles.length > 0 ? (
+                                            <div className="flex flex-wrap gap-1.5">
+                                              {clientRoles.map((r: string) => (
+                                                <span
+                                                  key={r}
+                                                  className="px-2 py-0.5 rounded text-[11px] font-mono bg-white dark:bg-neutral-900 text-cyan-800 dark:text-cyan-200 border border-cyan-200 dark:border-cyan-800/50 max-w-full break-all"
+                                                >
+                                                  {r}
+                                                </span>
+                                              ))}
+                                            </div>
+                                          ) : (
+                                            <span className="text-[11px] text-neutral-400 italic">No roles configured</span>
+                                          )}
+                                        </div>
+                                      );
+                                    })}
+                                  </div>
+                                )}
+
+                                {/* Generic Array Claim (e.g. roles, aud, allowed-origins) */}
+                                {isArrayVal && (
+                                  <div className="flex flex-wrap gap-1.5 pt-0.5">
+                                    {val.map((item: any, idx: number) => (
+                                      <span
+                                        key={idx}
+                                        className={`px-2.5 py-1 rounded-md text-[11px] font-mono border max-w-full break-all ${
+                                          key === 'roles'
+                                            ? 'bg-purple-50/80 dark:bg-purple-950/40 text-purple-700 dark:text-purple-300 border-purple-200 dark:border-purple-800/50 font-semibold'
+                                            : 'bg-neutral-100 dark:bg-neutral-800/80 text-neutral-800 dark:text-neutral-200 border-neutral-200 dark:border-neutral-700/60'
+                                        }`}
+                                      >
+                                        {typeof item === 'object' ? JSON.stringify(item) : String(item)}
+                                      </span>
+                                    ))}
+                                  </div>
+                                )}
+
+                                {/* Generic Object Claim (other than realm_access and resource_access) */}
+                                {isObjectVal && !isRealm && !isResource && (
+                                  <div className="bg-neutral-50 dark:bg-neutral-900/60 p-2.5 rounded-lg border border-neutral-200/60 dark:border-neutral-800 overflow-x-auto max-w-full">
+                                    <pre className="text-[11px] font-mono text-neutral-800 dark:text-neutral-200 whitespace-pre-wrap break-all">
+                                      {JSON.stringify(val, null, 2)}
+                                    </pre>
                                   </div>
                                 )}
                               </div>

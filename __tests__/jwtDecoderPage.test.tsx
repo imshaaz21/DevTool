@@ -94,4 +94,20 @@ describe('JwtDecoderPage', () => {
     fireEvent.click(copyPayloadBtn);
     expect(navigator.clipboard.writeText).toHaveBeenCalled();
   });
+
+  it('renders Keycloak realm roles and resource access when loading Keycloak sample', () => {
+    render(
+      <SidebarProvider>
+        <JwtDecoderPage />
+      </SidebarProvider>
+    );
+
+    const keycloakBtn = screen.getByTitle(/Load sample Keycloak token with realm_access and resource_access roles/i);
+    fireEvent.click(keycloakBtn);
+
+    expect(screen.getByText(/Realm Roles \(12\)/i)).toBeInTheDocument();
+    expect(screen.getByText('hhc doctor')).toBeInTheDocument();
+    expect(screen.getByText('Lab Administrator')).toBeInTheDocument();
+    expect(screen.getByText('browser-inspector')).toBeInTheDocument();
+  });
 });
