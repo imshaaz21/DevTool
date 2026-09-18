@@ -79,21 +79,33 @@ export function base64UrlDecode(base64Url: string): string {
 }
 
 /**
- * Standard JWT claim descriptions according to RFC 7519.
+ * Standard JWT claim descriptions according to RFC 7519, OpenID Connect & Keycloak.
  */
 const STANDARD_CLAIMS_MAP: Record<string, string> = {
   iss: 'Issuer - Identifies the principal that issued the JWT',
   sub: 'Subject - Identifies the subject of the JWT (e.g. User ID)',
   aud: 'Audience - Identifies the recipients that the JWT is intended for',
-  exp: 'Expiration Time - Identifies the expiration time on or after which the JWT MUST NOT be accepted',
-  nbf: 'Not Before - Identifies the time before which the JWT MUST NOT be accepted',
-  iat: 'Issued At - Identifies the time at which the JWT was issued',
+  exp: 'Expiration Time - Identifies when the token expires',
+  nbf: 'Not Before - Identifies the time before which the token must not be accepted',
+  iat: 'Issued At - Identifies when the token was issued',
   jti: 'JWT ID - Unique identifier for the JWT',
-  name: 'User Full Name',
-  email: 'User Email Address',
-  preferred_username: 'Username',
+  typ: 'Token Type (e.g. Bearer)',
+  azp: 'Authorized Party - Client ID that requested the token',
+  nonce: 'Client Nonce - Mitigates replay attacks',
+  auth_time: 'Authentication Time - When user originally authenticated',
+  session_state: 'Session State - Identifier for Single Sign-Out',
+  acr: 'Authentication Context Class Reference',
+  'allowed-origins': 'Allowed Origins - CORS allowed origins for the client',
+  realm_access: 'Keycloak Realm Roles - Realm-wide roles assigned to the user',
+  resource_access: 'Keycloak Client Roles - Client/resource-specific roles',
+  scope: 'OAuth Scopes - Authorized permissions and profile scopes',
   roles: 'User Access Roles',
-  scope: 'Authorized OAuth Scopes',
+  email_verified: 'Email Verified - Verification status of email address',
+  name: 'User Full Name',
+  preferred_username: 'Username',
+  given_name: 'Given / First Name',
+  family_name: 'Family / Last Name',
+  email: 'User Email Address',
 };
 
 export function getClaimDescription(key: string): string {
@@ -104,12 +116,26 @@ export function getClaimDescription(key: string): string {
  * Checks if a JWT claim is a Unix timestamp in seconds.
  */
 export function isTimestampClaim(key: string, value: any): boolean {
-  if (typeof value !== 'number') return false;
+  if (typeof value !== 'number' || value <= 0) return false;
   if (key === 'exp' || key === 'iat' || key === 'nbf' || key === 'auth_time' || key === 'updated_at') {
     return true;
   }
   // Check if value looks like a valid Unix timestamp in seconds (between year 2000 and 2100)
   return value > 946684800 && value < 4102444800;
+}
+
+/**
+ * Checks if claim represents Keycloak realm_access with a roles list.
+ */
+export function isKeycloakRealmAccess(key: string, val: any): boolean {
+  return key === 'realm_access' && typeof val === 'object' && val !== null && Array.isArray(val.roles);
+}
+
+/**
+ * Checks if claim represents Keycloak resource_access with client-specific roles.
+ */
+export function isKeycloakResourceAccess(key: string, val: any): boolean {
+  return key === 'resource_access' && typeof val === 'object' && val !== null && !Array.isArray(val);
 }
 
 /**
@@ -322,8 +348,12 @@ export function decodeJwt(tokenInput: string, userTimeZone?: string): DecodedJwt
   }
 
   if (payload && typeof payload.nbf === 'number') {
-    const { formatted, isPast, timeZone: tz } = formatTimestamp(payload.nbf, resolvedTimeZone);
-    notBeforeNotice = isPast ? `Active since ${formatted} (${tz})` : `Not valid until ${formatted} (${tz})`;
+    if (payload.nbf === 0) {
+      notBeforeNotice = 'Immediately valid (no delay)';
+    } else {
+      const { formatted, isPast, timeZone: tz } = formatTimestamp(payload.nbf, resolvedTimeZone);
+      notBeforeNotice = isPast ? `Active since ${formatted} (${tz})` : `Not valid until ${formatted} (${tz})`;
+    }
   }
 
   return {
@@ -353,3 +383,6 @@ export const SAMPLE_ACTIVE_JWT = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiO
 export const SAMPLE_BEARER_JWT = `Bearer ${SAMPLE_ACTIVE_JWT}`;
 
 export const SAMPLE_EXPIRED_JWT = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ1c2VyLTk5NDIxIiwibmFtZSI6IlNhcmFoIEhhc3NhbiIsImVtYWlsIjoic2FyYWguaEBjc2kuY29tIiwicm9sZXMiOlsidmlld2VyIl0sImlhdCI6MTY3MjUyODAwMCwiZXhwIjoxNjc1MTIwMDAwLCJpc3MiOiJkZXZ0b29scy5pbnRlcm5hbCJ9.dGVzdC1zaWduYXR1cmUtZm9yLWV4cGlyZWQtdG9rZW4tc2FtcGxl';
+
+export const SAMPLE_KEYCLOAK_JWT = 'eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiI2M2QyZTk3NC04M2MwLTRlMzgtODdhZi1mYWFlY2Q3ODljOWQiLCJleHAiOjE3ODk3MzM5MjAsIm5iZiI6MCwiaWF0IjoxNzg5NzIzMTIwLCJpc3MiOiJodHRwczovL2FwcGhpc3MxdmkubW9oLmdvdi5zYS9hdXRoL3JlYWxtcy9hcHBoaXNzMXZpIiwiYXVkIjpbInJlYWxtLW1hbmFnZW1lbnQiLCJzdXBlcnNldCIsImFjY291bnQiXSwic3ViIjoiNmNlNDVlYzgtZTI4Ni00M2Y2LTlkYjEtMGEwYTViZjMwYmFlIiwidHlwIjoiQmVhcmVyIiwiYXpwIjoiYXBwIiwibm9uY2UiOiIwYzRiNmUwMC1lNDVlLTQ2OWQtODAwOC04ZTRkNjYwNWI5YzMiLCJhdXRoX3RpbWUiOjE3ODk3MTE2NjgsInNlc3Npb25fc3RhdGUiOiI4NmNiZjA0NC0zN2E2LTRmZTYtYTE5ZS0wYjQxZjM5Njg4OTQiLCJhY3IiOiIwIiwiYWxsb3dlZC1vcmlnaW5zIjpbIioiXSwicmVhbG1fYWNjZXNzIjp7InJvbGVzIjpbImhoYyBkb2N0b3IiLCJMYWIgQWRtaW5pc3RyYXRvciIsIkNvbmZpZ3VyYXRpb24iLCJvZmZsaW5lX2FjY2VzcyIsIkFwcGxpY2F0aW9uIFN1cHBvcnQiLCJ1bWFfYXV0aG9yaXphdGlvbiIsIkRvY3RvciIsIkJpbGxpbmcgTWFzdGVyIEFkbWluIiwiRVIgRG9jdG9yIiwiQmxvb2QgQmFuayBEb2N0b3IiLCJOdXJzZSIsIkJsb29kIEJhbmsgTWFuYWdlciJdfSwicmVzb3VyY2VfYWNjZXNzIjp7ImFwcCI6eyJyb2xlcyI6WyJicm93c2VyLWluc3BlY3RvciJdfSwicmVhbG0tbWFuYWdlbWVudCI6eyJyb2xlcyI6WyJ2aWV3LXJlYWxtIl19LCJzdXBlcnNldCI6eyJyb2xlcyI6WyJIb3NwaXRhbF9XaXNlX1JlYWRfT25seV9Vc2VyX0VSIl19LCJhY2NvdW50Ijp7InJvbGVzIjpbIm1hbmFnZS1hY2NvdW50IiwibWFuYWdlLWFjY291bnQtbGlua3MiLCJ2aWV3LXByb2ZpbGUiXX19LCJzY29wZSI6Im9wZW5pZCBwcm9maWxlIGVtYWlsIiwiZW1haWxfdmVyaWZpZWQiOmZhbHNlLCJyb2xlcyI6WyJIb3NwaXRhbF9XaXNlX1JlYWRfT25seV9Vc2VyX0VSIl0sIm5hbWUiOiJNT0hBIGRvY3RvciIsInByZWZlcnJlZF91c2VybmFtZSI6ImwzIiwiZ2l2ZW5fbmFtZSI6Ik1PSEEiLCJmYW1pbHlfbmFtZSI6ImRvY3RvciIsImVtYWlsIjoiY3Nkb2N0b3JAbW9oLmdvdi5zYSJ9.mock-keycloak-signature';
+
