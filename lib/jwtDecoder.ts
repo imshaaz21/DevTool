@@ -101,12 +101,26 @@ export function getClaimDescription(key: string): string {
 }
 
 /**
- * Formats a Unix timestamp (seconds) into human-readable date and time strings.
+ * Checks if a JWT claim is a Unix timestamp in seconds.
  */
-export function formatTimestamp(timestampInSeconds: number): {
+export function isTimestampClaim(key: string, value: any): boolean {
+  if (typeof value !== 'number') return false;
+  if (key === 'exp' || key === 'iat' || key === 'nbf' || key === 'auth_time' || key === 'updated_at') {
+    return true;
+  }
+  // Check if value looks like a valid Unix timestamp in seconds (between year 2000 and 2100)
+  return value > 946684800 && value < 4102444800;
+}
+
+/**
+ * Formats a Unix timestamp (seconds) into human-readable date and time strings with timezone info.
+ */
+export function formatTimestamp(timestampInSeconds: number, timeZone?: string): {
   formatted: string;
   relative: string;
   isPast: boolean;
+  timeZone: string;
+  utcFormatted: string;
 } {
   const date = new Date(timestampInSeconds * 1000);
   const now = new Date();
@@ -130,16 +144,55 @@ export function formatTimestamp(timestampInSeconds: number): {
     relative = `${seconds}s ${isPast ? 'ago' : 'remaining'}`;
   }
 
-  // Format with date, time, and UTC
-  const formatted = `${date.toLocaleString()} (UTC: ${date.toISOString().replace('T', ' ').slice(0, 19)})`;
+  let tz = timeZone;
+  if (!tz) {
+    try {
+      tz = Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
+    } catch {
+      tz = 'UTC';
+    }
+  }
 
-  return { formatted, relative, isPast };
+  let formatted = '';
+  try {
+    formatted = new Intl.DateTimeFormat('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      hour12: true,
+      timeZoneName: 'short',
+      timeZone: tz,
+    }).format(date);
+  } catch {
+    formatted = date.toLocaleString();
+  }
+
+  let utcFormatted = '';
+  try {
+    utcFormatted = new Intl.DateTimeFormat('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      hour12: false,
+      timeZone: 'UTC',
+    }).format(date) + ' UTC';
+  } catch {
+    utcFormatted = date.toISOString();
+  }
+
+  return { formatted, relative, isPast, timeZone: tz, utcFormatted };
 }
 
 /**
  * Decodes and thoroughly analyzes a JWT string.
  */
-export function decodeJwt(tokenInput: string): DecodedJwtResult {
+export function decodeJwt(tokenInput: string, userTimeZone?: string): DecodedJwtResult {
   const { cleaned, hadBearerPrefix } = cleanJwtToken(tokenInput);
 
   if (!cleaned) {
@@ -246,20 +299,31 @@ export function decodeJwt(tokenInput: string): DecodedJwtResult {
   let issuedAtText: string | null = null;
   let notBeforeNotice: string | null = null;
 
+  let resolvedTimeZone = userTimeZone;
+  if (!resolvedTimeZone) {
+    try {
+      resolvedTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
+    } catch {
+      resolvedTimeZone = 'UTC';
+    }
+  }
+
   if (payload && typeof payload.exp === 'number') {
-    const { formatted, relative, isPast } = formatTimestamp(payload.exp);
+    const { formatted, relative, isPast, timeZone: tz } = formatTimestamp(payload.exp, resolvedTimeZone);
     isExpired = isPast;
-    expiresInText = isPast ? `Expired ${relative} (${formatted})` : `Active · ${relative} (${formatted})`;
+    expiresInText = isPast
+      ? `Expired ${relative} (${formatted} · ${tz})`
+      : `Active · ${relative} (${formatted} · ${tz})`;
   }
 
   if (payload && typeof payload.iat === 'number') {
-    const { formatted, relative } = formatTimestamp(payload.iat);
-    issuedAtText = `${relative} (${formatted})`;
+    const { formatted, relative, timeZone: tz } = formatTimestamp(payload.iat, resolvedTimeZone);
+    issuedAtText = `${relative} (${formatted} · ${tz})`;
   }
 
   if (payload && typeof payload.nbf === 'number') {
-    const { formatted, isPast } = formatTimestamp(payload.nbf);
-    notBeforeNotice = isPast ? `Active since ${formatted}` : `Not valid until ${formatted}`;
+    const { formatted, isPast, timeZone: tz } = formatTimestamp(payload.nbf, resolvedTimeZone);
+    notBeforeNotice = isPast ? `Active since ${formatted} (${tz})` : `Not valid until ${formatted} (${tz})`;
   }
 
   return {
