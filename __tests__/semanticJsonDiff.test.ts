@@ -99,4 +99,27 @@ describe('semanticJsonDiff engine (jdd compatibility)', () => {
 
     expect(result.diffs.length).toBe(0);
   });
+
+  it('formats strings, dates, and keys cleanly without inserting backspace \\b artifacts', () => {
+    const payload = [
+      {
+        admissionId: 5795505,
+        encounterType: 'ER',
+        status: 'ACTIVE',
+        batchRefNo: 'CLM-S2026013022861232286123',
+        invoiceDate: '2026-01-30 10:17:39',
+        claimType: 'ER',
+      },
+    ];
+
+    const result = computeSemanticDiff(payload, payload);
+
+    expect(result.diffs.length).toBe(0);
+    // Crucial check: Must not contain any \b escape sequences
+    expect(result.leftFormatted).not.toContain('\\b');
+    expect(result.rightFormatted).not.toContain('\\b');
+    expect(result.leftFormatted).toContain('"encounterType": "ER"');
+    expect(result.leftFormatted).toContain('"admissionId": 5795505');
+    expect(result.leftFormatted).toContain('"invoiceDate": "2026-01-30 10:17:39"');
+  });
 });
