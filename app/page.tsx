@@ -16,7 +16,8 @@ import {
   Search,
   ArrowRight,
   GitCompare,
-  Calculator
+  Calculator,
+  Code2
 } from 'lucide-react';
 
 interface Tool {
@@ -94,12 +95,20 @@ const TOOLS: Tool[] = [
     tags: ['screen', 'permission', 'gzip', 'base64', 'decompress', 'compress']
   },
   {
-    title: 'Base64 Image Viewer',
-    desc: 'Decode, preview, inspect dimensions and download images from Base64 encoded strings or data URIs.',
+    title: 'Base64 Image & PDF Viewer',
+    desc: 'Decode, preview, and download Base64 encoded images and PDF documents with embedded PDF rendering.',
     href: '/base64-viewer',
     category: 'Utilities',
     icon: ImageIcon,
-    tags: ['base64', 'image', 'preview', 'decode', 'data uri', 'png']
+    tags: ['base64', 'image', 'pdf', 'preview', 'decode', 'data uri', 'png', 'document']
+  },
+  {
+    title: 'HTML Viewer & Sandbox',
+    desc: 'Live interactive sandbox preview for HTML markup with responsive Desktop, Tablet, and Mobile viewports.',
+    href: '/html-viewer',
+    category: 'Utilities',
+    icon: Code2,
+    tags: ['html', 'viewer', 'sandbox', 'preview', 'responsive', 'mobile', 'tablet', 'format', 'beautify']
   },
   {
     title: 'UUID Generator',

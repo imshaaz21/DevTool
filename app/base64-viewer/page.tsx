@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { toast } from 'react-hot-toast';
 import { Sidebar } from '@/components/Sidebar';
 import { useSidebar } from '@/components/SidebarContext';
@@ -11,7 +11,7 @@ import {
   getImageMetadata,
   formatFileSize,
   normalizeBase64,
-  ImageMetadata
+  ImageMetadata,
 } from '@/utils/base64ImageViewer';
 import { ImageModal } from '@/components/ImageModal';
 import { AutoToggle } from '@/components/AutoToggle';
@@ -23,8 +23,15 @@ import {
   Maximize2,
   Info,
   FileImage,
-  AlertCircle
+  AlertCircle,
+  FileText,
+  ExternalLink,
+  Sparkles,
 } from 'lucide-react';
+
+const SAMPLE_IMAGE_BASE64 = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAABMSURBVHgB7dKxCQAgEMDA3P2ndIsU8RCGfEDjQyU512Nf/wE4gAAIIAACIIAACIAACIAACIAACIAACIAACIAACIAACIAACIAACIBAMHMAkR4E2cM3Qd8AAAAASUVORK5CYII=';
+
+const SAMPLE_PDF_BASE64 = 'data:application/pdf;base64,JVBERi0xLjQKJeLjz9MKMSAwIG9iajw8L1R5cGUvQ2F0YWxvZy9QYWdlcyAyIDAgUj4+ZW5kb2JqCjIgMCBvYmo8PC9UeXBlL1BhZ2VzL0tpZHNbMyAwIFJdL0NvdW50IDE+PmVuZG9iagozIDAgb2JqPDwvVHlwZS9QYWdlL1BhcmVudCAyIDAgUi9NZWRpYUJveFswIDAgNDAwIDIwMF0vQ29udGVudHMgNCAwIFI+PmVuZG9iago0IDAgb2JqPDwvTGVuZ3RoIDU1Pj5zdHJlYW0KQVQKL1YgMSBUZgovRjEgMTQgVGYKKERldlRvb2xzIFBERiBWaWV3ZXIgU3VjY2Vzc2Z1bCkgVGoKRVQKZW5kc3RyZWFtCmVuZG9iago1IDAgb2JqPDwvVHlwZS9Gb250L1N1YnR5cGUvVHlwZTEvQmFzZUZvbnQvSGVsdmV0aWNhPj5lbmRvYmoKeHJlZgowIDYKMDAwMDAwMDAwMCA2NTUzNSBmIAowMDAwMDAwMDE4IDAwMDAwIG4gCjAwMDAwMDAwNjggMDAwMDAgbiAKMDAwMDAwMDEyNSAwMDAwMCBuIAowMDAwMDAwMjIwIDAwMDAwIG4gCjAwMDAwMDAzMjggMDAwMDAgbiAKdHJhaWxlcjw8L1Jvb3QgMSAwIFIvU2l6ZSA2Pj4Kc3RhcnR4cmVmCjQwMAolJUVPRg==';
 
 export default function Base64ViewerPage() {
   const { width } = useSidebar();
@@ -36,6 +43,37 @@ export default function Base64ViewerPage() {
   const [showModal, setShowModal] = useState(false);
   const [isAutoConvert, setIsAutoConvert] = useState(true);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleDecode = useCallback(async (inputBase64?: string) => {
+    let base64 = inputBase64 !== undefined ? inputBase64 : base64Input;
+    base64 = base64.trim();
+    if (base64.startsWith('"') && base64.endsWith('"')) base64 = base64.slice(1, -1);
+    if (!base64.trim()) {
+      setError('Enter Base64 data or upload an image/PDF');
+      return;
+    }
+
+    setLoading(true);
+    setError('');
+    try {
+      if (imageUrl && imageUrl.startsWith('blob:')) URL.revokeObjectURL(imageUrl);
+      const mimeType = extractMimeType(base64);
+      if (!mimeType.startsWith('image/') && mimeType !== 'application/pdf') {
+        throw new Error('Data does not appear to be a valid image or PDF');
+      }
+      const normalizedBase64 = normalizeBase64(base64, mimeType);
+      const blobUrl = createBlobUrl(normalizedBase64, mimeType);
+      setImageUrl(blobUrl);
+      const fileMetadata = await getImageMetadata(normalizedBase64);
+      setMetadata(fileMetadata);
+    } catch (err) {
+      setError((err as Error).message);
+      setImageUrl(null);
+      setMetadata(null);
+    } finally {
+      setLoading(false);
+    }
+  }, [base64Input, imageUrl]);
 
   useEffect(() => {
     if (!isAutoConvert) return;
@@ -49,8 +87,7 @@ export default function Base64ViewerPage() {
       }
     }, 250);
     return () => clearTimeout(timer);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [base64Input, isAutoConvert]);
+  }, [base64Input, isAutoConvert, handleDecode]);
 
   useEffect(() => {
     return () => {
@@ -60,42 +97,11 @@ export default function Base64ViewerPage() {
     };
   }, [imageUrl]);
 
-  const handleDecode = async (inputBase64?: string) => {
-    let base64 = inputBase64 || base64Input;
-    base64 = base64.trim();
-    if (base64.startsWith('"') && base64.endsWith('"')) base64 = base64.slice(1, -1);
-    if (!base64.trim()) {
-      setError('Enter Base64 data or upload an image');
-      return;
-    }
-
-    setLoading(true);
-    setError('');
-    try {
-      if (imageUrl && imageUrl.startsWith('blob:')) URL.revokeObjectURL(imageUrl);
-      const mimeType = extractMimeType(base64);
-      if (!mimeType.startsWith('image/')) {
-        throw new Error('Data does not appear to be a valid image');
-      }
-      const normalizedBase64 = normalizeBase64(base64, mimeType);
-      const blobUrl = createBlobUrl(normalizedBase64, mimeType);
-      setImageUrl(blobUrl);
-      const imageMetadata = await getImageMetadata(normalizedBase64);
-      setMetadata(imageMetadata);
-    } catch (err) {
-      setError((err as Error).message);
-      setImageUrl(null);
-      setMetadata(null);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
-    if (!file.type.startsWith('image/')) {
-      setError('Please select an image file');
+    if (!file.type.startsWith('image/') && file.type !== 'application/pdf') {
+      setError('Please select an image or PDF file');
       return;
     }
     const reader = new FileReader();
@@ -103,7 +109,7 @@ export default function Base64ViewerPage() {
       const base64 = e.target?.result as string;
       setBase64Input(base64);
       handleDecode(base64);
-      toast.success('Image loaded and converted to Base64');
+      toast.success(file.type === 'application/pdf' ? 'PDF loaded and converted to Base64' : 'Image loaded and converted to Base64');
     };
     reader.readAsDataURL(file);
   };
@@ -112,9 +118,10 @@ export default function Base64ViewerPage() {
     if (!imageUrl) return;
     const a = document.createElement('a');
     a.href = imageUrl;
-    a.download = `decoded-image.${metadata?.format.toLowerCase() || 'png'}`;
+    const ext = metadata?.isPdf ? 'pdf' : metadata?.format.toLowerCase() || 'png';
+    a.download = `decoded-file.${ext}`;
     a.click();
-    toast.success('Image downloaded');
+    toast.success(`${metadata?.isPdf ? 'PDF' : 'Image'} downloaded`);
   };
 
   const handleClear = () => {
@@ -122,6 +129,16 @@ export default function Base64ViewerPage() {
     setImageUrl(null);
     setMetadata(null);
     setError('');
+  };
+
+  const loadSampleImage = () => {
+    setBase64Input(SAMPLE_IMAGE_BASE64);
+    handleDecode(SAMPLE_IMAGE_BASE64);
+  };
+
+  const loadSamplePdf = () => {
+    setBase64Input(SAMPLE_PDF_BASE64);
+    handleDecode(SAMPLE_PDF_BASE64);
   };
 
   return (
@@ -134,34 +151,50 @@ export default function Base64ViewerPage() {
       >
         <PageHeader
           icon={ImageIcon}
-          title="Base64 Image Viewer"
-          description="Decode, render, inspect dimensions, and download Base64 encoded images."
-          badge="Image Decoder"
+          title="Base64 Image & PDF Viewer"
+          description="Decode, render, inspect dimensions, and download Base64 encoded images and PDF documents."
+          badge="Media & PDF Decoder"
         >
+          <button
+            onClick={loadSampleImage}
+            className="btn btn-secondary btn-sm flex items-center gap-1 text-xs"
+            title="Load sample Base64 image"
+          >
+            <Sparkles size={12} />
+            <span>Sample Image</span>
+          </button>
+          <button
+            onClick={loadSamplePdf}
+            className="btn btn-secondary btn-sm flex items-center gap-1 text-xs"
+            title="Load sample Base64 PDF document"
+          >
+            <FileText size={12} />
+            <span>Sample PDF</span>
+          </button>
           <AutoToggle
             enabled={isAutoConvert}
             onChange={setIsAutoConvert}
           />
           <button
             onClick={() => fileInputRef.current?.click()}
-            className="btn btn-secondary btn-sm"
+            className="btn btn-secondary btn-sm flex items-center gap-1 text-xs"
           >
             <Upload size={13} />
-            <span>Upload Image</span>
+            <span>Upload File</span>
           </button>
           <input
             type="file"
             ref={fileInputRef}
             onChange={handleFileUpload}
-            accept="image/*"
+            accept="image/*,application/pdf"
             className="hidden"
           />
           <button
             onClick={() => handleDecode()}
             disabled={loading || !base64Input.trim()}
-            className="btn btn-primary"
+            className="btn btn-primary btn-sm"
           >
-            {loading ? 'Decoding...' : 'Render Image'}
+            {loading ? 'Decoding...' : 'Render'}
           </button>
         </PageHeader>
 
@@ -174,7 +207,7 @@ export default function Base64ViewerPage() {
                 <div className="card p-0 overflow-hidden flex flex-col min-h-[220px]">
                   <div className="px-4 py-2 border-b border-neutral-200 dark:border-neutral-800 bg-neutral-50/50 dark:bg-neutral-900/50 flex items-center justify-between">
                     <span className="text-xs font-medium text-neutral-600 dark:text-neutral-400 font-mono">
-                      Base64 Input
+                      Base64 Input (Image or PDF)
                     </span>
                     <div className="flex items-center gap-2">
                       <span className="text-[11px] font-mono text-neutral-400">
@@ -193,8 +226,8 @@ export default function Base64ViewerPage() {
                   <textarea
                     value={base64Input}
                     onChange={(e) => setBase64Input(e.target.value)}
-                    placeholder="Paste Base64 encoded image string or data:image/... URI here..."
-                    className="flex-1 w-full p-4 bg-transparent text-neutral-900 dark:text-neutral-100 font-mono text-xs leading-relaxed focus:outline-none resize-none placeholder:text-neutral-400 dark:placeholder:text-neutral-600"
+                    placeholder="Paste Base64 encoded image or PDF data here (with or without data: URI prefix)..."
+                    className="flex-1 p-4 bg-transparent border-0 resize-none font-mono text-xs focus:outline-none min-h-[160px] text-neutral-800 dark:text-neutral-200 placeholder:text-neutral-400"
                     spellCheck={false}
                   />
                 </div>
@@ -206,41 +239,83 @@ export default function Base64ViewerPage() {
                   </div>
                 )}
 
-                {/* Canvas */}
+                {/* Canvas or PDF Viewer */}
                 {imageUrl ? (
-                  <div className="card p-0 overflow-hidden">
-                    <div className="px-4 py-2 border-b border-neutral-200 dark:border-neutral-800 bg-neutral-50/50 dark:bg-neutral-900/50 flex items-center justify-between">
-                      <span className="text-xs font-medium text-neutral-600 dark:text-neutral-400 font-mono">
-                        Preview Canvas
-                      </span>
-                      <div className="flex items-center gap-1.5">
-                        <button
-                          onClick={() => setShowModal(true)}
-                          className="btn btn-secondary btn-sm"
-                          title="Full Screen Preview"
-                        >
-                          <Maximize2 size={12} />
-                          <span>Expand</span>
-                        </button>
-                        <button
-                          onClick={handleDownload}
-                          className="btn btn-secondary btn-sm"
-                          title="Download Image"
-                        >
-                          <Download size={12} />
-                          <span>Download</span>
-                        </button>
+                  metadata?.isPdf ? (
+                    /* PDF Document Preview */
+                    <div className="card p-0 overflow-hidden flex flex-col h-[520px]">
+                      <div className="px-4 py-2 border-b border-neutral-200 dark:border-neutral-800 bg-neutral-50/50 dark:bg-neutral-900/50 flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <FileText size={14} className="text-red-500" />
+                          <span className="text-xs font-medium text-neutral-700 dark:text-neutral-300 font-mono">
+                            PDF Document Preview
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-1.5">
+                          <a
+                            href={imageUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="btn btn-secondary btn-sm flex items-center gap-1"
+                            title="Open PDF in new tab"
+                          >
+                            <ExternalLink size={12} />
+                            <span>Open in New Tab</span>
+                          </a>
+                          <button
+                            onClick={handleDownload}
+                            className="btn btn-secondary btn-sm flex items-center gap-1"
+                            title="Download PDF"
+                          >
+                            <Download size={12} />
+                            <span>Download PDF</span>
+                          </button>
+                        </div>
+                      </div>
+                      <div className="flex-1 w-full bg-neutral-100 dark:bg-neutral-900 relative">
+                        <iframe
+                          src={imageUrl}
+                          className="w-full h-full border-0"
+                          title="PDF Preview"
+                        />
                       </div>
                     </div>
-                    <div className="p-6 flex items-center justify-center bg-neutral-50/50 dark:bg-neutral-950/80 min-h-[360px]">
-                      <img
-                        src={imageUrl}
-                        alt="Preview"
-                        className="max-w-full max-h-[460px] object-contain rounded border border-neutral-200/80 dark:border-neutral-800 shadow-sm cursor-zoom-in"
-                        onClick={() => setShowModal(true)}
-                      />
+                  ) : (
+                    /* Image Preview */
+                    <div className="card p-0 overflow-hidden">
+                      <div className="px-4 py-2 border-b border-neutral-200 dark:border-neutral-800 bg-neutral-50/50 dark:bg-neutral-900/50 flex items-center justify-between">
+                        <span className="text-xs font-medium text-neutral-600 dark:text-neutral-400 font-mono">
+                          Image Preview Canvas
+                        </span>
+                        <div className="flex items-center gap-1.5">
+                          <button
+                            onClick={() => setShowModal(true)}
+                            className="btn btn-secondary btn-sm"
+                            title="Full Screen Preview"
+                          >
+                            <Maximize2 size={12} />
+                            <span>Expand</span>
+                          </button>
+                          <button
+                            onClick={handleDownload}
+                            className="btn btn-secondary btn-sm"
+                            title="Download Image"
+                          >
+                            <Download size={12} />
+                            <span>Download</span>
+                          </button>
+                        </div>
+                      </div>
+                      <div className="p-6 flex items-center justify-center bg-neutral-50/50 dark:bg-neutral-950/80 min-h-[360px]">
+                        <img
+                          src={imageUrl}
+                          alt="Preview"
+                          className="max-w-full max-h-[460px] object-contain rounded border border-neutral-200/80 dark:border-neutral-800 shadow-sm cursor-zoom-in"
+                          onClick={() => setShowModal(true)}
+                        />
+                      </div>
                     </div>
-                  </div>
+                  )
                 ) : (
                   <div
                     onClick={() => fileInputRef.current?.click()}
@@ -248,7 +323,7 @@ export default function Base64ViewerPage() {
                   >
                     <FileImage size={32} className="text-neutral-300 dark:text-neutral-700" />
                     <p className="text-xs font-medium text-neutral-500">
-                      No image rendered yet. Paste Base64 or click to upload.
+                      No file rendered yet. Paste Base64 or click to upload Image / PDF.
                     </p>
                   </div>
                 )}
@@ -260,44 +335,67 @@ export default function Base64ViewerPage() {
                   <div className="flex items-center gap-2 pb-2 border-b border-neutral-100 dark:border-neutral-800">
                     <Info size={14} className="text-neutral-500" />
                     <span className="text-xs font-semibold text-neutral-900 dark:text-neutral-100">
-                      Image Intelligence
+                      Document & Media Intelligence
                     </span>
                   </div>
 
                   {metadata ? (
                     <div className="space-y-2.5 text-xs">
-                      <MetaRow label="Format" value={metadata.format} />
-                      <MetaRow label="Dimensions" value={`${metadata.width} × ${metadata.height} px`} />
+                      <MetaRow label="Format" value={metadata.isPdf ? 'PDF Document' : metadata.format} />
+                      {!metadata.isPdf && metadata.width && metadata.height && (
+                        <>
+                          <MetaRow label="Dimensions" value={`${metadata.width} × ${metadata.height} px`} />
+                          <MetaRow label="Aspect Ratio" value={`${(metadata.width / metadata.height).toFixed(2)}:1`} />
+                        </>
+                      )}
+                      {metadata.isPdf && (
+                        <MetaRow label="Type" value="Paginated PDF Document" />
+                      )}
                       <MetaRow label="File Size" value={formatFileSize(metadata.sizeInBytes)} />
                       <MetaRow label="MIME Type" value={metadata.mimeType} />
-                      <MetaRow label="Aspect Ratio" value={metadata.height ? `${(metadata.width / metadata.height).toFixed(2)}:1` : 'N/A'} />
                     </div>
                   ) : (
                     <p className="text-xs text-neutral-400 py-4 text-center italic">
-                      Metadata appears when an image is decoded.
+                      Metadata appears when an image or PDF is decoded.
                     </p>
                   )}
+                </div>
+
+                <div className="card p-4 space-y-2 text-xs text-neutral-500">
+                  <h4 className="font-semibold text-neutral-800 dark:text-neutral-200">Supported Formats</h4>
+                  <ul className="list-disc pl-4 space-y-1 text-[11px] text-neutral-600 dark:text-neutral-400">
+                    <li><strong className="text-neutral-700 dark:text-neutral-300">PDF</strong> (<code className="font-mono">application/pdf</code>, <code className="font-mono">%PDF</code>, <code className="font-mono">JVBERi...</code>)</li>
+                    <li><strong className="text-neutral-700 dark:text-neutral-300">PNG</strong> (<code className="font-mono">image/png</code>)</li>
+                    <li><strong className="text-neutral-700 dark:text-neutral-300">JPEG / JPG</strong> (<code className="font-mono">image/jpeg</code>)</li>
+                    <li><strong className="text-neutral-700 dark:text-neutral-300">WebP</strong> (<code className="font-mono">image/webp</code>)</li>
+                    <li><strong className="text-neutral-700 dark:text-neutral-300">GIF</strong> (<code className="font-mono">image/gif</code>)</li>
+                    <li><strong className="text-neutral-700 dark:text-neutral-300">SVG</strong> (<code className="font-mono">image/svg+xml</code>)</li>
+                  </ul>
                 </div>
               </div>
             </div>
           </div>
         </div>
-      </main>
 
-      <ImageModal
-        isOpen={showModal}
-        onClose={() => setShowModal(false)}
-        imageUrl={imageUrl}
-      />
+        {/* Fullscreen Image Modal (for images only) */}
+        {imageUrl && !metadata?.isPdf && (
+          <ImageModal
+            isOpen={showModal}
+            onClose={() => setShowModal(false)}
+            imageUrl={imageUrl}
+            imageAlt="Decoded Image Preview"
+          />
+        )}
+      </main>
     </div>
   );
 }
 
 function MetaRow({ label, value }: { label: string; value: string }) {
   return (
-    <div className="flex items-center justify-between py-1 border-b border-neutral-100 dark:border-neutral-800/60 last:border-0">
-      <span className="text-neutral-500">{label}</span>
-      <span className="font-mono font-medium text-neutral-900 dark:text-neutral-100">{value}</span>
+    <div className="flex justify-between items-center py-1 border-b border-neutral-100 dark:border-neutral-800/60 last:border-0">
+      <span className="text-neutral-500 dark:text-neutral-400">{label}</span>
+      <span className="font-medium font-mono text-neutral-800 dark:text-neutral-200">{value}</span>
     </div>
   );
 }
