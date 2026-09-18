@@ -9,7 +9,7 @@ import {
   formatHtml,
   minifyHtml,
   getHtmlStats,
-  SAMPLE_HTML_TEMPLATES,
+  LOREM_DUMMY_HTML,
 } from '@/lib/htmlViewer';
 import {
   Code2,
@@ -37,7 +37,7 @@ type ViewLayout = 'split' | 'preview' | 'code';
 export default function HtmlViewerPage() {
   const { isCollapsed } = useSidebar();
 
-  const [htmlContent, setHtmlContent] = useState<string>(SAMPLE_HTML_TEMPLATES[0].code);
+  const [htmlContent, setHtmlContent] = useState<string>(LOREM_DUMMY_HTML);
   const [viewportMode, setViewportMode] = useState<ViewportMode>('desktop');
   const [layout, setLayout] = useState<ViewLayout>('split');
   const [copied, setCopied] = useState(false);
@@ -144,28 +144,18 @@ export default function HtmlViewerPage() {
           description="Live preview HTML, test responsive viewports (Desktop, Tablet, Mobile), format or minify markup."
           badge="Live HTML Preview"
         >
-          {/* Sample template selector */}
-          <div className="relative inline-block">
-            <select
-              onChange={(e) => {
-                const tmpl = SAMPLE_HTML_TEMPLATES.find((t) => t.id === e.target.value);
-                if (tmpl) setHtmlContent(tmpl.code);
-              }}
-              className="btn-secondary text-xs py-1.5 px-3 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 font-medium cursor-pointer"
-              defaultValue="product-card"
-            >
-              <option value="" disabled>Load Sample Template...</option>
-              {SAMPLE_HTML_TEMPLATES.map((tmpl) => (
-                <option key={tmpl.id} value={tmpl.id}>
-                  {tmpl.name}
-                </option>
-              ))}
-            </select>
-          </div>
+          <button
+            onClick={() => setHtmlContent(LOREM_DUMMY_HTML)}
+            className="btn btn-secondary btn-sm flex items-center gap-1.5 text-xs shrink-0"
+            title="Load sample Lorem Ipsum HTML"
+          >
+            <Sparkles size={13} />
+            <span>Sample HTML</span>
+          </button>
 
           <button
             onClick={() => fileInputRef.current?.click()}
-            className="btn-secondary flex items-center gap-1.5 text-xs py-1.5 px-3 rounded-lg border border-neutral-200 dark:border-neutral-700 font-medium"
+            className="btn btn-secondary btn-sm flex items-center gap-1.5 text-xs shrink-0"
             title="Upload HTML file from disk"
           >
             <Upload size={13} />
@@ -182,7 +172,7 @@ export default function HtmlViewerPage() {
           <button
             onClick={handleFormat}
             disabled={!htmlContent.trim()}
-            className="btn-secondary flex items-center gap-1.5 text-xs py-1.5 px-3 rounded-lg border border-neutral-200 dark:border-neutral-700 font-medium disabled:opacity-40"
+            className="btn btn-secondary btn-sm flex items-center gap-1.5 text-xs shrink-0 disabled:opacity-40"
             title="Format and indent HTML"
           >
             <Wand2 size={13} />
@@ -191,7 +181,7 @@ export default function HtmlViewerPage() {
 
           <button
             onClick={handleClear}
-            className="btn-secondary flex items-center gap-1.5 text-xs py-1.5 px-3 rounded-lg border border-neutral-200 dark:border-neutral-700 font-medium text-neutral-600 dark:text-neutral-400 hover:text-red-600 dark:hover:text-red-400"
+            className="btn btn-secondary btn-sm flex items-center gap-1.5 text-xs shrink-0 text-neutral-600 dark:text-neutral-400 hover:text-red-600 dark:hover:text-red-400"
             title="Clear editor"
           >
             <Trash2 size={13} />
