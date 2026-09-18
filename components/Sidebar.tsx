@@ -19,7 +19,8 @@ import {
   ShieldCheck,
   Terminal,
   GitCompare,
-  Calculator
+  Calculator,
+  Code2
 } from 'lucide-react';
 
 export function Sidebar() {
@@ -54,8 +55,9 @@ export function Sidebar() {
     { name: 'List Compare', path: '/list-compare', icon: GitCompare },
     { name: 'JSON Path & Sum', path: '/json-path-aggregator', icon: Calculator },
     { name: 'JSON Formatter', path: '/json-formatter', icon: FileJson },
+    { name: 'HTML Viewer', path: '/html-viewer', icon: Code2 },
     { name: 'Screen Permission', path: '/screen-permission-decode', icon: ShieldCheck },
-    { name: 'Base64 Image', path: '/base64-viewer', icon: ImageIcon },
+    { name: 'Base64 Media / PDF', path: '/base64-viewer', icon: ImageIcon },
     { name: 'UUID Generator', path: '/uuid-generator', icon: Fingerprint },
     { name: 'Encoder / Decoder', path: '/encoder-decoder', icon: Binary },
     { name: 'Time Zone', path: '/timezone-converter', icon: Globe },

@@ -4,14 +4,17 @@
  * This file contains utility functions for decoding and analyzing base64 encoded images.
  */
 
-// Interface for image metadata
+// Interface for image / file metadata
 export interface ImageMetadata {
-  width: number;
-  height: number;
+  width?: number;
+  height?: number;
   format: string;
   mimeType: string;
   sizeInBytes: number;
+  isPdf?: boolean;
 }
+
+export type FileMetadata = ImageMetadata;
 
 // Decode a base64 string to an ArrayBuffer with chunking for large strings
 export function decodeBase64(base64String: string): ArrayBuffer {
@@ -66,22 +69,27 @@ export function extractMimeType(dataUrl: string): string {
   return mimeMatch ? mimeMatch[1] : 'application/octet-stream';
 }
 
-// Guess MIME type from base64 content (simplified version)
+// Guess MIME type from base64 content
 function guessMimeTypeFromBase64(base64: string): string {
-  // Check the first few characters of the decoded string to identify file type
+  const clean = base64.trim();
+  if (clean.startsWith('JVBERi')) return 'application/pdf';
+
   try {
-    const prefix = atob(base64.substring(0, 8));
+    const prefix = atob(clean.substring(0, 16));
+
+    // PDF signature '%PDF'
+    if (prefix.startsWith('%PDF')) return 'application/pdf';
 
     // Check for common image file signatures
     if (prefix.startsWith('\xFF\xD8\xFF')) return 'image/jpeg';
     if (prefix.startsWith('\x89PNG\r\n\x1A\n')) return 'image/png';
     if (prefix.startsWith('GIF87a') || prefix.startsWith('GIF89a')) return 'image/gif';
-    if (prefix.startsWith('RIFF') && prefix.substring(8, 12) === 'WEBP') return 'image/webp';
-    if (prefix.startsWith('<?xml') || prefix.startsWith('<svg')) return 'image/svg+xml';
+    if (prefix.startsWith('RIFF') && prefix.includes('WEBP')) return 'image/webp';
+    if (prefix.startsWith('<?xml') || prefix.startsWith('<svg') || prefix.includes('<svg')) return 'image/svg+xml';
 
     // Default to octet-stream if unknown
     return 'application/octet-stream';
-  } catch (e) {
+  } catch {
     return 'application/octet-stream';
   }
 }
@@ -96,10 +104,26 @@ export function createBlobUrl(base64String: string, mimeType: string): string {
   return URL.createObjectURL(blob);
 }
 
-// Get image metadata by loading the image
+// Get image / file metadata
 export async function getImageMetadata(base64String: string): Promise<ImageMetadata> {
+  const mimeType = extractMimeType(base64String);
+
+  // If PDF, calculate size and return PDF metadata directly
+  if (mimeType === 'application/pdf') {
+    const base64Data = base64String.includes('base64,')
+      ? base64String.split('base64,')[1]
+      : base64String;
+    const sizeInBytes = Math.floor((base64Data.length * 3) / 4);
+
+    return {
+      format: 'PDF',
+      mimeType: 'application/pdf',
+      sizeInBytes,
+      isPdf: true,
+    };
+  }
+
   return new Promise((resolve, reject) => {
-    const mimeType = extractMimeType(base64String);
     const blobUrl = createBlobUrl(base64String, mimeType);
 
     const img = new Image();
@@ -124,7 +148,8 @@ export async function getImageMetadata(base64String: string): Promise<ImageMetad
         height: img.height,
         format,
         mimeType,
-        sizeInBytes
+        sizeInBytes,
+        isPdf: false,
       });
 
       // Clean up
