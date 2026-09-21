@@ -21,7 +21,8 @@ import {
   GitCompare,
   Calculator,
   Code2,
-  KeyRound
+  KeyRound,
+  DatabaseZap
 } from 'lucide-react';
 
 export function Sidebar() {
@@ -62,6 +63,7 @@ export function Sidebar() {
     { name: 'UUID Generator', path: '/uuid-generator', icon: Fingerprint },
     { name: 'Encoder / Decoder', path: '/encoder-decoder', icon: Binary },
     { name: 'JWT Decoder', path: '/jwt-decoder', icon: KeyRound },
+    { name: 'Liquibase Checksum', path: '/liquibase-checksum', icon: DatabaseZap },
     { name: 'Time Zone', path: '/timezone-converter', icon: Globe },
   ];
 
