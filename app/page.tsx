@@ -18,7 +18,8 @@ import {
   GitCompare,
   Calculator,
   Code2,
-  KeyRound
+  KeyRound,
+  DatabaseZap
 } from 'lucide-react';
 
 interface Tool {
@@ -134,6 +135,14 @@ const TOOLS: Tool[] = [
     category: 'Data & Security',
     icon: KeyRound,
     tags: ['jwt', 'token', 'decode', 'bearer', 'claims', 'auth', 'security', 'expiration', 'header']
+  },
+  {
+    title: 'Liquibase Checksum',
+    desc: 'Compute Liquibase v9 checksums for <sql> changesets and verify them against databasechangelog md5sum values.',
+    href: '/liquibase-checksum',
+    category: 'Data & Security',
+    icon: DatabaseZap,
+    tags: ['liquibase', 'checksum', 'md5sum', 'changeset', 'databasechangelog', 'migration', 'validation']
   },
   {
     title: 'Time Zone Converter',
