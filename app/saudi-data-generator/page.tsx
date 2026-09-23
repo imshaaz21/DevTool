@@ -32,7 +32,7 @@ export default function SaudiDataGeneratorPage() {
   const [idType, setIdType] = useState<'NID' | 'Iqama' | 'Passport'>('NID');
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [autoGenerate, setAutoGenerate] = useState<boolean>(true);
-  const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
+  const [copiedKey, setCopiedKey] = useState<string | null>(null);
   const rowsPerPage = 10;
 
   useEffect(() => {
@@ -108,17 +108,50 @@ export default function SaudiDataGeneratorPage() {
     }
   };
 
-  const handleCopyToClipboard = () => {
-    const jsonData = JSON.stringify(people, null, 2);
-    navigator.clipboard.writeText(jsonData);
-    toast.success('Copied all profiles as JSON');
+  const handleCopy = (text: string, key: string, label: string) => {
+    navigator.clipboard.writeText(text);
+    setCopiedKey(key);
+    toast.success(`Copied ${label}`);
+    setTimeout(() => setCopiedKey(null), 1500);
   };
 
-  const handleCopySingle = (text: string, idx: number) => {
-    navigator.clipboard.writeText(text);
-    setCopiedIndex(idx);
-    setTimeout(() => setCopiedIndex(null), 1500);
-    toast.success('Copied to clipboard');
+  const handleCopyToClipboard = () => {
+    const jsonData = JSON.stringify(people, null, 2);
+    handleCopy(jsonData, 'all-json', 'all profiles as JSON');
+  };
+
+  const CopyButton = ({
+    text,
+    copyKey,
+    label,
+    highlight = false,
+  }: {
+    text: string;
+    copyKey: string;
+    label: string;
+    highlight?: boolean;
+  }) => {
+    const isCopied = copiedKey === copyKey;
+    return (
+      <button
+        type="button"
+        onClick={(e) => {
+          e.stopPropagation();
+          handleCopy(text, copyKey, label);
+        }}
+        className={`p-1 rounded transition-all shrink-0 ${
+          isCopied
+            ? 'text-emerald-500 opacity-100'
+            : highlight
+            ? 'text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 hover:bg-neutral-200/60 dark:hover:bg-neutral-700/60 opacity-60 sm:opacity-40 sm:group-hover:opacity-80 sm:hover:!opacity-100 focus:opacity-100'
+            : 'text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 hover:bg-neutral-200/60 dark:hover:bg-neutral-700/60 opacity-60 sm:opacity-0 sm:group-hover:opacity-60 sm:hover:!opacity-100 focus:opacity-100'
+        }`}
+        title={`Copy ${label}`}
+        aria-label={`Copy ${label}`}
+      >
+        {isCopied ? <Check size={12} className="text-emerald-500" /> : <Copy size={12} />}
+      </button>
+    );
   };
 
   const handleExport = (format: 'json' | 'csv') => {
@@ -296,8 +329,12 @@ export default function SaudiDataGeneratorPage() {
                     onClick={handleCopyToClipboard}
                     className="btn btn-secondary btn-sm"
                   >
-                    <Copy size={12} />
-                    <span>Copy JSON</span>
+                    {copiedKey === 'all-json' ? (
+                      <Check size={12} className="text-emerald-500" />
+                    ) : (
+                      <Copy size={12} />
+                    )}
+                    <span>{copiedKey === 'all-json' ? 'Copied' : 'Copy JSON'}</span>
                   </button>
                   <button
                     onClick={() => handleExport('csv')}
@@ -317,6 +354,7 @@ export default function SaudiDataGeneratorPage() {
                         <th>ID Type</th>
                         <th>ID Number</th>
                         <th>Name (EN / AR)</th>
+                        <th>Email</th>
                         <th>Phone</th>
                         <th>Gender</th>
                         <th>DOB</th>
@@ -325,56 +363,130 @@ export default function SaudiDataGeneratorPage() {
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-neutral-200/60 dark:divide-neutral-800/60">
-                      {currentPageData.map((person, idx) => (
-                        <tr
-                          key={idx}
-                          className="group hover:bg-neutral-100/70 dark:hover:bg-neutral-800/60 transition-colors"
-                        >
-                          <td>
-                            <span className="inline-block px-1.5 py-0.5 rounded text-[10px] font-mono font-medium bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-300 group-hover:bg-white dark:group-hover:bg-neutral-700 group-hover:text-neutral-900 dark:group-hover:text-white border border-neutral-200 dark:border-neutral-700 transition-colors">
-                              {person.idType}
-                            </span>
-                          </td>
-                          <td className="font-mono text-xs font-semibold text-neutral-900 dark:text-neutral-100 group-hover:text-black dark:group-hover:text-white transition-colors">
-                            {person.idNumber}
-                          </td>
-                          <td>
-                            <div className="flex flex-col">
-                              <span className="text-xs font-medium text-neutral-900 dark:text-neutral-100 group-hover:text-black dark:group-hover:text-white transition-colors">
-                                {person.englishName}
-                              </span>
-                              <span className="text-[11px] text-neutral-400 dark:text-neutral-400 group-hover:text-neutral-600 dark:group-hover:text-neutral-200 font-arabic transition-colors">
-                                {person.arabicName}
-                              </span>
-                            </div>
-                          </td>
-                          <td className="font-mono text-xs text-neutral-600 dark:text-neutral-300 group-hover:text-neutral-900 dark:group-hover:text-white transition-colors">
-                            {person.phoneNumber}
-                          </td>
-                          <td className="capitalize text-xs text-neutral-600 dark:text-neutral-300 group-hover:text-neutral-900 dark:group-hover:text-white transition-colors">
-                            {person.gender}
-                          </td>
-                          <td className="text-xs text-neutral-600 dark:text-neutral-300 group-hover:text-neutral-900 dark:group-hover:text-white font-mono transition-colors">
-                            {person.dateOfBirth}
-                          </td>
-                          <td className="text-xs text-neutral-600 dark:text-neutral-300 group-hover:text-neutral-900 dark:group-hover:text-white transition-colors">
-                            {person.nationality}
-                          </td>
-                          <td className="text-right">
-                            <button
-                              onClick={() => handleCopySingle(JSON.stringify(person, null, 2), idx)}
-                              className="p-1 rounded text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
-                              title="Copy profile JSON"
-                            >
-                              {copiedIndex === idx ? (
-                                <Check size={13} className="text-emerald-500" />
-                              ) : (
-                                <Copy size={13} />
-                              )}
-                            </button>
-                          </td>
-                        </tr>
-                      ))}
+                      {currentPageData.map((person, idx) => {
+                        const personIndex = startIndex + idx;
+                        return (
+                          <tr
+                            key={idx}
+                            className="group hover:bg-neutral-100/70 dark:hover:bg-neutral-800/60 transition-colors"
+                          >
+                            <td>
+                              <div className="flex items-center gap-1.5 group/cell">
+                                <span className="inline-block px-1.5 py-0.5 rounded text-[10px] font-mono font-medium bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-300 group-hover:bg-white dark:group-hover:bg-neutral-700 group-hover:text-neutral-900 dark:group-hover:text-white border border-neutral-200 dark:border-neutral-700 transition-colors">
+                                  {person.idType}
+                                </span>
+                                <CopyButton
+                                  text={person.idType}
+                                  copyKey={`${personIndex}-idType`}
+                                  label="ID Type"
+                                />
+                              </div>
+                            </td>
+                            <td>
+                              <div className="flex items-center gap-1.5 font-mono text-xs font-semibold text-neutral-900 dark:text-neutral-100 group-hover:text-black dark:group-hover:text-white transition-colors group/cell">
+                                <span>{person.idNumber}</span>
+                                <CopyButton
+                                  text={person.idNumber}
+                                  copyKey={`${personIndex}-idNumber`}
+                                  label={`${person.idType} Number`}
+                                  highlight
+                                />
+                              </div>
+                            </td>
+                            <td>
+                              <div className="flex flex-col gap-0.5">
+                                <div className="flex items-center gap-1.5 group/cell">
+                                  <span className="text-xs font-medium text-neutral-900 dark:text-neutral-100 group-hover:text-black dark:group-hover:text-white transition-colors">
+                                    {person.englishName}
+                                  </span>
+                                  <CopyButton
+                                    text={person.englishName}
+                                    copyKey={`${personIndex}-enName`}
+                                    label="English Name"
+                                  />
+                                </div>
+                                <div className="flex items-center gap-1.5 group/cell">
+                                  <span className="text-[11px] text-neutral-400 dark:text-neutral-400 group-hover:text-neutral-600 dark:group-hover:text-neutral-200 font-arabic transition-colors">
+                                    {person.arabicName}
+                                  </span>
+                                  <CopyButton
+                                    text={person.arabicName}
+                                    copyKey={`${personIndex}-arName`}
+                                    label="Arabic Name"
+                                  />
+                                </div>
+                              </div>
+                            </td>
+                            <td>
+                              <div className="flex items-center gap-1.5 font-mono text-xs text-neutral-600 dark:text-neutral-300 group-hover:text-neutral-900 dark:group-hover:text-white transition-colors group/cell">
+                                <span className="truncate max-w-[200px]" title={person.email}>
+                                  {person.email}
+                                </span>
+                                <CopyButton
+                                  text={person.email}
+                                  copyKey={`${personIndex}-email`}
+                                  label="Email"
+                                />
+                              </div>
+                            </td>
+                            <td>
+                              <div className="flex items-center gap-1.5 font-mono text-xs text-neutral-600 dark:text-neutral-300 group-hover:text-neutral-900 dark:group-hover:text-white transition-colors group/cell">
+                                <span>{person.phoneNumber}</span>
+                                <CopyButton
+                                  text={person.phoneNumber}
+                                  copyKey={`${personIndex}-phone`}
+                                  label="Phone Number"
+                                />
+                              </div>
+                            </td>
+                            <td>
+                              <div className="flex items-center gap-1.5 capitalize text-xs text-neutral-600 dark:text-neutral-300 group-hover:text-neutral-900 dark:group-hover:text-white transition-colors group/cell">
+                                <span>{person.gender}</span>
+                                <CopyButton
+                                  text={person.gender}
+                                  copyKey={`${personIndex}-gender`}
+                                  label="Gender"
+                                />
+                              </div>
+                            </td>
+                            <td>
+                              <div className="flex items-center gap-1.5 text-xs text-neutral-600 dark:text-neutral-300 group-hover:text-neutral-900 dark:group-hover:text-white font-mono transition-colors group/cell">
+                                <span>{person.dateOfBirth}</span>
+                                <CopyButton
+                                  text={person.dateOfBirth}
+                                  copyKey={`${personIndex}-dob`}
+                                  label="Date of Birth"
+                                />
+                              </div>
+                            </td>
+                            <td>
+                              <div className="flex items-center gap-1.5 text-xs text-neutral-600 dark:text-neutral-300 group-hover:text-neutral-900 dark:group-hover:text-white transition-colors group/cell">
+                                <span>{person.nationality}</span>
+                                <CopyButton
+                                  text={person.nationality}
+                                  copyKey={`${personIndex}-nationality`}
+                                  label="Nationality"
+                                />
+                              </div>
+                            </td>
+                            <td className="text-right">
+                              <button
+                                type="button"
+                                onClick={() => handleCopy(JSON.stringify(person, null, 2), `${personIndex}-json`, 'profile JSON')}
+                                className="p-1 rounded text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+                                title="Copy profile JSON"
+                                aria-label="Copy profile JSON"
+                              >
+                                {copiedKey === `${personIndex}-json` ? (
+                                  <Check size={13} className="text-emerald-500" />
+                                ) : (
+                                  <Copy size={13} />
+                                )}
+                              </button>
+                            </td>
+                          </tr>
+                        );
+                      })}
                     </tbody>
                   </table>
                 </div>
