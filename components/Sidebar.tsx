@@ -22,7 +22,8 @@ import {
   Calculator,
   Code2,
   KeyRound,
-  DatabaseZap
+  DatabaseZap,
+  CaseSensitive
 } from 'lucide-react';
 
 export function Sidebar() {
@@ -64,6 +65,7 @@ export function Sidebar() {
     { name: 'Encoder / Decoder', path: '/encoder-decoder', icon: Binary },
     { name: 'JWT Decoder', path: '/jwt-decoder', icon: KeyRound },
     { name: 'Liquibase Checksum', path: '/liquibase-checksum', icon: DatabaseZap },
+    { name: 'Case Converter', path: '/case-converter', icon: CaseSensitive },
     { name: 'Time Zone', path: '/timezone-converter', icon: Globe },
   ];
 

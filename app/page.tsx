@@ -19,7 +19,8 @@ import {
   Calculator,
   Code2,
   KeyRound,
-  DatabaseZap
+  DatabaseZap,
+  CaseSensitive
 } from 'lucide-react';
 
 interface Tool {
@@ -143,6 +144,14 @@ const TOOLS: Tool[] = [
     category: 'Data & Security',
     icon: DatabaseZap,
     tags: ['liquibase', 'checksum', 'md5sum', 'changeset', 'databasechangelog', 'migration', 'validation']
+  },
+  {
+    title: 'Text & Case Studio',
+    desc: 'Convert programming cases (camelCase, snake_case, CONSTANT_CASE, kebab-case), replace spaces with _ or -, and batch format lines.',
+    href: '/case-converter',
+    category: 'Utilities',
+    icon: CaseSensitive,
+    tags: ['case', 'camelcase', 'snake_case', 'constant_case', 'kebab-case', 'pascalcase', 'uppercase', 'lowercase', 'spaces', 'underscore', 'slug', 'text', 'transform']
   },
   {
     title: 'Time Zone Converter',
