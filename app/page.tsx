@@ -20,7 +20,9 @@ import {
   Code2,
   KeyRound,
   DatabaseZap,
-  CaseSensitive
+  CaseSensitive,
+  CalendarRange,
+  Palette
 } from 'lucide-react';
 
 interface Tool {
@@ -152,6 +154,22 @@ const TOOLS: Tool[] = [
     category: 'Utilities',
     icon: CaseSensitive,
     tags: ['case', 'camelcase', 'snake_case', 'constant_case', 'kebab-case', 'pascalcase', 'uppercase', 'lowercase', 'spaces', 'underscore', 'slug', 'text', 'transform']
+  },
+  {
+    title: 'SQL Date & Timestamp Filter',
+    desc: 'Generate exact WHERE clause timestamp ranges for Oracle (TO_DATE, TO_TIMESTAMP) and PostgreSQL with BETWEEN, >=, <=, and dynamic presets.',
+    href: '/sql-date-filter',
+    category: 'Data & Security',
+    icon: CalendarRange,
+    tags: ['sql', 'date', 'timestamp', 'oracle', 'postgres', 'postgresql', 'to_date', 'to_timestamp', 'between', 'range', 'where', 'created_date']
+  },
+  {
+    title: 'Hex Color Decoder & Studio',
+    desc: 'Decode hex codes, preview live color swatches, inspect formats (RGB, HSL, CMYK), check WCAG contrast, and extract colors from code.',
+    href: '/color-inspector',
+    category: 'Utilities',
+    icon: Palette,
+    tags: ['color', 'hex', 'rgb', 'hsl', 'cmyk', 'palette', 'swatch', 'wcag', 'contrast', 'css', 'tailwind', 'extractor']
   },
   {
     title: 'Time Zone Converter',
