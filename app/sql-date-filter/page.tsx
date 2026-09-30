@@ -27,6 +27,7 @@ import {
   generateAllSqlDateClauses,
   getPresetDateRange,
   formatDateString,
+  formatForDatetimeInput,
 } from '@/lib/sqlDateFilter';
 
 const SAMPLE_COLUMNS = [
@@ -54,10 +55,9 @@ export default function SqlDateFilterPage() {
   // Custom date range state (in datetime-local format: YYYY-MM-DDTHH:mm)
   const defaultDates = useMemo(() => {
     const { start, end } = getPresetDateRange('last30days', new Date(), 30, 'Asia/Riyadh');
-    const pad = (n: number) => String(n).padStart(2, '0');
     return {
-      start: `${start.getFullYear()}-${pad(start.getMonth() + 1)}-${pad(start.getDate())}T${pad(start.getHours())}:${pad(start.getMinutes())}`,
-      end: `${end.getFullYear()}-${pad(end.getMonth() + 1)}-${pad(end.getDate())}T${pad(end.getHours())}:${pad(end.getMinutes())}`,
+      start: formatForDatetimeInput(start, 'Asia/Riyadh'),
+      end: formatForDatetimeInput(end, 'Asia/Riyadh'),
     };
   }, []);
 
@@ -80,9 +80,8 @@ export default function SqlDateFilterPage() {
     setPreset(newPreset);
     if (newPreset !== 'custom') {
       const { start, end } = getPresetDateRange(newPreset, new Date(), lastN, tz);
-      const pad = (n: number) => String(n).padStart(2, '0');
-      setCustomStart(`${start.getFullYear()}-${pad(start.getMonth() + 1)}-${pad(start.getDate())}T${pad(start.getHours())}:${pad(start.getMinutes())}`);
-      setCustomEnd(`${end.getFullYear()}-${pad(end.getMonth() + 1)}-${pad(end.getDate())}T${pad(end.getHours())}:${pad(end.getMinutes())}`);
+      setCustomStart(formatForDatetimeInput(start, tz));
+      setCustomEnd(formatForDatetimeInput(end, tz));
     }
   };
 
@@ -352,7 +351,7 @@ export default function SqlDateFilterPage() {
             <div className="p-2.5 rounded-lg bg-emerald-50/70 dark:bg-emerald-950/20 border border-emerald-200/80 dark:border-emerald-800/40 text-[11px] font-mono flex flex-wrap items-center justify-between gap-2">
               <div className="flex items-center gap-1.5 text-neutral-700 dark:text-neutral-300">
                 <span className="font-semibold text-emerald-800 dark:text-emerald-400">Input ({queryResults.timezoneLabel}):</span>
-                <span>{customStart.replace('T', ' ')} ➔ {customEnd.replace('T', ' ')}</span>
+                <span>{queryResults.inputStartDateFormatted} ➔ {queryResults.inputEndDateFormatted}</span>
               </div>
               <div className="flex items-center gap-1.5 text-emerald-700 dark:text-emerald-300">
                 <span className="font-semibold">Output in SQL:</span>

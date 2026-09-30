@@ -1,7 +1,11 @@
 /**
  * SQL Date & Timestamp Range Generator
  * Generates accurate WHERE clauses for Oracle and PostgreSQL.
- * Supports Timezone selection (Default: Saudi Arabia AST / UTC+3) with automatic conversion to UTC for databases.
+ * Supports exactly 3 enterprise timezones:
+ * - Saudi Arabia (AST / UTC+3) [Default]
+ * - Sri Lanka (SL / UTC+5:30)
+ * - UTC (UTC+0)
+ * Completely independent of the user's browser timezone.
  */
 
 export type DatabaseDialect = 'oracle' | 'postgres';
@@ -23,13 +27,12 @@ export type ClausePrefix = 'AND' | 'WHERE' | 'none';
 
 export type PrecisionType = 'seconds' | 'milliseconds';
 
-export type TimezoneOption = 'Asia/Riyadh' | 'UTC' | 'Asia/Colombo' | 'local';
+export type TimezoneOption = 'Asia/Riyadh' | 'Asia/Colombo' | 'UTC';
 
-export const TIMEZONE_OPTIONS: { id: TimezoneOption; label: string; offsetLabel: string }[] = [
-  { id: 'Asia/Riyadh', label: 'Saudi Arabia (AST)', offsetLabel: 'UTC+3' },
-  { id: 'UTC', label: 'UTC / GMT', offsetLabel: 'UTC+0' },
-  { id: 'Asia/Colombo', label: 'Sri Lanka / India (IST)', offsetLabel: 'UTC+5:30' },
-  { id: 'local', label: 'Browser Local', offsetLabel: 'Local' },
+export const TIMEZONE_OPTIONS: { id: TimezoneOption; label: string; offsetLabel: string; short: string }[] = [
+  { id: 'Asia/Riyadh', label: 'Saudi Arabia (AST)', offsetLabel: 'UTC+3', short: 'AST' },
+  { id: 'Asia/Colombo', label: 'Sri Lanka (SL)', offsetLabel: 'UTC+5:30', short: 'SL' },
+  { id: 'UTC', label: 'UTC / GMT', offsetLabel: 'UTC+0', short: 'UTC' },
 ];
 
 export interface SqlDateFilterOptions {
@@ -52,6 +55,40 @@ export interface DateRange {
 }
 
 /**
+ * Formats a Date object in a specific timezone using Intl.DateTimeFormat (no browser local time bias)
+ */
+export function formatInTz(date: Date, tz: TimezoneOption, includeMillis = false): string {
+  const formatter = new Intl.DateTimeFormat('en-CA', {
+    timeZone: tz,
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: false,
+  });
+  const parts = formatter.formatToParts(date);
+  const get = (type: string) => parts.find((p) => p.type === type)?.value || '00';
+  const hour = get('hour') === '24' ? '00' : get('hour');
+  const dateStr = `${get('year')}-${get('month')}-${get('day')} ${hour}:${get('minute')}:${get('second')}`;
+
+  if (includeMillis) {
+    const ms = String(date.getUTCMilliseconds()).padStart(3, '0');
+    return `${dateStr}.${ms}`;
+  }
+  return dateStr;
+}
+
+/**
+ * Formats a Date object for input[type="datetime-local"] ("YYYY-MM-DDTHH:mm") in a specific timezone
+ */
+export function formatForDatetimeInput(date: Date, tz: TimezoneOption): string {
+  const str = formatInTz(date, tz, false);
+  return str.slice(0, 16).replace(' ', 'T');
+}
+
+/**
  * Gets current date/time components in a specific timezone
  */
 export function getNowInTimezone(tz: TimezoneOption): {
@@ -64,7 +101,7 @@ export function getNowInTimezone(tz: TimezoneOption): {
 } {
   const now = new Date();
   const formatter = new Intl.DateTimeFormat('en-US', {
-    timeZone: tz === 'local' ? undefined : tz,
+    timeZone: tz,
     year: 'numeric',
     month: 'numeric',
     day: 'numeric',
@@ -90,7 +127,7 @@ export function getNowInTimezone(tz: TimezoneOption): {
 }
 
 /**
- * Parses a date-time string interpreted in a specific timezone into a standard Date object
+ * Parses a date-time string interpreted in a specific timezone into a standard Date object (UTC timestamp)
  */
 export function parseDateTimeInTz(dtStr: string, tz: TimezoneOption): Date {
   const cleaned = dtStr.replace(' ', 'T');
@@ -115,8 +152,7 @@ export function parseDateTimeInTz(dtStr: string, tz: TimezoneOption): Date {
   if (tz === 'Asia/Colombo') {
     return new Date(`${isoBase}+05:30`);
   }
-  // Local browser
-  return new Date(year, month - 1, day, hour, minute, second, millisecond);
+  return new Date(`${isoBase}Z`);
 }
 
 /**
@@ -140,23 +176,10 @@ export function formatUtcDateString(date: Date, includeMillis = false): string {
 }
 
 /**
- * Helper to format a Date into local/system YYYY-MM-DD HH:mm:ss or with .SSS
+ * Formats a Date object without timezone shift (plain format)
  */
 export function formatDateString(date: Date, includeMillis = false): string {
-  const pad = (n: number, z = 2) => String(n).padStart(z, '0');
-  const year = date.getFullYear();
-  const month = pad(date.getMonth() + 1);
-  const day = pad(date.getDate());
-  const hours = pad(date.getHours());
-  const minutes = pad(date.getMinutes());
-  const seconds = pad(date.getSeconds());
-
-  if (includeMillis) {
-    const millis = pad(date.getMilliseconds(), 3);
-    return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}.${millis}`;
-  }
-
-  return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+  return formatUtcDateString(date, includeMillis);
 }
 
 /**
@@ -181,10 +204,10 @@ export function getPresetDateRange(
       };
     }
     case 'yesterday': {
-      const yesterday = new Date(Date.UTC(nowTz.year, nowTz.month - 1, nowTz.day - 1));
-      const yYear = yesterday.getUTCFullYear();
-      const yMonth = yesterday.getUTCMonth() + 1;
-      const yDay = yesterday.getUTCDate();
+      const yesterdayRef = new Date(Date.UTC(nowTz.year, nowTz.month - 1, nowTz.day - 1));
+      const yYear = yesterdayRef.getUTCFullYear();
+      const yMonth = yesterdayRef.getUTCMonth() + 1;
+      const yDay = yesterdayRef.getUTCDate();
 
       const startStr = `${yYear}-${pad(yMonth)}-${pad(yDay)}T00:00:00.000`;
       const endStr = `${yYear}-${pad(yMonth)}-${pad(yDay)}T23:59:59.999`;
@@ -257,7 +280,7 @@ export function getPresetDateRange(
     case 'custom':
     default: {
       const ref = new Date(referenceDate);
-      const start = new Date(ref.getFullYear(), ref.getMonth(), 1, 0, 0, 0, 0);
+      const start = new Date(ref.getTime() - 30 * 24 * 60 * 60 * 1000);
       const end = new Date(ref);
       return { start, end };
     }
@@ -454,7 +477,7 @@ export function generateAllSqlDateClauses(
   let start: Date;
   let end: Date;
 
-  if (preset === 'custom' && options.startDate && options.endDate) {
+  if (options.startDate && options.endDate) {
     start = parseDateTimeInTz(options.startDate, inputTimezone);
     end = parseDateTimeInTz(options.endDate, inputTimezone);
     if (isNaN(start.getTime())) start = new Date();
@@ -467,11 +490,11 @@ export function generateAllSqlDateClauses(
 
   const isMillis = precision === 'milliseconds';
 
-  // Format strings for SQL: Either converted to UTC (default) or kept in local time
-  const startSec = convertToUtc ? formatUtcDateString(start, false) : formatDateString(start, false);
-  const endSec = convertToUtc ? formatUtcDateString(end, false) : formatDateString(end, false);
-  const startMillis = convertToUtc ? formatUtcDateString(start, true) : formatDateString(start, true);
-  const endMillis = convertToUtc ? formatUtcDateString(end, true) : formatDateString(end, true);
+  // Format strings for SQL: Either converted to UTC (default) or formatted in input timezone
+  const startSec = convertToUtc ? formatUtcDateString(start, false) : formatInTz(start, inputTimezone, false);
+  const endSec = convertToUtc ? formatUtcDateString(end, false) : formatInTz(end, inputTimezone, false);
+  const startMillis = convertToUtc ? formatUtcDateString(start, true) : formatInTz(start, inputTimezone, true);
+  const endMillis = convertToUtc ? formatUtcDateString(end, true) : formatInTz(end, inputTimezone, true);
 
   const prefixStr = prefix === 'none' ? '' : prefix;
 
@@ -487,9 +510,9 @@ export function generateAllSqlDateClauses(
   const postgresCast = generatePostgresClause(columnName, chosenStart, chosenEnd, operator, prefixStr, 'cast');
   const postgresDynamic = generatePostgresDynamic(columnName, preset, prefixStr, lastN);
 
-  // Display strings for the UI input values
-  const inputStartDateFormatted = formatDateString(start, isMillis);
-  const inputEndDateFormatted = formatDateString(end, isMillis);
+  // Display strings for the UI input values in the selected input timezone
+  const inputStartDateFormatted = formatInTz(start, inputTimezone, isMillis);
+  const inputEndDateFormatted = formatInTz(end, inputTimezone, isMillis);
 
   const tzObj = TIMEZONE_OPTIONS.find((t) => t.id === inputTimezone) || TIMEZONE_OPTIONS[0];
 
