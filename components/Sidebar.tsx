@@ -23,7 +23,9 @@ import {
   Code2,
   KeyRound,
   DatabaseZap,
-  CaseSensitive
+  CaseSensitive,
+  CalendarRange,
+  Palette
 } from 'lucide-react';
 
 export function Sidebar() {
@@ -66,6 +68,8 @@ export function Sidebar() {
     { name: 'JWT Decoder', path: '/jwt-decoder', icon: KeyRound },
     { name: 'Liquibase Checksum', path: '/liquibase-checksum', icon: DatabaseZap },
     { name: 'Case Converter', path: '/case-converter', icon: CaseSensitive },
+    { name: 'SQL Date Filter', path: '/sql-date-filter', icon: CalendarRange },
+    { name: 'Color Inspector', path: '/color-inspector', icon: Palette },
     { name: 'Time Zone', path: '/timezone-converter', icon: Globe },
   ];
 
