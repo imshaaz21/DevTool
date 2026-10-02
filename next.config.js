@@ -11,6 +11,15 @@ const nextConfig = {
     domains: [],
   },
   output: 'standalone', // Enable standalone output for Docker deployment
+  async redirects() {
+    return [
+      {
+        source: '/robot.txt',
+        destination: '/robots.txt',
+        permanent: true,
+      },
+    ];
+  },
 }
 
 module.exports = nextConfig
