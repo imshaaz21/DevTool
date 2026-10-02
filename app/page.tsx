@@ -22,7 +22,8 @@ import {
   DatabaseZap,
   CaseSensitive,
   CalendarRange,
-  Palette
+  Palette,
+  Key
 } from 'lucide-react';
 
 interface Tool {
@@ -130,6 +131,14 @@ const TOOLS: Tool[] = [
     category: 'Encoders',
     icon: Binary,
     tags: ['base64', 'encode', 'decode', 'hash', 'sha256', 'md5', 'sha512']
+  },
+  {
+    title: 'PKCE Generator & Validator',
+    desc: 'Generate RFC 7636 code_verifier and code_challenge (S256 / plain), verify PKCE pairs, and inspect SHA-256 transformations.',
+    href: '/pkce-generator',
+    category: 'Data & Security',
+    icon: Key,
+    tags: ['pkce', 'oauth', 'oauth2', 'code_verifier', 'code_challenge', 's256', 'sha256', 'base64url', 'auth', 'security']
   },
   {
     title: 'JWT Decoder',

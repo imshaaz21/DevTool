@@ -244,7 +244,7 @@ export const SAMPLE_SCREEN_PERMISSION_JSON = JSON.stringify(
     screenId: "SCR_SECURITY_ROLES_MGMT",
     screenName: "Role & Permission Management",
     module: "ACCESS_CONTROL",
-    tenant: "SA-GOV-PROD-01",
+    tenant: "TENANT-DEMO-01",
     allowedActions: [
       "VIEW_PERMISSIONS",
       "ASSIGN_ROLE",

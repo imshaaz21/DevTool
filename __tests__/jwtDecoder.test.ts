@@ -46,7 +46,7 @@ describe('jwtDecoder utility', () => {
       expect(res.valid).toBe(true);
       expect(res.header).toEqual({ alg: 'HS256', typ: 'JWT' });
       expect(res.payload?.sub).toBe('1234567890');
-      expect(res.payload?.name).toBe('Ali Al-Shahrani');
+      expect(res.payload?.name).toBe('Demo User');
       expect(res.hadBearerPrefix).toBe(false);
       expect(res.algorithm).toBe('HS256');
       expect(res.isExpired).toBe(false);
@@ -57,7 +57,7 @@ describe('jwtDecoder utility', () => {
       const res = decodeJwt(SAMPLE_BEARER_JWT);
       expect(res.valid).toBe(true);
       expect(res.hadBearerPrefix).toBe(true);
-      expect(res.payload?.email).toBe('ali.shahrani@csi.com');
+      expect(res.payload?.email).toBe('demo.user@example.com');
       expect(res.payload?.roles).toContain('ADMIN');
     });
 
