@@ -25,7 +25,8 @@ import {
   DatabaseZap,
   CaseSensitive,
   CalendarRange,
-  Palette
+  Palette,
+  Key
 } from 'lucide-react';
 
 export function Sidebar() {
@@ -65,6 +66,7 @@ export function Sidebar() {
     { name: 'Base64 Media / PDF', path: '/base64-viewer', icon: ImageIcon },
     { name: 'UUID Generator', path: '/uuid-generator', icon: Fingerprint },
     { name: 'Encoder / Decoder', path: '/encoder-decoder', icon: Binary },
+    { name: 'PKCE Generator', path: '/pkce-generator', icon: Key },
     { name: 'JWT Decoder', path: '/jwt-decoder', icon: KeyRound },
     { name: 'Liquibase Checksum', path: '/liquibase-checksum', icon: DatabaseZap },
     { name: 'Case Converter', path: '/case-converter', icon: CaseSensitive },
