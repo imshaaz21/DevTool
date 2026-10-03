@@ -55,8 +55,8 @@ jobs:
         if-no-files-found: ignore
 
     - name: SonarCloud Scan (Node 20.x only)
-      if: matrix.node-version == '20.x' && env.SONAR_TOKEN != ''
-      uses: SonarSource/sonarcloud-github-action@ffc3010689be73b8e5ae0c57ce35968afd7909e8 # v5.0.0
+      if: matrix.node-version == '20.x'
+      uses: SonarSource/sonarqube-scan-action@0303d6b62e310685c0e34d0b9cde218036885c4d # v5.0.0
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
