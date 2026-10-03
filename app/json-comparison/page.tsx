@@ -6,7 +6,7 @@ import dynamic from 'next/dynamic';
 import { Sidebar } from '@/components/Sidebar';
 import { useSidebar } from '@/components/SidebarContext';
 import { PageHeader } from '@/components/PageHeader';
-import { compareJsonObjects } from '@/utils/jsonComparator';
+import { compareJsonObjects, type JsonComparisonResult } from '@/utils/jsonComparator';
 const JsonEditorComponent = dynamic(() => import('@/components/JsonEditorComponent').then(mod => ({ default: mod.JsonEditorComponent })), { ssr: false, loading: () => <EditorSkeleton /> });
 import { EditorSkeleton } from '@/components/EditorSkeleton';
 import { ViewTab, StatBox, KeyDiffList, ValueDiffRow, EmptyState } from '@/components/JsonCompareParts';
@@ -25,16 +25,16 @@ import {
 
 export default function JsonComparisonPage() {
   const { width } = useSidebar();
-  const [jsonA, setJsonA] = useState<any>({
+  const [jsonA, setJsonA] = useState<unknown>({
     example: "Paste or edit JSON A here",
     user: { name: "John", age: 30 }
   });
-  const [jsonB, setJsonB] = useState<any>({
+  const [jsonB, setJsonB] = useState<unknown>({
     example: "Paste or edit JSON B here",
     user: { name: "Jane", age: 25 }
   });
 
-  const [comparison, setComparison] = useState<any>(null);
+  const [comparison, setComparison] = useState<JsonComparisonResult | null>(null);
   const [error, setError] = useState<string>('');
   const [viewMode, setViewMode] = useState<'input' | 'comparison'>('input');
   const [selectedView, setSelectedView] = useState<'diff' | 'common' | 'values' | 'keys' | 'all'>('diff');
@@ -122,7 +122,7 @@ export default function JsonComparisonPage() {
             </Link>
           </div>
 
-          {viewMode === 'input' ? (
+          {viewMode === 'input' || !comparison ? (
             <div className="h-full flex flex-col gap-4">
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 flex-1 min-h-[500px]">
                 <EditorPanel title="Original JSON (A)" json={jsonA} onChange={setJsonA} />
@@ -178,7 +178,7 @@ export default function JsonComparisonPage() {
 
                 {selectedView === 'values' && (
                   <div className="p-4 space-y-3">
-                    {comparison.valueDiffs.map((diff: any, i: number) => (
+                    {comparison.valueDiffs.map((diff, i) => (
                       <ValueDiffRow key={i} diff={diff} labelA="JSON A" labelB="JSON B" />
                     ))}
                     {comparison.valueDiffs.length === 0 && <EmptyState text="No value differences found." />}
@@ -212,7 +212,7 @@ export default function JsonComparisonPage() {
   );
 }
 
-function EditorPanel({ title, json, onChange }: { title: string, json: any, onChange: (j: any) => void }) {
+function EditorPanel({ title, json, onChange }: { title: string, json: unknown, onChange: (j: unknown) => void }) {
   return (
     <div className="flex flex-col card p-0 overflow-hidden lg:h-[600px]">
       <div className="px-4 py-2.5 border-b border-neutral-200 dark:border-neutral-800 bg-neutral-50/50 dark:bg-neutral-900/50 flex items-center justify-between">

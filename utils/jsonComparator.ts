@@ -5,23 +5,24 @@
  */
 
 // Get all keys from an object recursively
-export function getAllKeys(obj: any, prefix = ''): string[] {
+export function getAllKeys(obj: unknown, prefix = ''): string[] {
   if (!obj || typeof obj !== 'object') {
     return [];
   }
 
   let keys: string[] = [];
+  const record = obj as Record<string, unknown>;
 
-  Object.keys(obj).forEach(key => {
+  Object.keys(record).forEach(key => {
     const currentKey = prefix ? `${prefix}.${key}` : key;
     keys.push(currentKey);
 
-    if (obj[key] && typeof obj[key] === 'object' && !Array.isArray(obj[key])) {
+    if (record[key] && typeof record[key] === 'object' && !Array.isArray(record[key])) {
       // Recursively get keys from nested objects
-      keys = [...keys, ...getAllKeys(obj[key], currentKey)];
-    } else if (Array.isArray(obj[key])) {
+      keys = [...keys, ...getAllKeys(record[key], currentKey)];
+    } else if (Array.isArray(record[key])) {
       // For arrays, check if they contain objects and get keys from those
-      obj[key].forEach((item: any, index: number) => {
+      (record[key] as unknown[]).forEach((item, index) => {
         if (item && typeof item === 'object') {
           keys = [...keys, ...getAllKeys(item, `${currentKey}[${index}]`)];
         }
@@ -33,7 +34,23 @@ export function getAllKeys(obj: any, prefix = ''): string[] {
 }
 
 // Compare two JSON objects and return the differences
-export function compareJsonObjects(jsonA: any, jsonB: any) {
+export interface ValueDiff {
+  key: string;
+  valueA: unknown;
+  valueB: unknown;
+}
+
+export interface JsonComparisonResult {
+  keysOnlyInA: string[];
+  keysOnlyInB: string[];
+  keysInBoth: string[];
+  commonKeysWithSameValue: string[];
+  valueDiffs: ValueDiff[];
+  totalKeysA: number;
+  totalKeysB: number;
+}
+
+export function compareJsonObjects(jsonA: unknown, jsonB: unknown): JsonComparisonResult {
   const keysA = getAllKeys(jsonA);
   const keysB = getAllKeys(jsonB);
 
@@ -94,7 +111,7 @@ export function compareJsonObjects(jsonA: any, jsonB: any) {
 }
 
 // Get a nested value from an object using a dot-notation path
-export function getValueByPath(obj: any, path: string): any {
+export function getValueByPath(obj: unknown, path: string): unknown {
   // Handle array notation like "users[0].name"
   const arrayMatch = path.match(/^(.*?)\[(\d+)\](.*)$/);
   if (arrayMatch) {
@@ -118,17 +135,17 @@ export function getValueByPath(obj: any, path: string): any {
   let current = obj;
 
   for (const part of parts) {
-    if (current === null || current === undefined) {
+    if (current === null || current === undefined || typeof current !== 'object') {
       return undefined;
     }
-    current = current[part];
+    current = (current as Record<string, unknown>)[part];
   }
 
   return current;
 }
 
 // Pretty print JSON with proper indentation
-export function prettyPrintJson(json: any): string {
+export function prettyPrintJson(json: unknown): string {
   return JSON.stringify(json, null, 2);
 }
 
@@ -136,12 +153,12 @@ export function prettyPrintJson(json: any): string {
 export interface TreeNode {
   name: string;
   children?: TreeNode[];
-  value?: any;
+  value?: unknown;
   path?: string;
   status?: 'added' | 'removed' | 'unchanged';
 }
 
-export function createTreeFromKeys(keys: string[], json: any, status?: 'added' | 'removed' | 'unchanged'): TreeNode {
+export function createTreeFromKeys(keys: string[], json: unknown, status?: 'added' | 'removed' | 'unchanged'): TreeNode {
   const root: TreeNode = { name: 'root', children: [] };
 
   keys.forEach(key => {

@@ -5,7 +5,7 @@ import dynamic from 'next/dynamic';
 import { Sidebar } from '@/components/Sidebar';
 import { useSidebar } from '@/components/SidebarContext';
 import { PageHeader } from '@/components/PageHeader';
-import { compareJsonObjects } from '@/utils/jsonComparator';
+import { compareJsonObjects, type JsonComparisonResult } from '@/utils/jsonComparator';
 const JsonEditorComponent = dynamic(() => import('@/components/JsonEditorComponent').then(mod => ({ default: mod.JsonEditorComponent })), { ssr: false, loading: () => <EditorSkeleton /> });
 import { EditorSkeleton } from '@/components/EditorSkeleton';
 import { ViewTab, StatBox, KeyDiffList, ValueDiffRow, EmptyState } from '@/components/JsonCompareParts';
@@ -21,7 +21,7 @@ import {
 
 export default function JsonComparatorPage() {
   const { width } = useSidebar();
-  const [jsonA, setJsonA] = useState<any>({
+  const [jsonA, setJsonA] = useState<unknown>({
     configValue: {
       release: {
         enableNewUI: true,
@@ -31,7 +31,7 @@ export default function JsonComparatorPage() {
       }
     }
   });
-  const [jsonB, setJsonB] = useState<any>({
+  const [jsonB, setJsonB] = useState<unknown>({
     configValue: {
       release: {
         enableNewUI: true,
@@ -42,13 +42,15 @@ export default function JsonComparatorPage() {
     }
   });
 
-  const [comparison, setComparison] = useState<any>(null);
+  const [comparison, setComparison] = useState<JsonComparisonResult | null>(null);
   const [error, setError] = useState<string>('');
   const [viewMode, setViewMode] = useState<'input' | 'comparison'>('input');
   const [selectedView, setSelectedView] = useState<'common' | 'values' | 'keys' | 'all'>('keys');
 
-  const hasConfigValueRelease = (json: any): boolean => {
-    return json && typeof json === 'object' && json.configValue && json.configValue.release;
+  const hasConfigValueRelease = (json: unknown): boolean => {
+    if (!json || typeof json !== 'object') return false;
+    const configValue = (json as Record<string, unknown>).configValue;
+    return !!configValue && typeof configValue === 'object' && 'release' in configValue;
   };
 
   const { isValidStructure, validationError } = useMemo(() => {
@@ -76,8 +78,8 @@ export default function JsonComparatorPage() {
   const handleCompare = () => {
     setError('');
     try {
-      const releaseA = jsonA.configValue.release;
-      const releaseB = jsonB.configValue.release;
+      const releaseA = (jsonA as { configValue?: { release?: unknown } }).configValue?.release;
+      const releaseB = (jsonB as { configValue?: { release?: unknown } }).configValue?.release;
       const result = compareJsonObjects(releaseA, releaseB);
       setComparison(result);
       setViewMode('comparison');
@@ -128,7 +130,7 @@ export default function JsonComparatorPage() {
 
         {/* Content */}
         <div className="flex-1 overflow-auto p-6 space-y-6">
-          {viewMode === 'input' ? (
+          {viewMode === 'input' || !comparison ? (
             <div className="h-full flex flex-col gap-4">
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 flex-1 min-h-[500px]">
                 <EditorPanel title="Environment A (Ops)" json={jsonA} onChange={setJsonA} />
@@ -184,7 +186,7 @@ export default function JsonComparatorPage() {
 
                 {selectedView === 'values' && (
                   <div className="p-4 space-y-3">
-                    {comparison.valueDiffs.map((diff: any, i: number) => (
+                    {comparison.valueDiffs.map((diff, i) => (
                       <ValueDiffRow key={i} diff={diff} labelA="Ops" labelB="Release" />
                     ))}
                     {comparison.valueDiffs.length === 0 && <EmptyState text="No value differences found." />}
@@ -222,7 +224,7 @@ export default function JsonComparatorPage() {
   );
 }
 
-function EditorPanel({ title, json, onChange }: { title: string, json: any, onChange: (j: any) => void }) {
+function EditorPanel({ title, json, onChange }: { title: string, json: unknown, onChange: (j: unknown) => void }) {
   return (
     <div className="flex flex-col card p-0 overflow-hidden lg:h-[600px]">
       <div className="px-4 py-2.5 border-b border-neutral-200 dark:border-neutral-800 bg-neutral-50/50 dark:bg-neutral-900/50 flex items-center justify-between">

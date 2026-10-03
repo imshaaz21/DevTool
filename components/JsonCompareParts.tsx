@@ -1,4 +1,5 @@
 import { CheckCircle2 } from 'lucide-react';
+import type { ValueDiff } from '@/utils/jsonComparator';
 
 export function ViewTab({ active, onClick, label }: { active: boolean, onClick: () => void, label: string }) {
   return (
@@ -55,7 +56,7 @@ export function KeyDiffList({ title, items, type }: { title: string, items: stri
   );
 }
 
-export function ValueDiffRow({ diff, labelA, labelB }: { diff: any, labelA: string, labelB: string }) {
+export function ValueDiffRow({ diff, labelA, labelB }: { diff: ValueDiff, labelA: string, labelB: string }) {
   return (
     <div className="p-3 bg-neutral-50/60 dark:bg-neutral-900/40 rounded-lg border border-neutral-200/80 dark:border-neutral-800">
       <div className="font-mono text-xs font-medium text-neutral-900 dark:text-neutral-100 mb-2 truncate">
@@ -69,7 +70,7 @@ export function ValueDiffRow({ diff, labelA, labelB }: { diff: any, labelA: stri
   );
 }
 
-export function ValBox({ label, value, variant }: { label: string, value: any, variant: 'added' | 'removed' }) {
+export function ValBox({ label, value, variant }: { label: string, value: unknown, variant: 'added' | 'removed' }) {
   const valStr = typeof value === 'object' ? JSON.stringify(value) : String(value);
   return (
     <div className="bg-white dark:bg-neutral-900 border border-neutral-200/80 dark:border-neutral-800 p-2 rounded-md">
