@@ -21,6 +21,7 @@ import {
   ColorDetails,
 } from '@/lib/colorInspector';
 import { copyTextToClipboard } from '@/lib/clipboard';
+import { onKeyActivate } from '@/lib/a11y';
 
 const SAMPLE_HEX = '#3B82F6';
 const SAMPLE_PALETTES = [
@@ -264,6 +265,9 @@ export default function ColorInspectorPage() {
                 ].map((item) => (
                   <div
                     key={item.label}
+                    role="button"
+                    tabIndex={0}
+                    onKeyDown={onKeyActivate(() => handleCopy(item.val, item.key))}
                     onClick={() => handleCopy(item.val, item.key)}
                     className="group bg-white dark:bg-[#0e0e11] border border-neutral-200 dark:border-neutral-800/80 hover:border-neutral-300 dark:hover:border-neutral-700 rounded-xl p-3 shadow-xs transition-all cursor-pointer flex flex-col justify-between gap-2"
                   >
@@ -448,6 +452,12 @@ export default function ColorInspectorPage() {
                     {extractedColors.map(({ hex, count, details }) => (
                       <div
                         key={hex}
+                        role="button"
+                        tabIndex={0}
+                        onKeyDown={onKeyActivate(() => {
+                          setColorInput(hex);
+                          setActiveTab('inspector');
+                        })}
                         onClick={() => {
                           setColorInput(hex);
                           setActiveTab('inspector');

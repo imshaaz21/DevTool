@@ -91,7 +91,7 @@ export default function EncoderDecoderPage() {
     if (!isAutoConvert) return;
 
     const timer = setTimeout(() => {
-      handleEncodeDecode(input, mode, isEncoding, hashType);
+      void handleEncodeDecode(input, mode, isEncoding, hashType);
     }, 200);
 
     return () => clearTimeout(timer);
@@ -223,7 +223,7 @@ export default function EncoderDecoderPage() {
               )}
 
               <button
-                onClick={() => handleEncodeDecode(input, mode, isEncoding, hashType)}
+                onClick={() => void handleEncodeDecode(input, mode, isEncoding, hashType)}
                 className="btn btn-primary"
               >
                 Process Now

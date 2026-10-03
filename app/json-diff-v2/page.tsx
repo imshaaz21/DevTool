@@ -26,6 +26,7 @@ import {
   DiffSummary,
 } from '@/lib/semanticJsonDiff';
 import { copyTextToClipboard } from '@/lib/clipboard';
+import { onKeyActivate } from '@/lib/a11y';
 
 const JsonEditorComponent = dynamic(
   () => import('@/components/JsonEditorComponent').then((mod) => ({ default: mod.JsonEditorComponent })),
@@ -718,6 +719,14 @@ export default function JsonDiffV2Page() {
                             <div
                               key={`left-l-${lineNum}`}
                               id={`left-line-${lineNum}`}
+                              role="button"
+                              tabIndex={-1}
+                              onKeyDown={onKeyActivate(() => {
+                                if (activeLineDiff) {
+                                  const diffIdx = visibleDiffs.findIndex((d) => d.id === activeLineDiff.id);
+                                  if (diffIdx !== -1) jumpToDiff(diffIdx);
+                                }
+                              })}
                               onClick={() => {
                                 if (activeLineDiff) {
                                   const diffIdx = visibleDiffs.findIndex((d) => d.id === activeLineDiff.id);
@@ -794,6 +803,14 @@ export default function JsonDiffV2Page() {
                             <div
                               key={`right-l-${lineNum}`}
                               id={`right-line-${lineNum}`}
+                              role="button"
+                              tabIndex={-1}
+                              onKeyDown={onKeyActivate(() => {
+                                if (activeLineDiff) {
+                                  const diffIdx = visibleDiffs.findIndex((d) => d.id === activeLineDiff.id);
+                                  if (diffIdx !== -1) jumpToDiff(diffIdx);
+                                }
+                              })}
                               onClick={() => {
                                 if (activeLineDiff) {
                                   const diffIdx = visibleDiffs.findIndex((d) => d.id === activeLineDiff.id);
@@ -852,6 +869,9 @@ export default function JsonDiffV2Page() {
                           return (
                             <div
                               key={diff.id}
+                              role="button"
+                              tabIndex={0}
+                              onKeyDown={onKeyActivate(() => jumpToDiff(idx))}
                               onClick={() => jumpToDiff(idx)}
                               className={`p-2.5 rounded-lg border text-xs cursor-pointer transition-all ${
                                 isSelected

@@ -29,6 +29,7 @@ import {
   DelimiterOption,
 } from '@/lib/listCompare';
 import { copyTextToClipboard } from '@/lib/clipboard';
+import { onKeyActivate } from '@/lib/a11y';
 
 const SAMPLE_LIST_A = `INV-S2026082369196656919665
 INV-S2026082770727072704
@@ -463,6 +464,9 @@ export default function ListComparePage() {
                     </span>
                     {analysisA.duplicates.length > 0 && (
                       <span
+                        role="button"
+                        tabIndex={0}
+                        onKeyDown={onKeyActivate(() => setActiveTab('dupesA'))}
                         className="px-1.5 py-0.5 rounded bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-800/60 flex items-center gap-1 cursor-pointer"
                         onClick={() => setActiveTab('dupesA')}
                         title="Click to view duplicate items in List A"
@@ -523,6 +527,9 @@ export default function ListComparePage() {
                     </span>
                     {analysisB.duplicates.length > 0 && (
                       <span
+                        role="button"
+                        tabIndex={0}
+                        onKeyDown={onKeyActivate(() => setActiveTab('dupesB'))}
                         className="px-1.5 py-0.5 rounded bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-800/60 flex items-center gap-1 cursor-pointer"
                         onClick={() => setActiveTab('dupesB')}
                         title="Click to view duplicate items in List B"

@@ -38,7 +38,7 @@ export default function SaudiDataGeneratorPage() {
 
   useEffect(() => {
     if (autoGenerate) {
-      handleGenerate();
+      void handleGenerate();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [count, nationality, idType, autoGenerate]);
