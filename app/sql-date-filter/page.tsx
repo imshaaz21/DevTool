@@ -27,6 +27,7 @@ import {
   getPresetDateRange,
   formatForDatetimeInput,
 } from '@/lib/sqlDateFilter';
+import { copyTextToClipboard } from '@/lib/clipboard';
 
 const SAMPLE_COLUMNS = [
   'BI.CREATED_DATE',
@@ -68,7 +69,7 @@ export default function SqlDateFilterPage() {
 
   // Copy handler
   const handleCopy = (text: string, key: string) => {
-    navigator.clipboard.writeText(text);
+    copyTextToClipboard(text);
     setCopiedKey(key);
     setTimeout(() => setCopiedKey(null), 1800);
   };

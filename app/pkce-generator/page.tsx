@@ -25,6 +25,7 @@ import {
   ShieldCheck,
   Sparkles,
 } from 'lucide-react';
+import { copyTextToClipboard } from '@/lib/clipboard';
 
 const RFC_SAMPLE_VERIFIER =
   'dBjftJeZ4CVP-mB92K27uhbUJU1p1r_wW1gFWFOEjXk';
@@ -66,7 +67,7 @@ export default function PkceGeneratorPage() {
   );
 
   const handleCopy = useCallback((text: string, key: string, label: string = 'Copied') => {
-    navigator.clipboard.writeText(text);
+    copyTextToClipboard(text);
     setCopiedKey(key);
     toast.success(`${label} copied to clipboard`);
     setTimeout(() => {

@@ -12,6 +12,7 @@ import {
   AlertCircle,
   WrapText,
 } from 'lucide-react';
+import { copyTextToClipboard } from '@/lib/clipboard';
 
 export interface StyledJsonInputProps {
   value: string;
@@ -193,7 +194,7 @@ export function StyledJsonInput({
 
   // Copy action
   const handleCopy = () => {
-    navigator.clipboard.writeText(value);
+    copyTextToClipboard(value);
     setCopied(true);
     setTimeout(() => setCopied(false), 1800);
   };

@@ -25,6 +25,7 @@ import {
   SemanticDiff,
   DiffSummary,
 } from '@/lib/semanticJsonDiff';
+import { copyTextToClipboard } from '@/lib/clipboard';
 
 const JsonEditorComponent = dynamic(
   () => import('@/components/JsonEditorComponent').then((mod) => ({ default: mod.JsonEditorComponent })),
@@ -308,7 +309,7 @@ export default function JsonDiffV2Page() {
 
   // Copy helper
   const handleCopy = (text: string, key: string) => {
-    navigator.clipboard.writeText(text);
+    copyTextToClipboard(text);
     setCopiedKey(key);
     setTimeout(() => setCopiedKey(null), 1800);
   };

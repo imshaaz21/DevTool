@@ -28,6 +28,7 @@ import {
   SortOption,
   DelimiterOption,
 } from '@/lib/listCompare';
+import { copyTextToClipboard } from '@/lib/clipboard';
 
 const SAMPLE_LIST_A = `INV-S2026082369196656919665
 INV-S2026082770727072704
@@ -156,7 +157,7 @@ export default function ListComparePage() {
 
   // Copy helper
   const handleCopy = (text: string, key: string) => {
-    navigator.clipboard.writeText(text);
+    copyTextToClipboard(text);
     setCopiedKey(key);
     setTimeout(() => setCopiedKey(null), 1800);
   };

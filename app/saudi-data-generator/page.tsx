@@ -20,6 +20,7 @@ import {
   ChevronRight,
   Check
 } from 'lucide-react';
+import { copyTextToClipboard } from '@/lib/clipboard';
 
 export default function SaudiDataGeneratorPage() {
   const { width } = useSidebar();
@@ -109,7 +110,7 @@ export default function SaudiDataGeneratorPage() {
   };
 
   const handleCopy = (text: string, key: string, label: string) => {
-    navigator.clipboard.writeText(text);
+    copyTextToClipboard(text);
     setCopiedKey(key);
     toast.success(`Copied ${label}`);
     setTimeout(() => setCopiedKey(null), 1500);

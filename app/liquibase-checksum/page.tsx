@@ -7,6 +7,7 @@ import { useSidebar } from '@/components/SidebarContext';
 import { PageHeader } from '@/components/PageHeader';
 import { DatabaseZap, Copy, CheckCircle2, XCircle, AlertTriangle } from 'lucide-react';
 import { computeChecksums, matchStored, EMPTY_CHECKSUM } from '@/lib/liquibaseChecksum';
+import { copyTextToClipboard } from '@/lib/clipboard';
 
 const DATABASES = ['postgresql', 'oracle'];
 
@@ -28,7 +29,7 @@ export default function LiquibaseChecksum() {
   const matches = useMemo(() => matchStored(results, stored), [results, stored]);
 
   const copy = (text: string) => {
-    navigator.clipboard.writeText(text);
+    copyTextToClipboard(text);
     toast.success('Copied to clipboard');
   };
 

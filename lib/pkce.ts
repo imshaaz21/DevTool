@@ -70,13 +70,10 @@ export function generateCodeVerifier(length = DEFAULT_VERIFIER_LENGTH): string {
   const charset = UNRESERVED_CHARACTERS;
   const randomValues = new Uint8Array(targetLength);
 
-  if (typeof crypto !== 'undefined' && crypto.getRandomValues) {
-    crypto.getRandomValues(randomValues);
-  } else {
-    for (let i = 0; i < targetLength; i++) {
-      randomValues[i] = Math.floor(Math.random() * 256);
-    }
+  if (typeof crypto === 'undefined' || !crypto.getRandomValues) {
+    throw new Error('crypto.getRandomValues is not available in this environment');
   }
+  crypto.getRandomValues(randomValues);
 
   let result = '';
   for (let i = 0; i < targetLength; i++) {

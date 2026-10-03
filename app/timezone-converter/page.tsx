@@ -23,6 +23,7 @@ import {
   AlertCircle
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
+import { copyTextToClipboard } from '@/lib/clipboard';
 
 type InputMode = 'paste' | 'picker';
 
@@ -89,7 +90,7 @@ export default function TimeZoneConverterPage() {
   }, [handleConvert]);
 
   const handleCopy = (text: string, tz: string, label = 'Timestamp') => {
-    navigator.clipboard.writeText(text);
+    copyTextToClipboard(text);
     setCopiedTz(tz);
     setTimeout(() => setCopiedTz(null), 1500);
     toast.success(`${label} copied to clipboard`);

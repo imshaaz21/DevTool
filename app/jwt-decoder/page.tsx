@@ -30,6 +30,7 @@ import {
   Code2,
   ShieldCheck,
 } from 'lucide-react';
+import { copyTextToClipboard } from '@/lib/clipboard';
 
 export default function JwtDecoderPage() {
   const { isCollapsed } = useSidebar();
@@ -53,7 +54,7 @@ export default function JwtDecoderPage() {
 
   // Copy helper
   const handleCopy = useCallback((text: string, key: string, label: string = 'Copied') => {
-    navigator.clipboard.writeText(text);
+    copyTextToClipboard(text);
     setCopiedKey(key);
     toast.success(`${label} copied to clipboard`);
     setTimeout(() => {

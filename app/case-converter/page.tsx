@@ -35,6 +35,7 @@ import {
   batchConvert,
   getTextStats,
 } from '@/lib/caseConverter';
+import { copyTextToClipboard } from '@/lib/clipboard';
 
 const SAMPLE_SINGLE = 'user_account_profile_settings';
 const SAMPLE_MULTILINE = `user_id
@@ -86,7 +87,7 @@ export default function CaseConverterPage() {
 
   // Copy handler
   const handleCopy = (text: string, key: string) => {
-    navigator.clipboard.writeText(text);
+    copyTextToClipboard(text);
     setCopiedKey(key);
     setTimeout(() => setCopiedKey(null), 1800);
   };

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { copyTextToClipboard } from '@/lib/clipboard';
 
 interface JsonViewerProps {
   data: any;
@@ -74,7 +75,7 @@ export function InteractiveJson({ data, editable = false, onEdit }: JsonViewerPr
   };
 
   const copyToClipboard = () => {
-    navigator.clipboard.writeText(editableValue);
+    copyTextToClipboard(editableValue);
   };
 
   const updateJsonValue = (path: string[], newValue: any) => {
