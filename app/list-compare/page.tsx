@@ -28,7 +28,7 @@ import {
   SortOption,
   DelimiterOption,
 } from '@/lib/listCompare';
-import { copyTextToClipboard } from '@/lib/clipboard';
+import { useCopyFeedback, downloadTextFile } from '@/lib/clipboard';
 import { onKeyActivate } from '@/lib/a11y';
 
 const SAMPLE_LIST_A = `INV-S2026082369196656919665
@@ -76,7 +76,6 @@ export default function ListComparePage() {
   // Active view tab & search filter
   const [activeTab, setActiveTab] = useState<ResultTab>('common');
   const [searchQuery, setSearchQuery] = useState('');
-  const [copiedKey, setCopiedKey] = useState<string | null>(null);
 
   // Parse inputs
   const parsedA = useMemo(() => {
@@ -157,24 +156,10 @@ export default function ListComparePage() {
   }, [activeTab, currentTabItems, analysisA, analysisB, quoteStyle, outputDelimiter, wrapper]);
 
   // Copy helper
-  const handleCopy = (text: string, key: string) => {
-    copyTextToClipboard(text);
-    setCopiedKey(key);
-    setTimeout(() => setCopiedKey(null), 1800);
-  };
+  const { copiedKey, handleCopy } = useCopyFeedback();
 
   // Download file helper
-  const handleDownload = (content: string, filename: string) => {
-    const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = filename;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-  };
+  const handleDownload = downloadTextFile;
 
   // Quick action: load sample
   const handleLoadSample = () => {

@@ -35,7 +35,7 @@ import {
   batchConvert,
   getTextStats,
 } from '@/lib/caseConverter';
-import { copyTextToClipboard } from '@/lib/clipboard';
+import { useCopyFeedback, downloadTextFile } from '@/lib/clipboard';
 import { onKeyActivate } from '@/lib/a11y';
 
 const SAMPLE_SINGLE = 'user_account_profile_settings';
@@ -65,7 +65,6 @@ export default function CaseConverterPage() {
   const [singleInput, setSingleInput] = useState<string>(SAMPLE_SINGLE);
   const [caseFilter, setCaseFilter] = useState<string>('all');
   const [caseSearch, setCaseSearch] = useState<string>('');
-  const [copiedKey, setCopiedKey] = useState<string | null>(null);
 
   // Batch Mode states
   const [batchInput, setBatchInput] = useState<string>(SAMPLE_MULTILINE);
@@ -87,24 +86,10 @@ export default function CaseConverterPage() {
   const [isCaseSensitive, setIsCaseSensitive] = useState<boolean>(true);
 
   // Copy handler
-  const handleCopy = (text: string, key: string) => {
-    copyTextToClipboard(text);
-    setCopiedKey(key);
-    setTimeout(() => setCopiedKey(null), 1800);
-  };
+  const { copiedKey, handleCopy } = useCopyFeedback();
 
   // Download handler
-  const handleDownload = (content: string, filename: string) => {
-    const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = filename;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-  };
+  const handleDownload = downloadTextFile;
 
   // Filtered case cards for Matrix view
   const filteredCases = useMemo(() => {

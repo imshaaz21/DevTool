@@ -29,7 +29,7 @@ import {
   ExtractedItem,
 } from '@/lib/jsonAggregator';
 import { cleanAndParseJsonString, unwrapNestedStrings } from '@/utils/jsonFormatter';
-import { copyTextToClipboard } from '@/lib/clipboard';
+import { useCopyFeedback, downloadTextFile } from '@/lib/clipboard';
 
 const SAMPLE_HEALTHCARE_JSON = `[
   {
@@ -143,7 +143,6 @@ export default function JsonPathAggregatorPage() {
 
   // View & UI state
   const [activeView, setActiveView] = useState<ViewMode>('table');
-  const [copiedKey, setCopiedKey] = useState<string | null>(null);
   const [fieldFilter, setFieldFilter] = useState('');
   const [tableSearch, setTableSearch] = useState('');
 
@@ -249,11 +248,7 @@ export default function JsonPathAggregatorPage() {
   }, [aggregationResult.items, tableSearch]);
 
   // Copy helper
-  const handleCopy = useCallback((text: string, key: string) => {
-    copyTextToClipboard(text);
-    setCopiedKey(key);
-    setTimeout(() => setCopiedKey(null), 1800);
-  }, []);
+  const { copiedKey, handleCopy } = useCopyFeedback();
 
   // Format JSON input
   const handleFormatJson = useCallback(() => {
@@ -289,17 +284,7 @@ export default function JsonPathAggregatorPage() {
   }, []);
 
   // Download exported data
-  const handleDownload = useCallback((content: string, filename: string) => {
-    const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = filename;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-  }, []);
+  const handleDownload = downloadTextFile;
 
   const formattedOutput = useMemo(() => {
     if (activeView === 'table') return '';
