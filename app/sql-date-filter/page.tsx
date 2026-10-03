@@ -27,7 +27,7 @@ import {
   getPresetDateRange,
   formatForDatetimeInput,
 } from '@/lib/sqlDateFilter';
-import { copyTextToClipboard } from '@/lib/clipboard';
+import { useCopyFeedback } from '@/lib/clipboard';
 
 const SAMPLE_COLUMNS = [
   'BI.CREATED_DATE',
@@ -62,17 +62,12 @@ export default function SqlDateFilterPage() {
 
   const [customStart, setCustomStart] = useState<string>(defaultDates.start);
   const [customEnd, setCustomEnd] = useState<string>(defaultDates.end);
-  const [copiedKey, setCopiedKey] = useState<string | null>(null);
 
   // Custom Full Query simulation
   const [baseTable, setBaseTable] = useState<string>('BANK_INVOICE BI');
 
   // Copy handler
-  const handleCopy = (text: string, key: string) => {
-    copyTextToClipboard(text);
-    setCopiedKey(key);
-    setTimeout(() => setCopiedKey(null), 1800);
-  };
+  const { copiedKey, handleCopy } = useCopyFeedback();
 
   // When preset changes, update custom inputs for easy tweaking
   const handlePresetSelect = (newPreset: DatePreset, tz = inputTimezone) => {

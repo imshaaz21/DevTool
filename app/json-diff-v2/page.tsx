@@ -25,7 +25,7 @@ import {
   SemanticDiff,
   DiffSummary,
 } from '@/lib/semanticJsonDiff';
-import { copyTextToClipboard } from '@/lib/clipboard';
+import { useCopyFeedback } from '@/lib/clipboard';
 import { onKeyActivate } from '@/lib/a11y';
 
 const JsonEditorComponent = dynamic(
@@ -105,7 +105,6 @@ export default function JsonDiffV2Page() {
   const [showEquality, setShowEquality] = useState<boolean>(true);
 
   // UI helpers
-  const [copiedKey, setCopiedKey] = useState<string | null>(null);
 
   // Scroll sync refs
   const leftPaneRef = useRef<HTMLDivElement>(null);
@@ -236,6 +235,18 @@ export default function JsonDiffV2Page() {
     }
   };
 
+  const isDiffVisible = (d: SemanticDiff) => {
+    if (d.type === 'missing' && !showMissing) return false;
+    if (d.type === 'type' && !showTypes) return false;
+    if (d.type === 'eq' && !showEquality) return false;
+    return true;
+  };
+
+  const jumpToDiffById = (diffId: number) => {
+    const idx = visibleDiffs.findIndex((d) => d.id === diffId);
+    if (idx !== -1) jumpToDiff(idx);
+  };
+
   const handlePrev = () => {
     if (currentDiffIndex > 0) {
       jumpToDiff(currentDiffIndex - 1);
@@ -309,11 +320,7 @@ export default function JsonDiffV2Page() {
   };
 
   // Copy helper
-  const handleCopy = (text: string, key: string) => {
-    copyTextToClipboard(text);
-    setCopiedKey(key);
-    setTimeout(() => setCopiedKey(null), 1800);
-  };
+  const { copiedKey, handleCopy } = useCopyFeedback();
 
   // Line diff classification maps
   const leftLineDiffMap = useMemo(() => {
@@ -692,58 +699,16 @@ export default function JsonDiffV2Page() {
                       >
                         {diffSummary.leftLines.map((lineStr, idx) => {
                           const lineNum = idx + 1;
-                          const lineDiffs = leftLineDiffMap.get(lineNum) || [];
-                          const activeLineDiff = lineDiffs.find((d) => {
-                            if (d.type === 'missing' && !showMissing) return false;
-                            if (d.type === 'type' && !showTypes) return false;
-                            if (d.type === 'eq' && !showEquality) return false;
-                            return true;
-                          });
-
-                          const isSelected = activeDiff?.path1.line === lineNum;
-
-                          let bgClass = '';
-                          if (isSelected) {
-                            bgClass = 'bg-blue-100 dark:bg-blue-950/80 text-blue-900 dark:text-blue-100 font-semibold';
-                          } else if (activeLineDiff) {
-                            if (activeLineDiff.type === 'missing') {
-                              bgClass = 'bg-emerald-50/80 dark:bg-emerald-950/40 text-emerald-900 dark:text-emerald-200';
-                            } else if (activeLineDiff.type === 'type') {
-                              bgClass = 'bg-rose-50/80 dark:bg-rose-950/40 text-rose-900 dark:text-rose-200';
-                            } else if (activeLineDiff.type === 'eq') {
-                              bgClass = 'bg-amber-50/80 dark:bg-amber-950/40 text-amber-900 dark:text-amber-200';
-                            }
-                          }
-
                           return (
-                            <div
+                            <DiffLine
                               key={`left-l-${lineNum}`}
-                              id={`left-line-${lineNum}`}
-                              role="button"
-                              tabIndex={-1}
-                              onKeyDown={onKeyActivate(() => {
-                                if (activeLineDiff) {
-                                  const diffIdx = visibleDiffs.findIndex((d) => d.id === activeLineDiff.id);
-                                  if (diffIdx !== -1) jumpToDiff(diffIdx);
-                                }
-                              })}
-                              onClick={() => {
-                                if (activeLineDiff) {
-                                  const diffIdx = visibleDiffs.findIndex((d) => d.id === activeLineDiff.id);
-                                  if (diffIdx !== -1) jumpToDiff(diffIdx);
-                                }
-                              }}
-                              className={`flex items-stretch group cursor-pointer transition-colors ${bgClass} ${
-                                !bgClass ? 'hover:bg-neutral-100/60 dark:hover:bg-neutral-900/60' : ''
-                              }`}
-                            >
-                              <span className="w-10 shrink-0 text-right pr-2 select-none text-[11px] text-neutral-400 dark:text-neutral-600 border-r border-neutral-100 dark:border-neutral-900/80">
-                                {lineNum}
-                              </span>
-                              <span className="pl-3 pr-2 whitespace-pre min-w-0 select-text">
-                                {lineStr || ' '}
-                              </span>
-                            </div>
+                              side="left"
+                              lineNum={lineNum}
+                              lineStr={lineStr}
+                              isSelected={activeDiff?.path1.line === lineNum}
+                              activeLineDiff={(leftLineDiffMap.get(lineNum) || []).find(isDiffVisible)}
+                              onJumpById={jumpToDiffById}
+                            />
                           );
                         })}
                       </div>
@@ -776,58 +741,16 @@ export default function JsonDiffV2Page() {
                       >
                         {diffSummary.rightLines.map((lineStr, idx) => {
                           const lineNum = idx + 1;
-                          const lineDiffs = rightLineDiffMap.get(lineNum) || [];
-                          const activeLineDiff = lineDiffs.find((d) => {
-                            if (d.type === 'missing' && !showMissing) return false;
-                            if (d.type === 'type' && !showTypes) return false;
-                            if (d.type === 'eq' && !showEquality) return false;
-                            return true;
-                          });
-
-                          const isSelected = activeDiff?.path2.line === lineNum;
-
-                          let bgClass = '';
-                          if (isSelected) {
-                            bgClass = 'bg-blue-100 dark:bg-blue-950/80 text-blue-900 dark:text-blue-100 font-semibold';
-                          } else if (activeLineDiff) {
-                            if (activeLineDiff.type === 'missing') {
-                              bgClass = 'bg-emerald-50/80 dark:bg-emerald-950/40 text-emerald-900 dark:text-emerald-200';
-                            } else if (activeLineDiff.type === 'type') {
-                              bgClass = 'bg-rose-50/80 dark:bg-rose-950/40 text-rose-900 dark:text-rose-200';
-                            } else if (activeLineDiff.type === 'eq') {
-                              bgClass = 'bg-amber-50/80 dark:bg-amber-950/40 text-amber-900 dark:text-amber-200';
-                            }
-                          }
-
                           return (
-                            <div
+                            <DiffLine
                               key={`right-l-${lineNum}`}
-                              id={`right-line-${lineNum}`}
-                              role="button"
-                              tabIndex={-1}
-                              onKeyDown={onKeyActivate(() => {
-                                if (activeLineDiff) {
-                                  const diffIdx = visibleDiffs.findIndex((d) => d.id === activeLineDiff.id);
-                                  if (diffIdx !== -1) jumpToDiff(diffIdx);
-                                }
-                              })}
-                              onClick={() => {
-                                if (activeLineDiff) {
-                                  const diffIdx = visibleDiffs.findIndex((d) => d.id === activeLineDiff.id);
-                                  if (diffIdx !== -1) jumpToDiff(diffIdx);
-                                }
-                              }}
-                              className={`flex items-stretch group cursor-pointer transition-colors ${bgClass} ${
-                                !bgClass ? 'hover:bg-neutral-100/60 dark:hover:bg-neutral-900/60' : ''
-                              }`}
-                            >
-                              <span className="w-10 shrink-0 text-right pr-2 select-none text-[11px] text-neutral-400 dark:text-neutral-600 border-r border-neutral-100 dark:border-neutral-900/80">
-                                {lineNum}
-                              </span>
-                              <span className="pl-3 pr-2 whitespace-pre min-w-0 select-text">
-                                {lineStr || ' '}
-                              </span>
-                            </div>
+                              side="right"
+                              lineNum={lineNum}
+                              lineStr={lineStr}
+                              isSelected={activeDiff?.path2.line === lineNum}
+                              activeLineDiff={(rightLineDiffMap.get(lineNum) || []).find(isDiffVisible)}
+                              onJumpById={jumpToDiffById}
+                            />
                           );
                         })}
                       </div>
@@ -928,104 +851,26 @@ export default function JsonDiffV2Page() {
               {diffTab === 'keys' && (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {/* Missing in Right (Original Left Only) */}
-                  <div className="bg-white dark:bg-[#0e0e11] border border-neutral-200 dark:border-neutral-800/80 rounded-xl p-4 shadow-xs flex flex-col">
-                    <div className="flex items-center justify-between pb-3 border-b border-neutral-100 dark:border-neutral-800 mb-3">
-                      <div className="flex items-center gap-2">
-                        <span className="w-2.5 h-2.5 rounded-full bg-rose-500" />
-                        <h3 className="text-xs font-semibold text-neutral-800 dark:text-neutral-200">
-                          Missing in Right (Original Left Only)
-                        </h3>
-                      </div>
-                      <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-400 border border-rose-200 dark:border-rose-900/60 font-semibold">
-                        {missingDiffs.inLeftOnly.length}
-                      </span>
-                    </div>
-                    <div className="space-y-2 overflow-y-auto max-h-[620px] pr-1">
-                      {missingDiffs.inLeftOnly.length === 0 ? (
-                        <div className="py-12 text-center text-xs text-neutral-400 font-mono">
-                          No keys missing from right document.
-                        </div>
-                      ) : (
-                        missingDiffs.inLeftOnly.map((d) => (
-                          <div
-                            key={d.id}
-                            className="p-2.5 rounded-lg border border-neutral-200 dark:border-neutral-800/80 bg-neutral-50/50 dark:bg-neutral-900/30 text-xs"
-                          >
-                            <div className="flex items-center justify-between gap-2 mb-1">
-                              <span className="font-mono text-xs font-semibold text-neutral-900 dark:text-neutral-100 truncate">
-                                {d.dotPath}
-                              </span>
-                              <button
-                                type="button"
-                                onClick={() => handleCopy(d.dotPath || '', `k-${d.id}`)}
-                                className="p-1 rounded hover:bg-white dark:hover:bg-neutral-800 text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200 transition-colors shrink-0"
-                                title="Copy dot path"
-                              >
-                                {copiedKey === `k-${d.id}` ? (
-                                  <Check size={12} className="text-emerald-500" />
-                                ) : (
-                                  <Copy size={12} />
-                                )}
-                              </button>
-                            </div>
-                            <div className="text-[11px] font-mono text-neutral-500 dark:text-neutral-400">
-                              Left Line {d.path1.line} • {d.rawMsg}
-                            </div>
-                          </div>
-                        ))
-                      )}
-                    </div>
-                  </div>
+                  <MissingKeysPanel
+                    tone="rose"
+                    title="Missing in Right (Original Left Only)"
+                    items={missingDiffs.inLeftOnly}
+                    emptyText="No keys missing from right document."
+                    lineOf={(d) => `Left Line ${d.path1.line}`}
+                    copiedKey={copiedKey}
+                    onCopy={handleCopy}
+                  />
 
                   {/* Missing in Left (Modified Right Only) */}
-                  <div className="bg-white dark:bg-[#0e0e11] border border-neutral-200 dark:border-neutral-800/80 rounded-xl p-4 shadow-xs flex flex-col">
-                    <div className="flex items-center justify-between pb-3 border-b border-neutral-100 dark:border-neutral-800 mb-3">
-                      <div className="flex items-center gap-2">
-                        <span className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
-                        <h3 className="text-xs font-semibold text-neutral-800 dark:text-neutral-200">
-                          Missing in Left (Modified Right Only)
-                        </h3>
-                      </div>
-                      <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-900/60 font-semibold">
-                        {missingDiffs.inRightOnly.length}
-                      </span>
-                    </div>
-                    <div className="space-y-2 overflow-y-auto max-h-[620px] pr-1">
-                      {missingDiffs.inRightOnly.length === 0 ? (
-                        <div className="py-12 text-center text-xs text-neutral-400 font-mono">
-                          No keys missing from left document.
-                        </div>
-                      ) : (
-                        missingDiffs.inRightOnly.map((d) => (
-                          <div
-                            key={d.id}
-                            className="p-2.5 rounded-lg border border-neutral-200 dark:border-neutral-800/80 bg-neutral-50/50 dark:bg-neutral-900/30 text-xs"
-                          >
-                            <div className="flex items-center justify-between gap-2 mb-1">
-                              <span className="font-mono text-xs font-semibold text-neutral-900 dark:text-neutral-100 truncate">
-                                {d.dotPath}
-                              </span>
-                              <button
-                                type="button"
-                                onClick={() => handleCopy(d.dotPath || '', `k-${d.id}`)}
-                                className="p-1 rounded hover:bg-white dark:hover:bg-neutral-800 text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200 transition-colors shrink-0"
-                                title="Copy dot path"
-                              >
-                                {copiedKey === `k-${d.id}` ? (
-                                  <Check size={12} className="text-emerald-500" />
-                                ) : (
-                                  <Copy size={12} />
-                                )}
-                              </button>
-                            </div>
-                            <div className="text-[11px] font-mono text-neutral-500 dark:text-neutral-400">
-                              Right Line {d.path2.line} • {d.rawMsg}
-                            </div>
-                          </div>
-                        ))
-                      )}
-                    </div>
-                  </div>
+                  <MissingKeysPanel
+                    tone="emerald"
+                    title="Missing in Left (Modified Right Only)"
+                    items={missingDiffs.inRightOnly}
+                    emptyText="No keys missing from left document."
+                    lineOf={(d) => `Right Line ${d.path2.line}`}
+                    copiedKey={copiedKey}
+                    onCopy={handleCopy}
+                  />
                 </div>
               )}
 
@@ -1193,6 +1038,125 @@ export default function JsonDiffV2Page() {
           )}
         </div>
       </main>
+    </div>
+  );
+}
+
+function DiffLine({ side, lineNum, lineStr, isSelected, activeLineDiff, onJumpById }: {
+  side: 'left' | 'right';
+  lineNum: number;
+  lineStr: string;
+  isSelected: boolean;
+  activeLineDiff?: SemanticDiff;
+  onJumpById: (diffId: number) => void;
+}) {
+  const jump = () => {
+    if (activeLineDiff) onJumpById(activeLineDiff.id);
+  };
+
+  let bgClass = '';
+  if (isSelected) {
+    bgClass = 'bg-blue-100 dark:bg-blue-950/80 text-blue-900 dark:text-blue-100 font-semibold';
+  } else if (activeLineDiff) {
+    if (activeLineDiff.type === 'missing') {
+      bgClass = 'bg-emerald-50/80 dark:bg-emerald-950/40 text-emerald-900 dark:text-emerald-200';
+    } else if (activeLineDiff.type === 'type') {
+      bgClass = 'bg-rose-50/80 dark:bg-rose-950/40 text-rose-900 dark:text-rose-200';
+    } else if (activeLineDiff.type === 'eq') {
+      bgClass = 'bg-amber-50/80 dark:bg-amber-950/40 text-amber-900 dark:text-amber-200';
+    }
+  }
+
+  return (
+    <div
+      id={`${side}-line-${lineNum}`}
+      role="button"
+      tabIndex={-1}
+      onKeyDown={onKeyActivate(jump)}
+      onClick={jump}
+      className={`flex items-stretch group cursor-pointer transition-colors ${bgClass} ${
+        !bgClass ? 'hover:bg-neutral-100/60 dark:hover:bg-neutral-900/60' : ''
+      }`}
+    >
+      <span className="w-10 shrink-0 text-right pr-2 select-none text-[11px] text-neutral-400 dark:text-neutral-600 border-r border-neutral-100 dark:border-neutral-900/80">
+        {lineNum}
+      </span>
+      <span className="pl-3 pr-2 whitespace-pre min-w-0 select-text">
+        {lineStr || ' '}
+      </span>
+    </div>
+  );
+}
+
+const PANEL_TONES = {
+  rose: {
+    dot: 'bg-rose-500',
+    badge: 'bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-400 border-rose-200 dark:border-rose-900/60',
+  },
+  emerald: {
+    dot: 'bg-emerald-500',
+    badge: 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 border-emerald-200 dark:border-emerald-900/60',
+  },
+} as const;
+
+function MissingKeysPanel({ tone, title, items, emptyText, lineOf, copiedKey, onCopy }: {
+  tone: keyof typeof PANEL_TONES;
+  title: string;
+  items: SemanticDiff[];
+  emptyText: string;
+  lineOf: (d: SemanticDiff) => string;
+  copiedKey: string | null;
+  onCopy: (text: string, key: string) => void;
+}) {
+  const t = PANEL_TONES[tone];
+  return (
+    <div className="bg-white dark:bg-[#0e0e11] border border-neutral-200 dark:border-neutral-800/80 rounded-xl p-4 shadow-xs flex flex-col">
+      <div className="flex items-center justify-between pb-3 border-b border-neutral-100 dark:border-neutral-800 mb-3">
+        <div className="flex items-center gap-2">
+          <span className={`w-2.5 h-2.5 rounded-full ${t.dot}`} />
+          <h3 className="text-xs font-semibold text-neutral-800 dark:text-neutral-200">
+            {title}
+          </h3>
+        </div>
+        <span className={`text-[10px] font-mono px-2 py-0.5 rounded border font-semibold ${t.badge}`}>
+          {items.length}
+        </span>
+      </div>
+      <div className="space-y-2 overflow-y-auto max-h-[620px] pr-1">
+        {items.length === 0 ? (
+          <div className="py-12 text-center text-xs text-neutral-400 font-mono">
+            {emptyText}
+          </div>
+        ) : (
+          items.map((d) => (
+            <div
+              key={d.id}
+              className="p-2.5 rounded-lg border border-neutral-200 dark:border-neutral-800/80 bg-neutral-50/50 dark:bg-neutral-900/30 text-xs"
+            >
+              <div className="flex items-center justify-between gap-2 mb-1">
+                <span className="font-mono text-xs font-semibold text-neutral-900 dark:text-neutral-100 truncate">
+                  {d.dotPath}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => onCopy(d.dotPath || '', `k-${d.id}`)}
+                  className="p-1 rounded hover:bg-white dark:hover:bg-neutral-800 text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200 transition-colors shrink-0"
+                  title="Copy dot path"
+                >
+                  {copiedKey === `k-${d.id}` ? (
+                    <Check size={12} className="text-emerald-500" />
+                  ) : (
+                    <Copy size={12} />
+                  )}
+                </button>
+              </div>
+              <div className="text-[11px] font-mono text-neutral-500 dark:text-neutral-400">
+                {lineOf(d)} • {d.rawMsg}
+              </div>
+            </div>
+          ))
+        )}
+      </div>
     </div>
   );
 }

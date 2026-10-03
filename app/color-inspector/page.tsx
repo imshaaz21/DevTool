@@ -20,7 +20,7 @@ import {
   extractHexColors,
   ColorDetails,
 } from '@/lib/colorInspector';
-import { copyTextToClipboard } from '@/lib/clipboard';
+import { useCopyFeedback } from '@/lib/clipboard';
 import { onKeyActivate } from '@/lib/a11y';
 
 const SAMPLE_HEX = '#3B82F6';
@@ -63,7 +63,6 @@ export default function ColorInspectorPage() {
   const [activeTab, setActiveTab] = useState<'inspector' | 'extractor'>('inspector');
   const [colorInput, setColorInput] = useState<string>(SAMPLE_HEX);
   const [extractorText, setExtractorText] = useState<string>(SAMPLE_CSS_TEXT);
-  const [copiedKey, setCopiedKey] = useState<string | null>(null);
 
   // Parse color details
   const colorDetails = useMemo<ColorDetails | null>(() => {
@@ -76,11 +75,7 @@ export default function ColorInspectorPage() {
   }, [extractorText]);
 
   // Copy helper
-  const handleCopy = (text: string, key: string) => {
-    copyTextToClipboard(text);
-    setCopiedKey(key);
-    setTimeout(() => setCopiedKey(null), 1800);
-  };
+  const { copiedKey, handleCopy } = useCopyFeedback();
 
   return (
     <div className="flex flex-col min-h-screen bg-neutral-50/50 dark:bg-[#070709] text-neutral-900 dark:text-neutral-100">
