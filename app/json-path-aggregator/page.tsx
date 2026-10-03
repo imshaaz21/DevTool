@@ -4,6 +4,7 @@ import { useState, useMemo, useCallback } from 'react';
 import { Sidebar } from '@/components/Sidebar';
 import { useSidebar } from '@/components/SidebarContext';
 import { PageHeader } from '@/components/PageHeader';
+import { StyledJsonInput } from '@/components/StyledJsonInput';
 import {
   Calculator,
   Search,
@@ -16,7 +17,6 @@ import {
   Code2,
   ListOrdered,
   Download,
-  AlertCircle,
   FileJson,
   Wand2,
   Sigma,
@@ -361,45 +361,20 @@ export default function JsonPathAggregatorPage() {
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
             
             {/* Left Column: JSON Input (5 cols on lg) */}
-            <div className="lg:col-span-5 flex flex-col space-y-3">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <span className="text-xs font-semibold uppercase tracking-wider text-neutral-500 dark:text-neutral-400">
-                    Source JSON
-                  </span>
-                  {parsedJson && (
-                    <span className="text-[11px] font-mono px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800">
-                      Valid JSON
-                    </span>
-                  )}
-                  {jsonError && (
-                    <span className="text-[11px] font-mono px-2 py-0.5 rounded-full bg-red-100 dark:bg-red-950/60 text-red-700 dark:text-red-400 border border-red-200 dark:border-red-800 flex items-center gap-1">
-                      <AlertCircle size={10} />
-                      Syntax Error
-                    </span>
-                  )}
-                </div>
-                <span className="text-xs text-neutral-400 font-mono">
-                  {rawInput.length.toLocaleString()} chars
-                </span>
-              </div>
-
-              <div className="relative rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-[#0e0e11] shadow-sm overflow-hidden focus-within:ring-2 focus-within:ring-neutral-400 dark:focus-within:ring-neutral-600">
-                <textarea
-                  value={rawInput}
-                  onChange={(e) => setRawInput(e.target.value)}
-                  placeholder="Paste JSON array or object here..."
-                  className="w-full h-[460px] p-3.5 font-mono text-xs bg-transparent border-0 resize-y focus:outline-none text-neutral-800 dark:text-neutral-200 leading-relaxed placeholder:text-neutral-400"
-                  spellCheck={false}
-                />
-              </div>
-
-              {jsonError && (
-                <div className="text-xs text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950/30 p-2.5 rounded-lg border border-red-200 dark:border-red-900/50 flex items-start gap-2">
-                  <AlertCircle size={14} className="shrink-0 mt-0.5" />
-                  <span className="break-all">{jsonError}</span>
-                </div>
-              )}
+            <div className="lg:col-span-5 flex flex-col">
+              <StyledJsonInput
+                title="Source JSON"
+                value={rawInput}
+                onChange={setRawInput}
+                placeholder="Paste JSON array or object here..."
+                height="480px"
+                error={jsonError}
+                allowFormat={true}
+                allowMinify={true}
+                allowUpload={true}
+                allowCopy={true}
+                allowClear={true}
+              />
             </div>
 
             {/* Right Column: Query Pattern, Discovered Fields & Metrics (7 cols on lg) */}
@@ -644,13 +619,13 @@ export default function JsonPathAggregatorPage() {
                     <div>
                       <span className="text-neutral-400 uppercase text-[10px] tracking-wider block">Min</span>
                       <span className="font-semibold text-neutral-800 dark:text-neutral-200">
-                        {aggregationResult.stats.min !== null ? aggregationResult.stats.min : '—'}
+                        {aggregationResult.stats.min !== null ? aggregationResult.stats.min : '-'}
                       </span>
                     </div>
                     <div>
                       <span className="text-neutral-400 uppercase text-[10px] tracking-wider block">Max</span>
                       <span className="font-semibold text-neutral-800 dark:text-neutral-200">
-                        {aggregationResult.stats.max !== null ? aggregationResult.stats.max : '—'}
+                        {aggregationResult.stats.max !== null ? aggregationResult.stats.max : '-'}
                       </span>
                     </div>
                     {aggregationResult.stats.arrayLengthSum > 0 && (
@@ -814,7 +789,7 @@ export default function JsonPathAggregatorPage() {
                               ))}
                             </div>
                           ) : (
-                            <span className="text-neutral-300 dark:text-neutral-700">—</span>
+                            <span className="text-neutral-300 dark:text-neutral-700">-</span>
                           )}
                         </td>
                         <td className="py-2 px-4 text-right">

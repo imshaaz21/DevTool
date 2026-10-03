@@ -122,4 +122,30 @@ describe('semanticJsonDiff engine (jdd compatibility)', () => {
     expect(result.leftFormatted).toContain('"admissionId": 5795505');
     expect(result.leftFormatted).toContain('"invoiceDate": "2026-01-30 10:17:39"');
   });
+
+  it('converts slash paths into dot-bracket notation cleanly with formatPathToDotNotation', () => {
+    const { formatPathToDotNotation, countJsonKeys } = require('../lib/semanticJsonDiff');
+    expect(formatPathToDotNotation('')).toBe('root');
+    expect(formatPathToDotNotation('/')).toBe('root');
+    expect(formatPathToDotNotation('//user/name')).toBe('user.name');
+    expect(formatPathToDotNotation('//items/0/id')).toBe('items[0].id');
+    expect(formatPathToDotNotation('//user/addresses/1/geo/lat')).toBe('user.addresses[1].geo.lat');
+
+    const obj = {
+      a: 1,
+      b: { c: 2, d: [3, { e: 4 }] },
+    };
+    expect(countJsonKeys(obj)).toBe(5); // a, b, c, d, e (5 keys in total)
+  });
+
+  it('attaches dotPath and total key counts to computeSemanticDiff results', () => {
+    const left = { user: { name: 'Alice', age: 30 } };
+    const right = { user: { name: 'Bob', age: 30 } };
+
+    const result = computeSemanticDiff(left, right);
+    expect(result.diffs.length).toBe(1);
+    expect(result.diffs[0].dotPath).toBe('user.name');
+    expect(result.totalKeysLeft).toBe(3); // user, name, age
+    expect(result.totalKeysRight).toBe(3);
+  });
 });

@@ -8,6 +8,7 @@ import { useSidebar } from '@/components/SidebarContext';
 import { PageHeader } from '@/components/PageHeader';
 import { AutoToggle } from '@/components/AutoToggle';
 import { CustomSelect } from '@/components/CustomSelect';
+import { StyledJsonInput } from '@/components/StyledJsonInput';
 const JsonEditorComponent = dynamic(
   () => import('@/components/JsonEditorComponent').then((mod) => ({ default: mod.JsonEditorComponent })),
   { ssr: false }
@@ -252,23 +253,19 @@ export default function JsonFormatterPage() {
         <div className="flex-1 flex flex-col p-4 gap-4 overflow-hidden">
           <div className="flex-1 grid grid-cols-1 lg:grid-cols-2 gap-4 min-h-0">
             {/* Input Editor */}
-            <div className="card p-0 flex flex-col overflow-hidden">
-              <div className="px-4 py-2 border-b border-neutral-200 dark:border-neutral-800 bg-neutral-50/50 dark:bg-neutral-900/50 flex items-center justify-between shrink-0">
-                <span className="text-xs font-medium text-neutral-600 dark:text-neutral-400 font-mono">
-                  Input JSON
-                </span>
-                <span className="text-[11px] font-mono text-neutral-400">
-                  {input.length.toLocaleString()} chars
-                </span>
-              </div>
-              <textarea
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                placeholder="Paste or type raw, minified, or stringified JSON here (including fields with inner stringified JSON)..."
-                className="flex-1 w-full p-4 bg-transparent text-neutral-900 dark:text-neutral-100 font-mono text-xs leading-relaxed focus:outline-none resize-none placeholder:text-neutral-400 dark:placeholder:text-neutral-600"
-                spellCheck={false}
-              />
-            </div>
+            <StyledJsonInput
+              title="Input JSON"
+              value={input}
+              onChange={setInput}
+              placeholder="Paste or type raw, minified, or stringified JSON here (including fields with inner stringified JSON)..."
+              height="100%"
+              className="flex-1 min-h-0"
+              allowFormat={false}
+              allowMinify={false}
+              allowClear={true}
+              allowUpload={true}
+              allowCopy={true}
+            />
 
             {/* Output Editor */}
             <div className="card p-0 flex flex-col overflow-hidden">

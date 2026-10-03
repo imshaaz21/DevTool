@@ -17,6 +17,7 @@ export interface SemanticDiff {
   rawMsg: string;
   path1: PathLine;
   path2: PathLine;
+  dotPath?: string;
 }
 
 export interface Config {
@@ -37,9 +38,61 @@ export interface DiffSummary {
   eqCount: number;
   missingCount: number;
   typeCount: number;
+  totalKeysLeft?: number;
+  totalKeysRight?: number;
 }
 
 const SEPARATOR = '/';
+
+/**
+ * Converts a slash-separated jdd path (e.g. "//user/address/0/city")
+ * into clean dot/bracket notation (e.g. "user.address[0].city").
+ */
+export function formatPathToDotNotation(path: string): string {
+  if (!path || path === '/' || path === '//') return 'root';
+  const clean = path.replace(/^\/+/, '');
+  if (!clean) return 'root';
+  const segments = clean.split('/').filter(Boolean);
+  if (segments.length === 0) return 'root';
+
+  let result = '';
+  segments.forEach((seg, idx) => {
+    const unescaped = seg.replace(/#/g, '/');
+    if (/^\d+$/.test(unescaped)) {
+      result += `[${unescaped}]`;
+    } else {
+      if (idx === 0) {
+        result += unescaped;
+      } else {
+        result += `.${unescaped}`;
+      }
+    }
+  });
+  return result || 'root';
+}
+
+/**
+ * Recursively counts the total number of keys in a JSON object or array.
+ */
+export function countJsonKeys(obj: any): number {
+  if (!obj || typeof obj !== 'object') return 0;
+  let count = 0;
+  const visited = new Set();
+  function walk(current: any) {
+    if (!current || typeof current !== 'object') return;
+    if (visited.has(current)) return;
+    visited.add(current);
+    if (Array.isArray(current)) {
+      current.forEach((item) => walk(item));
+    } else {
+      const keys = Object.keys(current);
+      count += keys.length;
+      keys.forEach((k) => walk(current[k]));
+    }
+  }
+  walk(obj);
+  return count;
+}
 
 /**
  * Returns the precise JSON type of a value.
@@ -582,9 +635,10 @@ export function computeSemanticDiff(
   // Sort diffs by line order
   diffs.sort((a, b) => a.path1.line - b.path1.line || a.path2.line - b.path2.line);
 
-  // Re-assign 1-based IDs
+  // Re-assign 1-based IDs and attach dotPath
   diffs.forEach((d, idx) => {
     d.id = idx + 1;
+    d.dotPath = formatPathToDotNotation(d.path1.path || d.path2.path);
   });
 
   const eqCount = diffs.filter((d) => d.type === 'eq').length;
@@ -600,5 +654,7 @@ export function computeSemanticDiff(
     eqCount,
     missingCount,
     typeCount,
+    totalKeysLeft: countJsonKeys(data1),
+    totalKeysRight: countJsonKeys(data2),
   };
 }
