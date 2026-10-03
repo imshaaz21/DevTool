@@ -1,11 +1,12 @@
 'use client';
 
-import React, { useState, useMemo, useRef, useEffect } from 'react';
+import React, { useState, useMemo, useRef } from 'react';
 import dynamic from 'next/dynamic';
 import { Sidebar } from '@/components/Sidebar';
 import { useSidebar } from '@/components/SidebarContext';
 import { PageHeader } from '@/components/PageHeader';
 import { StyledJsonInput } from '@/components/StyledJsonInput';
+import { EditorSkeleton } from '@/components/EditorSkeleton';
 import {
   Binary,
   ArrowLeftRight,
@@ -15,11 +16,7 @@ import {
   ChevronRight,
   Copy,
   Check,
-  Upload,
-  AlertCircle,
   CheckCircle2,
-  Filter,
-  FileCode2,
   Eye,
   Edit3,
 } from 'lucide-react';
@@ -27,12 +24,11 @@ import {
   computeSemanticDiff,
   SemanticDiff,
   DiffSummary,
-  DiffType,
 } from '@/lib/semanticJsonDiff';
 
 const JsonEditorComponent = dynamic(
   () => import('@/components/JsonEditorComponent').then((mod) => ({ default: mod.JsonEditorComponent })),
-  { ssr: false }
+  { ssr: false, loading: () => <EditorSkeleton /> }
 );
 
 const SAMPLE_LEFT = {
@@ -92,7 +88,7 @@ export default function JsonDiffV2Page() {
   const [rightError, setRightError] = useState<string | null>(null);
 
   // Settings
-  const [indentSize, setIndentSize] = useState<number>(2);
+  const indentSize = 2;
 
   // Comparison State
   const [diffSummary, setDiffSummary] = useState<DiffSummary | null>(null);
@@ -113,10 +109,6 @@ export default function JsonDiffV2Page() {
   const leftPaneRef = useRef<HTMLDivElement>(null);
   const rightPaneRef = useRef<HTMLDivElement>(null);
   const isSyncingScroll = useRef<boolean>(false);
-
-  // File upload refs
-  const leftFileRef = useRef<HTMLInputElement>(null);
-  const rightFileRef = useRef<HTMLInputElement>(null);
 
   // Parsed JSON objects for Rich Editor
   const parsedLeftJson = useMemo(() => {
@@ -314,48 +306,11 @@ export default function JsonDiffV2Page() {
     setIsDiffActive(false);
   };
 
-  // File upload handler
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>, side: 'left' | 'right') => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      const content = event.target?.result as string;
-      if (side === 'left') {
-        setLeftInput(content);
-        setLeftError(null);
-      } else {
-        setRightInput(content);
-        setRightError(null);
-      }
-    };
-    reader.readAsText(file);
-    e.target.value = '';
-  };
-
   // Copy helper
   const handleCopy = (text: string, key: string) => {
     navigator.clipboard.writeText(text);
     setCopiedKey(key);
     setTimeout(() => setCopiedKey(null), 1800);
-  };
-
-  // Format helper for textareas
-  const handleBeautifyInput = (side: 'left' | 'right') => {
-    try {
-      if (side === 'left') {
-        const obj = JSON.parse(leftInput);
-        setLeftInput(JSON.stringify(obj, null, indentSize));
-        setLeftError(null);
-      } else {
-        const obj = JSON.parse(rightInput);
-        setRightInput(JSON.stringify(obj, null, indentSize));
-        setRightError(null);
-      }
-    } catch (e: any) {
-      if (side === 'left') setLeftError(e.message);
-      else setRightError(e.message);
-    }
   };
 
   // Line diff classification maps

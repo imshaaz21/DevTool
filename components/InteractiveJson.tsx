@@ -16,7 +16,6 @@ export function InteractiveJson({ data, editable = false, onEdit }: JsonViewerPr
   const [expandedState, setExpandedState] = useState<ExpandedState>({});
   const [editableValue, setEditableValue] = useState<string>('');
   const [isEditing, setIsEditing] = useState<boolean>(false);
-  const [editPath, setEditPath] = useState<string[]>([]);
 
   useEffect(() => {
     if (data) {
@@ -35,9 +34,8 @@ export function InteractiveJson({ data, editable = false, onEdit }: JsonViewerPr
     }));
   };
 
-  const handleEdit = (path: string[]) => {
+  const handleEdit = () => {
     setIsEditing(true);
-    setEditPath(path);
   };
 
   const saveEdit = () => {
@@ -101,6 +99,9 @@ export function InteractiveJson({ data, editable = false, onEdit }: JsonViewerPr
       }
 
       setEditableValue(JSON.stringify(parsedData, null, 2));
+      if (onEdit) {
+        onEdit(parsedData);
+      }
     } catch (e) {
       console.error('Error updating JSON value:', e);
     }
@@ -295,7 +296,7 @@ export function InteractiveJson({ data, editable = false, onEdit }: JsonViewerPr
       {editable && (
         <div className="bg-neutral-50 dark:bg-neutral-900 border-b border-neutral-200 dark:border-neutral-800 px-3 py-2">
           <button
-            onClick={() => handleEdit([])}
+            onClick={handleEdit}
             className="btn btn-sm btn-secondary"
           >
             Edit JSON
@@ -303,7 +304,7 @@ export function InteractiveJson({ data, editable = false, onEdit }: JsonViewerPr
         </div>
       )}
       <div className="bg-white dark:bg-[#0a0a0c] text-neutral-900 dark:text-neutral-100 p-4 overflow-auto max-h-96 font-mono text-xs leading-relaxed">
-        {renderValue(data)}
+        {renderValue(data, [], 0, editable)}
       </div>
     </div>
   );

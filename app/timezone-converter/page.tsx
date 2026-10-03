@@ -17,7 +17,6 @@ import {
 import {
   Copy,
   Clock,
-  Trash2,
   Globe,
   Zap,
   Check,

@@ -12,10 +12,8 @@ import {
   Trash2,
   ArrowLeftRight,
   Download,
-  Filter,
   Sparkles,
   Search,
-  Layers,
   AlertCircle,
   FileCode,
   SlidersHorizontal,
@@ -428,6 +426,19 @@ export default function ListComparePage() {
                   <span className={`w-1.5 h-1.5 rounded-full ${trimWhitespace ? 'bg-emerald-400 dark:bg-emerald-600' : 'bg-neutral-400'}`} />
                   <span>Trim Whitespace</span>
                 </button>
+                <div className="w-40">
+                  <CustomSelect
+                    className="h-8 py-0"
+                    value={inputDelimiter}
+                    onChange={(val) => setInputDelimiter(val as DelimiterOption)}
+                    options={[
+                      { label: 'Auto-detect Input', value: 'auto' },
+                      { label: 'Newline Separated', value: 'newline' },
+                      { label: 'Comma Separated', value: 'comma' },
+                      { label: 'Whitespace Separated', value: 'whitespace' },
+                    ]}
+                  />
+                </div>
               </div>
             </div>
           </section>

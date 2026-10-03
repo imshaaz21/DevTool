@@ -45,6 +45,19 @@ export interface DiffSummary {
 const SEPARATOR = '/';
 
 /**
+ * Escapes HTML special characters so user-controlled values (e.g. JSON keys)
+ * can be safely embedded in diff messages rendered via dangerouslySetInnerHTML.
+ */
+function escapeHtml(str: string): string {
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+/**
  * Converts a slash-separated jdd path (e.g. "//user/address/0/city")
  * into clean dot/bracket notation (e.g. "user.address[0].city").
  */
@@ -489,7 +502,7 @@ export function computeSemanticDiff(
             generatePath(c1),
             c2,
             generatePath(c2, key),
-            `Missing property <code>${key}</code> from the object on the left side`,
+            `Missing property <code>${escapeHtml(key)}</code> from the object on the left side`,
             `Missing property "${key}" from the object on the left side`,
             'missing',
             diffCounter
@@ -509,7 +522,7 @@ export function computeSemanticDiff(
             generatePath(c1),
             c2,
             generatePath(c2),
-            `Missing property <code>${key}</code> from the object on the right side`,
+            `Missing property <code>${escapeHtml(key)}</code> from the object on the right side`,
             `Missing property "${key}" from the object on the right side`,
             'missing',
             diffCounter

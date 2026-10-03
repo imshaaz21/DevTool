@@ -10,7 +10,6 @@ import {
   Copy,
   Check,
   RotateCcw,
-  Sparkles,
   Database,
   SlidersHorizontal,
   Terminal,
@@ -26,7 +25,6 @@ import {
   TIMEZONE_OPTIONS,
   generateAllSqlDateClauses,
   getPresetDateRange,
-  formatDateString,
   formatForDatetimeInput,
 } from '@/lib/sqlDateFilter';
 
@@ -83,6 +81,14 @@ export default function SqlDateFilterPage() {
       setCustomStart(formatForDatetimeInput(start, tz));
       setCustomEnd(formatForDatetimeInput(end, tz));
     }
+  };
+
+  const handleLastNChange = (value: string) => {
+    const n = Math.max(1, parseInt(value, 10) || 1);
+    setLastN(n);
+    const { start, end } = getPresetDateRange('lastNdays', new Date(), n, inputTimezone);
+    setCustomStart(formatForDatetimeInput(start, inputTimezone));
+    setCustomEnd(formatForDatetimeInput(end, inputTimezone));
   };
 
   const handleTimezoneChange = (newTz: TimezoneOption) => {
@@ -194,6 +200,7 @@ export default function SqlDateFilterPage() {
                   { id: 'today', label: 'Today' },
                   { id: 'yesterday', label: 'Yesterday' },
                   { id: 'last7days', label: 'Last 7 Days' },
+                  { id: 'lastNdays', label: 'Last N Days' },
                   { id: 'thisYear', label: 'This Year' },
                   { id: 'custom', label: 'Custom Range' },
                 ].map((item) => (
@@ -210,6 +217,21 @@ export default function SqlDateFilterPage() {
                   </button>
                 ))}
               </div>
+              {preset === 'lastNdays' && (
+                <div className="flex items-center gap-2 pt-1">
+                  <label className="text-xs font-medium text-neutral-600 dark:text-neutral-400">
+                    Number of days (N)
+                  </label>
+                  <input
+                    type="number"
+                    min={1}
+                    max={365}
+                    value={lastN}
+                    onChange={(e) => handleLastNChange(e.target.value)}
+                    className="w-20 px-2 py-1 text-xs font-mono rounded-lg border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-neutral-100 focus:outline-none focus:ring-1 focus:ring-neutral-400 dark:focus:ring-neutral-600"
+                  />
+                </div>
+              )}
             </div>
 
             {/* Form Fields Grid */}
