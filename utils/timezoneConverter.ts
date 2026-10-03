@@ -47,7 +47,7 @@ export function parseInputTime(input: string, sourceTimezone: TimeZoneId): Date 
     const hasTimezoneInfo = /Z|[+-]\d{2}:?\d{2}/.test(trimmed);
     
     if (hasTimezoneInfo) {
-        let date = new Date(trimmed);
+        const date = new Date(trimmed);
         if (!isNaN(date.getTime())) {
             return date;
         }

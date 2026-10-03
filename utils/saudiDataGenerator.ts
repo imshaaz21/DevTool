@@ -18,7 +18,7 @@ function calculateLuhnChecksumDigit(digits: number[]): number {
   for (let i = 0; i < 9; i++) {
     if (i % 2 === 0) {
       // Double every even-indexed digit (0, 2, 4, 6, 8)
-      let product = digits[i] * 2;
+      const product = digits[i] * 2;
       // In Java: val11 = valStr[0], val12 = valStr[1]. sum += v11 + v12.
       // This is mathematically equivalent to (product > 9 ? product - 9 : product)
       sum += (Math.floor(product / 10) + (product % 10));
@@ -48,7 +48,7 @@ export function validateLuhnChecksum(id: string): boolean {
     const digit = parseInt(id.charAt(i), 10);
     if (i % 2 === 0) {
       // Even index (0, 2, 4, 6, 8)
-      let product = digit * 2;
+      const product = digit * 2;
       sum += (Math.floor(product / 10) + (product % 10));
     } else {
       // Odd index (1, 3, 5, 7, 9)
