@@ -33,6 +33,7 @@ interface Tool {
   category: 'Data & Security' | 'JSON & Diff' | 'Encoders' | 'Utilities';
   icon: any;
   tags: string[];
+  badge?: string;
 }
 
 const TOOLS: Tool[] = [
@@ -58,11 +59,12 @@ const TOOLS: Tool[] = [
     href: '/json-comparison',
     category: 'JSON & Diff',
     icon: Binary,
-    tags: ['json', 'diff', 'compare', 'viewer', 'syntax']
+    tags: ['json', 'diff', 'compare', 'viewer', 'syntax'],
+    badge: 'Deprecated'
   },
   {
     title: 'JSON Diff v2',
-    desc: 'Semantic JSON comparison tool matching jsondiff.com — compares values, types, and properties independent of key ordering.',
+    desc: 'Semantic JSON comparison tool matching jsondiff.com - compares values, types, and properties independent of key ordering.',
     href: '/json-diff-v2',
     category: 'JSON & Diff',
     icon: Binary,
@@ -295,9 +297,16 @@ export default function Home() {
                         </span>
                       </div>
 
-                      <h2 className="text-sm font-semibold text-neutral-900 dark:text-neutral-100 group-hover:text-neutral-950 dark:group-hover:text-white transition-colors">
-                        {tool.title}
-                      </h2>
+                      <div className="flex items-center gap-2">
+                        <h2 className="text-sm font-semibold text-neutral-900 dark:text-neutral-100 group-hover:text-neutral-950 dark:group-hover:text-white transition-colors">
+                          {tool.title}
+                        </h2>
+                        {tool.badge && (
+                          <span className="text-[9px] font-mono px-1.5 py-0.2 rounded bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-800/60 shrink-0">
+                            {tool.badge}
+                          </span>
+                        )}
+                      </div>
                       <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-1 line-clamp-2 leading-relaxed">
                         {tool.desc}
                       </p>

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Link from 'next/link';
 import dynamic from 'next/dynamic';
 import { Sidebar } from '@/components/Sidebar';
 import { useSidebar } from '@/components/SidebarContext';
@@ -10,10 +11,12 @@ const JsonEditorComponent = dynamic(() => import('@/components/JsonEditorCompone
 import { JsonDiffViewer } from '@/components/JsonDiffViewer';
 import {
   ArrowLeft,
+  ArrowRight,
   Binary,
   FileCode,
   CheckCircle2,
   AlertCircle,
+  AlertTriangle,
   Info,
   LayoutGrid
 } from 'lucide-react';
@@ -68,7 +71,7 @@ export default function JsonComparisonPage() {
           icon={Binary}
           title="JSON Comparison"
           description="Side-by-side visual diff and key/value comparison for any two JSON objects."
-          badge="Object Diff"
+          badge="Deprecated"
         >
           {viewMode === 'comparison' ? (
             <div className="flex items-center gap-2">
@@ -97,6 +100,27 @@ export default function JsonComparisonPage() {
 
         {/* Content */}
         <div className="flex-1 overflow-auto p-6 space-y-6">
+          {/* Deprecation Warning Banner */}
+          <div className="p-3.5 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900/60 rounded-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-amber-900 dark:text-amber-200 text-xs shadow-xs">
+            <div className="flex items-center gap-2.5">
+              <AlertTriangle size={16} className="shrink-0 text-amber-600 dark:text-amber-400" />
+              <span>
+                <strong>Notice:</strong> This tool is <strong>deprecated</strong>. For accurate semantic diffing with line alignment, type checking, and key-order invariance, please use{' '}
+                <Link href="/json-diff-v2" className="underline font-semibold text-amber-800 dark:text-amber-100 hover:text-amber-950 dark:hover:text-white">
+                  JSON Diff v2
+                </Link>
+                .
+              </span>
+            </div>
+            <Link
+              href="/json-diff-v2"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white dark:bg-neutral-900 border border-amber-300 dark:border-amber-800 text-neutral-800 dark:text-neutral-200 font-medium hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors shrink-0"
+            >
+              <span>Try JSON Diff v2</span>
+              <ArrowRight size={12} />
+            </Link>
+          </div>
+
           {viewMode === 'input' ? (
             <div className="h-full flex flex-col gap-4">
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 flex-1 min-h-[500px]">

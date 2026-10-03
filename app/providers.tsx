@@ -7,7 +7,7 @@ import { SidebarProvider } from '@/components/SidebarContext';
 
 export function Providers({ children }: { children: ReactNode }) {
   return (
-    <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
+    <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
       <SidebarProvider>
         {children}
         <Toaster position="bottom-right" />

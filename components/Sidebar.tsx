@@ -56,7 +56,7 @@ export function Sidebar() {
     { name: 'Dashboard', path: '/', icon: LayoutDashboard },
     { name: 'Saudi Fake Data', path: '/saudi-data-generator', icon: Database },
     { name: 'Feature Toggle Diff', path: '/json-comparator', icon: Diff },
-    { name: 'JSON Comparison', path: '/json-comparison', icon: Binary },
+    { name: 'JSON Comparison', path: '/json-comparison', icon: Binary, badge: 'Deprecated' },
     { name: 'JSON Diff v2', path: '/json-diff-v2', icon: Binary },
     { name: 'List Compare', path: '/list-compare', icon: GitCompare },
     { name: 'JSON Path & Sum', path: '/json-path-aggregator', icon: Calculator },
@@ -141,7 +141,7 @@ export function Sidebar() {
                       ? 'bg-neutral-100 dark:bg-neutral-800/90 text-neutral-950 dark:text-white font-medium'
                       : 'text-neutral-600 dark:text-neutral-400 hover:bg-neutral-50 dark:hover:bg-neutral-900 hover:text-neutral-900 dark:hover:text-neutral-200'
                   } ${isCollapsed ? 'justify-center' : ''}`}
-                  title={isCollapsed ? item.name : undefined}
+                  title={isCollapsed ? `${item.name}${item.badge ? ` (${item.badge})` : ''}` : undefined}
                 >
                   <Icon
                     size={16}
@@ -153,8 +153,13 @@ export function Sidebar() {
                     }`}
                   />
                   {!isCollapsed && (
-                    <span className="truncate">
+                    <span className="truncate flex-1">
                       {item.name}
+                    </span>
+                  )}
+                  {!isCollapsed && item.badge && (
+                    <span className="ml-auto text-[9px] font-mono px-1.5 py-0.2 rounded bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-800/60 shrink-0">
+                      {item.badge}
                     </span>
                   )}
                   {Active && (

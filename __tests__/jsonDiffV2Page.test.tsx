@@ -86,4 +86,32 @@ describe('JsonDiffV2Page', () => {
 
     expect(screen.getByText('1 of 9')).toBeInTheDocument();
   });
+
+  it('switches between Visual Diff, Key Diffs, Values & Types, and Summary tabs', () => {
+    render(
+      <SidebarProvider>
+        <JsonDiffV2Page />
+      </SidebarProvider>
+    );
+
+    fireEvent.click(screen.getByText('Sample Data'));
+
+    // Switch to Key Diffs
+    fireEvent.click(screen.getByText('Key Diffs'));
+    expect(screen.getByText('Missing in Right (Original Left Only)')).toBeInTheDocument();
+    expect(screen.getByText('Missing in Left (Modified Right Only)')).toBeInTheDocument();
+
+    // Switch to Values & Types
+    fireEvent.click(screen.getByText('Values & Types'));
+    expect(screen.getByText('Value & Type Differences')).toBeInTheDocument();
+
+    // Switch to Summary
+    fireEvent.click(screen.getByText('Summary'));
+    expect(screen.getByText('Total Diffs')).toBeInTheDocument();
+    expect(screen.getByText('Copy Summary Report')).toBeInTheDocument();
+
+    // Switch back to Visual Diff
+    fireEvent.click(screen.getByText('Visual Diff'));
+    expect(screen.getByText('Left (Original)')).toBeInTheDocument();
+  });
 });

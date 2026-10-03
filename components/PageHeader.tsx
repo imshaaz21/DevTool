@@ -8,6 +8,7 @@ interface PageHeaderProps {
   title: string;
   description: string;
   badge?: string;
+  badgeVariant?: 'default' | 'deprecated' | 'warning' | 'success';
   children?: React.ReactNode;
 }
 
@@ -16,8 +17,10 @@ export function PageHeader({
   title,
   description,
   badge,
+  badgeVariant,
   children
 }: PageHeaderProps) {
+  const isDeprecated = badgeVariant === 'deprecated' || badge?.toLowerCase() === 'deprecated';
   return (
     <header className="flex items-center justify-between gap-3 px-6 py-3 border-b border-neutral-200 dark:border-neutral-800 bg-white dark:bg-[#0a0a0c] sticky top-0 z-20 shrink-0">
       <div className="flex items-center gap-3 min-w-0 flex-1">
@@ -30,7 +33,13 @@ export function PageHeader({
               {title}
             </h1>
             {badge && (
-              <span className="text-[10px] font-mono font-medium px-1.5 py-0.5 rounded bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 border border-neutral-200 dark:border-neutral-700/60 shrink-0">
+              <span
+                className={`text-[10px] font-mono font-medium px-1.5 py-0.5 rounded border shrink-0 ${
+                  isDeprecated
+                    ? 'bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-400 border-amber-300 dark:border-amber-800/80'
+                    : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 border border-neutral-200 dark:border-neutral-700/60'
+                }`}
+              >
                 {badge}
               </span>
             )}
