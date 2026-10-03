@@ -30,6 +30,7 @@ import {
   FileCode,
   Laptop,
 } from 'lucide-react';
+import { copyTextToClipboard } from '@/lib/clipboard';
 
 type ViewportMode = 'desktop' | 'laptop' | 'tablet' | 'mobile';
 type ViewLayout = 'split' | 'preview' | 'code';
@@ -52,7 +53,7 @@ export default function HtmlViewerPage() {
 
   // Copy helper
   const handleCopy = useCallback(() => {
-    navigator.clipboard.writeText(htmlContent);
+    copyTextToClipboard(htmlContent);
     setCopied(true);
     toast.success('HTML copied to clipboard');
     setTimeout(() => setCopied(false), 2000);

@@ -13,6 +13,7 @@ import {
   Check,
   Layers
 } from 'lucide-react';
+import { copyTextToClipboard } from '@/lib/clipboard';
 
 export default function UuidGenerator() {
   const { width } = useSidebar();
@@ -36,7 +37,7 @@ export default function UuidGenerator() {
   }, [autoGenerate, generateUuid]);
 
   const copyToClipboard = (text: string, idx?: number) => {
-    navigator.clipboard.writeText(text);
+    copyTextToClipboard(text);
     if (idx !== undefined) {
       setCopiedIndex(idx);
       setTimeout(() => setCopiedIndex(null), 1500);

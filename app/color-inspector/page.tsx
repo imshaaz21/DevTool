@@ -20,6 +20,7 @@ import {
   extractHexColors,
   ColorDetails,
 } from '@/lib/colorInspector';
+import { copyTextToClipboard } from '@/lib/clipboard';
 
 const SAMPLE_HEX = '#3B82F6';
 const SAMPLE_PALETTES = [
@@ -75,7 +76,7 @@ export default function ColorInspectorPage() {
 
   // Copy helper
   const handleCopy = (text: string, key: string) => {
-    navigator.clipboard.writeText(text);
+    copyTextToClipboard(text);
     setCopiedKey(key);
     setTimeout(() => setCopiedKey(null), 1800);
   };

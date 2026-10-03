@@ -29,6 +29,7 @@ import {
   ExtractedItem,
 } from '@/lib/jsonAggregator';
 import { cleanAndParseJsonString, unwrapNestedStrings } from '@/utils/jsonFormatter';
+import { copyTextToClipboard } from '@/lib/clipboard';
 
 const SAMPLE_HEALTHCARE_JSON = `[
   {
@@ -249,7 +250,7 @@ export default function JsonPathAggregatorPage() {
 
   // Copy helper
   const handleCopy = useCallback((text: string, key: string) => {
-    navigator.clipboard.writeText(text);
+    copyTextToClipboard(text);
     setCopiedKey(key);
     setTimeout(() => setCopiedKey(null), 1800);
   }, []);
