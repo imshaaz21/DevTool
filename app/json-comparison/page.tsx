@@ -7,7 +7,8 @@ import { Sidebar } from '@/components/Sidebar';
 import { useSidebar } from '@/components/SidebarContext';
 import { PageHeader } from '@/components/PageHeader';
 import { compareJsonObjects } from '@/utils/jsonComparator';
-const JsonEditorComponent = dynamic(() => import('@/components/JsonEditorComponent').then(mod => ({ default: mod.JsonEditorComponent })), { ssr: false });
+const JsonEditorComponent = dynamic(() => import('@/components/JsonEditorComponent').then(mod => ({ default: mod.JsonEditorComponent })), { ssr: false, loading: () => <EditorSkeleton /> });
+import { EditorSkeleton } from '@/components/EditorSkeleton';
 import { JsonDiffViewer } from '@/components/JsonDiffViewer';
 import {
   ArrowLeft,
@@ -37,12 +38,11 @@ export default function JsonComparisonPage() {
   const [viewMode, setViewMode] = useState<'input' | 'comparison'>('input');
   const [selectedView, setSelectedView] = useState<'diff' | 'common' | 'values' | 'keys' | 'all'>('diff');
 
+  // Return to the input view whenever either document changes
   useEffect(() => {
-    if (viewMode === 'comparison') {
-      setViewMode('input');
-      setComparison(null);
-      setError('');
-    }
+    setViewMode('input');
+    setComparison(null);
+    setError('');
   }, [jsonA, jsonB]);
 
   const handleCompare = () => {

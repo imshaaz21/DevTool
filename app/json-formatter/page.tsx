@@ -9,9 +9,10 @@ import { PageHeader } from '@/components/PageHeader';
 import { AutoToggle } from '@/components/AutoToggle';
 import { CustomSelect } from '@/components/CustomSelect';
 import { StyledJsonInput } from '@/components/StyledJsonInput';
+import { EditorSkeleton } from '@/components/EditorSkeleton';
 const JsonEditorComponent = dynamic(
   () => import('@/components/JsonEditorComponent').then((mod) => ({ default: mod.JsonEditorComponent })),
-  { ssr: false }
+  { ssr: false, loading: () => <EditorSkeleton /> }
 );
 import {
   parseStringifiedJSON,
@@ -44,7 +45,7 @@ export default function JsonFormatterPage() {
   const [unwrapInner, setUnwrapInner] = useState<boolean>(true);
   const [unwrappedCount, setUnwrappedCount] = useState<number>(0);
   const [iterations, setIterations] = useState<number | undefined>();
-  const [indentSize, setIndentSize] = useState(2);
+  const indentSize = 2;
   const [editorMode, setEditorMode] = useState<EditorMode>('code');
   const [isAutoFormat, setIsAutoFormat] = useState(true);
   const [copied, setCopied] = useState(false);
@@ -84,7 +85,7 @@ export default function JsonFormatterPage() {
       try {
         const jsonObj = JSON.parse(result.formatted);
         setOutputJson(jsonObj);
-      } catch (e) {
+      } catch {
         setOutputJson(null);
       }
       if (result.iterations) {

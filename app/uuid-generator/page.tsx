@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { toast } from 'react-hot-toast';
 import { Sidebar } from '@/components/Sidebar';
 import { useSidebar } from '@/components/SidebarContext';
@@ -21,19 +21,19 @@ export default function UuidGenerator() {
   const [autoGenerate, setAutoGenerate] = useState(true);
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
 
-  useEffect(() => {
-    if (autoGenerate) {
-      generateUuid(false);
-    }
-  }, [count, autoGenerate]);
-
-  const generateUuid = (showToast = true) => {
+  const generateUuid = useCallback((showToast = true) => {
     const newUuids = Array.from({ length: count }, () => crypto.randomUUID());
     setUuids(newUuids);
     if (showToast) {
       toast.success(`Generated ${count} UUID${count > 1 ? 's' : ''}`);
     }
-  };
+  }, [count]);
+
+  useEffect(() => {
+    if (autoGenerate) {
+      generateUuid(false);
+    }
+  }, [autoGenerate, generateUuid]);
 
   const copyToClipboard = (text: string, idx?: number) => {
     navigator.clipboard.writeText(text);

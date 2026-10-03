@@ -149,3 +149,21 @@ describe('semanticJsonDiff engine (jdd compatibility)', () => {
     expect(result.totalKeysRight).toBe(3);
   });
 });
+
+describe('XSS safety', () => {
+  it('escapes HTML in user-controlled object keys embedded in diff messages', () => {
+    const left = {};
+    const right = { '<img src=x onerror=alert(1)>': 1, 'a"b\'c': 2 };
+
+    const result = computeSemanticDiff(left, right);
+
+    expect(result.missingCount).toBe(2);
+    for (const diff of result.diffs) {
+      expect(diff.msg).not.toContain('<img');
+      expect(diff.msg).not.toMatch(/<code>.*<img/);
+    }
+    expect(result.diffs[0].msg).toContain('&lt;img src=x onerror=alert(1)&gt;');
+    // rawMsg keeps the unescaped plain-text key
+    expect(result.diffs[0].rawMsg).toContain('"<img src=x onerror=alert(1)>"');
+  });
+});

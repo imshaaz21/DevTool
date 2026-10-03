@@ -13,9 +13,6 @@ import {
   Layers,
   FileCode,
   ShieldCheck,
-  AlertCircle,
-  Hash,
-  Eye,
   Trash2,
 } from 'lucide-react';
 import {

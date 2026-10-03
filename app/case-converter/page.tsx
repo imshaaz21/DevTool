@@ -12,16 +12,11 @@ import {
   Trash2,
   Sparkles,
   Download,
-  ArrowRight,
   SlidersHorizontal,
-  RefreshCw,
   Search,
-  Filter,
-  CheckCheck,
   Code2,
   FileText,
   Replace,
-  Settings2,
 } from 'lucide-react';
 import {
   CASE_OPTIONS,

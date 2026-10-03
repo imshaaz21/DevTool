@@ -1,12 +1,13 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import dynamic from 'next/dynamic';
 import { Sidebar } from '@/components/Sidebar';
 import { useSidebar } from '@/components/SidebarContext';
 import { PageHeader } from '@/components/PageHeader';
 import { compareJsonObjects } from '@/utils/jsonComparator';
-const JsonEditorComponent = dynamic(() => import('@/components/JsonEditorComponent').then(mod => ({ default: mod.JsonEditorComponent })), { ssr: false });
+const JsonEditorComponent = dynamic(() => import('@/components/JsonEditorComponent').then(mod => ({ default: mod.JsonEditorComponent })), { ssr: false, loading: () => <EditorSkeleton /> });
+import { EditorSkeleton } from '@/components/EditorSkeleton';
 import {
   ArrowLeft,
   Diff,
@@ -42,45 +43,34 @@ export default function JsonComparatorPage() {
 
   const [comparison, setComparison] = useState<any>(null);
   const [error, setError] = useState<string>('');
-  const [validationError, setValidationError] = useState<string>('');
-  const [isValidStructure, setIsValidStructure] = useState<boolean>(false);
   const [viewMode, setViewMode] = useState<'input' | 'comparison'>('input');
   const [selectedView, setSelectedView] = useState<'common' | 'values' | 'keys' | 'all'>('keys');
-
-  useEffect(() => {
-    if (viewMode === 'comparison') {
-      setViewMode('input');
-      setComparison(null);
-      setError('');
-    }
-    validateStructure();
-  }, [jsonA, jsonB]);
 
   const hasConfigValueRelease = (json: any): boolean => {
     return json && typeof json === 'object' && json.configValue && json.configValue.release;
   };
 
-  const validateStructure = () => {
+  const { isValidStructure, validationError } = useMemo(() => {
     try {
       if (!jsonA || typeof jsonA !== 'object' || !jsonB || typeof jsonB !== 'object') {
-        setIsValidStructure(false);
-        return;
+        return { isValidStructure: false, validationError: '' };
       }
-      const hasStructureA = hasConfigValueRelease(jsonA);
-      const hasStructureB = hasConfigValueRelease(jsonB);
-
-      if (!hasStructureA || !hasStructureB) {
-        setValidationError('Both JSON inputs must contain "configValue.release"');
-        setIsValidStructure(false);
-        return;
-      }
-
-      setValidationError('');
-      setIsValidStructure(true);
-    } catch (err) {
-      setIsValidStructure(false);
+      const valid = hasConfigValueRelease(jsonA) && hasConfigValueRelease(jsonB);
+      return {
+        isValidStructure: valid,
+        validationError: valid ? '' : 'Both JSON inputs must contain "configValue.release"',
+      };
+    } catch {
+      return { isValidStructure: false, validationError: '' };
     }
-  };
+  }, [jsonA, jsonB]);
+
+  // Return to the input view whenever either document changes
+  useEffect(() => {
+    setViewMode('input');
+    setComparison(null);
+    setError('');
+  }, [jsonA, jsonB]);
 
   const handleCompare = () => {
     setError('');
@@ -147,6 +137,12 @@ export default function JsonComparatorPage() {
                 <div className="p-3 bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-900/50 rounded-lg flex items-center gap-2 text-amber-700 dark:text-amber-400 text-xs font-medium">
                   <AlertCircle size={14} className="shrink-0" />
                   <span>{validationError}</span>
+                </div>
+              )}
+              {error && (
+                <div className="p-3 bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-900/50 rounded-lg flex items-center gap-2 text-red-700 dark:text-red-400 text-xs font-medium">
+                  <AlertCircle size={14} className="shrink-0" />
+                  <span>{error}</span>
                 </div>
               )}
             </div>

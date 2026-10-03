@@ -21,6 +21,12 @@ export function JsonEditorComponent({
 }: JsonEditorProps) {
     const containerRef = useRef<HTMLDivElement>(null);
     const editorRef = useRef<JSONEditor | null>(null);
+    const onChangeRef = useRef(onChange);
+    const jsonRef = useRef(json);
+
+    useEffect(() => {
+        onChangeRef.current = onChange;
+    }, [onChange]);
 
     useEffect(() => {
         if (!containerRef.current) return;
@@ -34,9 +40,9 @@ export function JsonEditorComponent({
                     try {
                         if (editorRef.current) {
                             const updatedJson = editorRef.current.get();
-                            onChange(updatedJson);
+                            onChangeRef.current(updatedJson);
                         }
-                    } catch (e) {
+                    } catch {
                         // Invalid JSON, ignore
                     }
                 }
@@ -52,7 +58,7 @@ export function JsonEditorComponent({
         };
 
         editorRef.current = new JSONEditor(containerRef.current, options);
-        editorRef.current.set(json);
+        editorRef.current.set(jsonRef.current);
 
         return () => {
             if (editorRef.current) {
@@ -70,7 +76,7 @@ export function JsonEditorComponent({
                 if (JSON.stringify(currentJson) !== JSON.stringify(json)) {
                     editorRef.current.set(json);
                 }
-            } catch (e) {
+            } catch {
                 editorRef.current.set(json);
             }
         }
