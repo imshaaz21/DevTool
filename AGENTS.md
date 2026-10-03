@@ -81,8 +81,8 @@ public/                 # Static assets (favicons, etc.)
 
 ## Gotchas
 
-- `jest.config.js` `collectCoverageFrom` covers `app/`, `components/`, `utils/` but
-  **not `lib/`** - coverage ignores newer lib files (known gap).
+- `jest.config.js` `collectCoverageFrom` covers `app/`, `components/`, `utils/`,
+  and `lib/`. SonarCloud quality gate requires 80% coverage on new code.
 - `jest.setup.js` polyfills `TextEncoder`/`TextDecoder` - needed by some utils.
 - `Dockerfile` uses `npm install --legacy-peer-deps` (React peer conflicts).
 - `scratch/` and `manual-test-saudi-ids.js` are ad-hoc/manual testing artifacts.
