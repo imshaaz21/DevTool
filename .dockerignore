@@ -36,3 +36,21 @@ yarn-error.log*
 
 # Testing
 coverage
+__tests__
+jest.config.js
+jest.setup.js
+
+# CI / quality
+.github
+sonar-project.properties
+
+# Docs and meta (not needed in image)
+*.md
+AGENTS.md
+Dockerfile
+.dockerignore
+docker-compose*
+
+# Ad-hoc/manual artifacts
+scratch
+manual-test-saudi-ids.js
