@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { X, ZoomIn, ZoomOut, Maximize, Minimize } from 'lucide-react';
+import { onKeyActivate } from '@/lib/a11y';
 
 interface ImageModalProps {
   isOpen: boolean;
@@ -85,11 +86,17 @@ export function ImageModal({ isOpen, onClose, imageUrl, imageAlt = 'Image Previe
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm"
+      role="button"
+      tabIndex={-1}
+      aria-label="Close image viewer"
+      onKeyDown={onKeyActivate(onClose)}
       onClick={onClose}
     >
       {/* Toolbar */}
       <div
         className="absolute top-4 right-4 flex items-center gap-2 z-10"
+        role="presentation"
+        onKeyDown={e => e.stopPropagation()}
         onClick={e => e.stopPropagation()}
       >
         <div className="bg-neutral-900/90 border border-neutral-800 rounded-lg p-1 flex items-center gap-1 shadow-lg">
@@ -139,6 +146,8 @@ export function ImageModal({ isOpen, onClose, imageUrl, imageAlt = 'Image Previe
           style={{
             transform: `translate(${position.x}px, ${position.y}px) scale(${scale})`,
           }}
+          role="presentation"
+          onKeyDown={(e) => e.stopPropagation()}
           onClick={(e) => e.stopPropagation()}
           onMouseDown={handleMouseDown}
           onMouseMove={handleMouseMove}

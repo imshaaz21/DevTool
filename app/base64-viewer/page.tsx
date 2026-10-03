@@ -29,6 +29,7 @@ import {
   Sparkles,
 } from 'lucide-react';
 import { copyTextToClipboard } from '@/lib/clipboard';
+import { onKeyActivate } from '@/lib/a11y';
 
 const SAMPLE_IMAGE_BASE64 = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAABMSURBVHgB7dKxCQAgEMDA3P2ndIsU8RCGfEDjQyU512Nf/wE4gAAIIAACIIAACIAACIAACIAACIAACIAACIAACIAACIAACIAACIBAMHMAkR4E2cM3Qd8AAAAASUVORK5CYII=';
 
@@ -111,7 +112,7 @@ export default function Base64ViewerPage() {
 
     const timer = setTimeout(() => {
       if (base64Input.trim()) {
-        handleDecode(base64Input);
+        void handleDecode(base64Input);
       } else {
         lastProcessedRef.current = '';
         if (currentBlobUrlRef.current && currentBlobUrlRef.current.startsWith('blob:')) {
@@ -137,7 +138,7 @@ export default function Base64ViewerPage() {
   const handleMediaTypeChange = (newType: 'image' | 'pdf') => {
     setMediaType(newType);
     if (base64Input.trim()) {
-      handleDecode(base64Input, newType);
+      void handleDecode(base64Input, newType);
     }
   };
 
@@ -158,7 +159,7 @@ export default function Base64ViewerPage() {
       const base64 = e.target?.result as string;
       if (!base64) return;
       setBase64Input(base64);
-      handleDecode(base64, targetMode);
+      void handleDecode(base64, targetMode);
       toast.success(isPdf ? 'PDF loaded and converted to Base64' : 'Image loaded and converted to Base64');
     };
     reader.readAsDataURL(file);
@@ -190,13 +191,13 @@ export default function Base64ViewerPage() {
   const loadSampleImage = () => {
     setMediaType('image');
     setBase64Input(SAMPLE_IMAGE_BASE64);
-    handleDecode(SAMPLE_IMAGE_BASE64, 'image');
+    void handleDecode(SAMPLE_IMAGE_BASE64, 'image');
   };
 
   const loadSamplePdf = () => {
     setMediaType('pdf');
     setBase64Input(SAMPLE_PDF_BASE64);
-    handleDecode(SAMPLE_PDF_BASE64, 'pdf');
+    void handleDecode(SAMPLE_PDF_BASE64, 'pdf');
   };
 
   return (
@@ -278,7 +279,7 @@ export default function Base64ViewerPage() {
             className="hidden"
           />
           <button
-            onClick={() => handleDecode()}
+            onClick={() => void handleDecode()}
             disabled={loading || !base64Input.trim()}
             className="btn btn-primary btn-sm min-w-[88px] justify-center shrink-0"
           >
@@ -402,6 +403,9 @@ export default function Base64ViewerPage() {
                         <img
                           src={imageUrl}
                           alt="Preview"
+                          role="button"
+                          tabIndex={0}
+                          onKeyDown={onKeyActivate(() => setShowModal(true))}
                           className="max-w-full max-h-[460px] object-contain rounded border border-neutral-200/80 dark:border-neutral-800 shadow-sm cursor-zoom-in"
                           onClick={() => setShowModal(true)}
                         />
@@ -410,6 +414,9 @@ export default function Base64ViewerPage() {
                   )
                 ) : (
                   <div
+                    role="button"
+                    tabIndex={0}
+                    onKeyDown={onKeyActivate(() => fileInputRef.current?.click())}
                     onClick={() => fileInputRef.current?.click()}
                     className="h-72 rounded-xl border border-dashed border-neutral-300 dark:border-neutral-800 flex flex-col items-center justify-center text-neutral-400 gap-2 cursor-pointer hover:bg-neutral-50 dark:hover:bg-neutral-900/40 transition-colors"
                   >

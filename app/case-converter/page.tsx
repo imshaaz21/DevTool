@@ -36,6 +36,7 @@ import {
   getTextStats,
 } from '@/lib/caseConverter';
 import { copyTextToClipboard } from '@/lib/clipboard';
+import { onKeyActivate } from '@/lib/a11y';
 
 const SAMPLE_SINGLE = 'user_account_profile_settings';
 const SAMPLE_MULTILINE = `user_id
@@ -460,6 +461,9 @@ export default function CaseConverterPage() {
                   return (
                     <div
                       key={opt.id}
+                      role="button"
+                      tabIndex={0}
+                      onKeyDown={onKeyActivate(() => handleCopy(transformed, opt.id))}
                       onClick={() => handleCopy(transformed, opt.id)}
                       className="group bg-white dark:bg-[#0e0e11] border border-neutral-200 dark:border-neutral-800/80 hover:border-neutral-300 dark:hover:border-neutral-700 rounded-xl p-3.5 shadow-xs transition-all cursor-pointer relative flex flex-col justify-between gap-3"
                     >

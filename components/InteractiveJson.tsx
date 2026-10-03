@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { copyTextToClipboard } from '@/lib/clipboard';
+import { onKeyActivate } from '@/lib/a11y';
 
 interface JsonViewerProps {
   data: any;
@@ -114,7 +115,19 @@ export function InteractiveJson({ data, editable = false, onEdit }: JsonViewerPr
     if (value === null) {
       return canEdit ? (
         <span
+          role="button"
+          tabIndex={0}
           className="text-neutral-400 cursor-pointer hover:bg-neutral-200 dark:hover:bg-neutral-800 hover:text-neutral-900 dark:hover:text-white px-1 rounded"
+          onKeyDown={onKeyActivate(() => {
+            const newValue = prompt('Edit value:', 'null');
+            if (newValue !== null) {
+              try {
+                updateJsonValue(path, JSON.parse(newValue));
+              } catch (e) {
+                alert(`Invalid JSON: ${(e as Error).message}`);
+              }
+            }
+          })}
           onClick={() => {
             const newValue = prompt('Edit value:', 'null');
             if (newValue !== null) {
@@ -140,7 +153,12 @@ export function InteractiveJson({ data, editable = false, onEdit }: JsonViewerPr
     if (typeof value === 'boolean') {
       return canEdit ? (
         <span
+          role="button"
+          tabIndex={0}
           className="text-amber-600 dark:text-amber-400 cursor-pointer hover:bg-neutral-100 dark:hover:bg-neutral-800 px-1 rounded"
+          onKeyDown={onKeyActivate(() => {
+            updateJsonValue(path, !value);
+          })}
           onClick={() => {
             updateJsonValue(path, !value);
           }}
@@ -155,7 +173,20 @@ export function InteractiveJson({ data, editable = false, onEdit }: JsonViewerPr
     if (typeof value === 'number') {
       return canEdit ? (
         <span
+          role="button"
+          tabIndex={0}
           className="text-neutral-900 dark:text-neutral-100 font-semibold cursor-pointer hover:bg-neutral-100 dark:hover:bg-neutral-800 px-1 rounded"
+          onKeyDown={onKeyActivate(() => {
+            const newValue = prompt('Edit value:', value.toString());
+            if (newValue !== null) {
+              const parsed = parseFloat(newValue);
+              if (!isNaN(parsed)) {
+                updateJsonValue(path, parsed);
+              } else {
+                alert('Please enter a valid number');
+              }
+            }
+          })}
           onClick={() => {
             const newValue = prompt('Edit value:', value.toString());
             if (newValue !== null) {
@@ -178,7 +209,15 @@ export function InteractiveJson({ data, editable = false, onEdit }: JsonViewerPr
     if (typeof value === 'string') {
       return canEdit ? (
         <span
+          role="button"
+          tabIndex={0}
           className="text-emerald-600 dark:text-emerald-400 cursor-pointer hover:bg-neutral-100 dark:hover:bg-neutral-800 px-1 rounded"
+          onKeyDown={onKeyActivate(() => {
+            const newValue = prompt('Edit value:', value);
+            if (newValue !== null) {
+              updateJsonValue(path, newValue);
+            }
+          })}
           onClick={() => {
             const newValue = prompt('Edit value:', value);
             if (newValue !== null) {
@@ -199,7 +238,10 @@ export function InteractiveJson({ data, editable = false, onEdit }: JsonViewerPr
       return (
         <div>
           <span
+            role="button"
+            tabIndex={0}
             className="cursor-pointer select-none text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200"
+            onKeyDown={onKeyActivate(() => toggleExpand(currentPath))}
             onClick={() => toggleExpand(currentPath)}
           >
             {isExpanded ? '▼' : '▶'} Array[{value.length}]
@@ -226,7 +268,10 @@ export function InteractiveJson({ data, editable = false, onEdit }: JsonViewerPr
       return (
         <div>
           <span
+            role="button"
+            tabIndex={0}
             className="cursor-pointer select-none text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200"
+            onKeyDown={onKeyActivate(() => toggleExpand(currentPath))}
             onClick={() => toggleExpand(currentPath)}
           >
             {isExpanded ? '▼' : '▶'} Object{keys.length > 0 ? `{${keys.length}}` : '{}'}
