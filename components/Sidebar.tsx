@@ -26,7 +26,9 @@ import {
   CaseSensitive,
   CalendarRange,
   Palette,
-  Key
+  Key,
+  Bug,
+  Lightbulb
 } from 'lucide-react';
 
 export function Sidebar() {
@@ -175,16 +177,48 @@ export function Sidebar() {
       {/* Footer / Time & Theme */}
       <div className="p-2.5 border-t border-neutral-200 dark:border-neutral-800 bg-neutral-50/50 dark:bg-neutral-900/30">
         {!isCollapsed ? (
-          <div className="flex items-center justify-between gap-2 px-1">
-            <div className="flex items-center gap-2 text-[11px] text-neutral-500 dark:text-neutral-400 font-mono">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" title="Live AST Time" />
-              <span>AST</span>
-              <span className="text-neutral-800 dark:text-neutral-200 font-medium">{currentTime}</span>
+          <>
+            <div className="flex items-center gap-1.5 px-1 pb-2">
+              <a
+                href="https://github.com/imshaaz21/DevTool/issues/new?template=bug_report.md"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-1 text-[11px] text-neutral-500 dark:text-neutral-400 hover:text-rose-600 dark:hover:text-rose-400 transition-colors"
+              >
+                <Bug size={12} />
+                <span>Report issue</span>
+              </a>
+              <span className="text-neutral-300 dark:text-neutral-700">·</span>
+              <a
+                href="https://github.com/imshaaz21/DevTool/issues/new?template=feature_request.md"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-1 text-[11px] text-neutral-500 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-100 transition-colors"
+              >
+                <Lightbulb size={12} />
+                <span>Request feature</span>
+              </a>
             </div>
-            <ThemeToggle />
-          </div>
+            <div className="flex items-center justify-between gap-2 px-1">
+              <div className="flex items-center gap-2 text-[11px] text-neutral-500 dark:text-neutral-400 font-mono">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" title="Live AST Time" />
+                <span>AST</span>
+                <span className="text-neutral-800 dark:text-neutral-200 font-medium">{currentTime}</span>
+              </div>
+              <ThemeToggle />
+            </div>
+          </>
         ) : (
           <div className="flex flex-col items-center gap-2">
+            <a
+              href="https://github.com/imshaaz21/DevTool/issues/new/choose"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="p-1.5 rounded-md text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+              title="Report issue / Request feature"
+            >
+              <Bug size={15} />
+            </a>
             <div
               className="w-2 h-2 rounded-full bg-emerald-500"
               title={`AST: ${currentTime}`}
