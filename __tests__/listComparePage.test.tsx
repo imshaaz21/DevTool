@@ -114,4 +114,21 @@ describe('ListComparePage', () => {
     fireEvent.click(screen.getByText('Duplicates: Remove'));
     expect(screen.getByText('Duplicates: Keep')).toBeInTheDocument();
   });
+
+  it('defaults to Only in List A (A \\ B) when adding items to List A', () => {
+    render(
+      <SidebarProvider>
+        <ListComparePage />
+      </SidebarProvider>
+    );
+
+    const listATextarea = screen.getByPlaceholderText(/INV-001/i) as HTMLTextAreaElement;
+    fireEvent.change(listATextarea, { target: { value: 'ORDER-101\nORDER-102\nORDER-103' } });
+
+    // Output textarea should immediately contain formatted items from List A under Only in List A
+    const outputTextarea = screen.getByPlaceholderText('Formatted output will appear here...') as HTMLTextAreaElement;
+    expect(outputTextarea.value).toContain("'ORDER-101'");
+    expect(outputTextarea.value).toContain("'ORDER-102'");
+    expect(outputTextarea.value).toContain("'ORDER-103'");
+  });
 });
