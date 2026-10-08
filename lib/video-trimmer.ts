@@ -26,7 +26,7 @@ export const ASPECT_RATIO_PRESETS: AspectRatioOption[] = [
  * Formats time in seconds to mm:ss.s format (e.g. 01:23.4).
  */
 export function formatTimestamp(seconds: number): string {
-  if (isNaN(seconds) || seconds < 0) return '00:00.0';
+  if (Number.isNaN(seconds) || seconds < 0) return '00:00.0';
   const mins = Math.floor(seconds / 60);
   const secs = Math.floor(seconds % 60);
   const tenths = Math.floor((seconds % 1) * 10);
@@ -44,13 +44,13 @@ export function parseTimestamp(str: string): number {
 
   if (trimmed.includes(':')) {
     const parts = trimmed.split(':');
-    const mins = parseFloat(parts[0]) || 0;
-    const secs = parseFloat(parts[1]) || 0;
+    const mins = Number.parseFloat(parts[0]) || 0;
+    const secs = Number.parseFloat(parts[1]) || 0;
     return Math.max(0, mins * 60 + secs);
   }
 
-  const val = parseFloat(trimmed);
-  return isNaN(val) ? 0 : Math.max(0, val);
+  const val = Number.parseFloat(trimmed);
+  return Number.isNaN(val) ? 0 : Math.max(0, val);
 }
 
 /**
@@ -142,7 +142,7 @@ export function calculateCropDimensions(
   }
 
   const preset = ASPECT_RATIO_PRESETS.find((p) => p.value === aspectRatioValue);
-  if (!preset || preset.ratio === null) {
+  if (preset?.ratio == null) {
     return { x: 0, y: 0, width: videoWidth, height: videoHeight };
   }
 
@@ -190,7 +190,7 @@ export function downloadBlob(blob: Blob, filename: string): void {
   a.download = filename;
   document.body.appendChild(a);
   a.click();
-  document.body.removeChild(a);
+  a.remove();
   URL.revokeObjectURL(url);
 }
 

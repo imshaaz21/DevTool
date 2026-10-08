@@ -367,7 +367,9 @@ export default function VideoTrimmerPage() {
                     muted={isMuted}
                     playsInline
                     className="max-h-[50vh] max-w-full object-contain"
-                  />
+                  >
+                    <track kind="captions" />
+                  </video>
 
                   {/* Play overlay button */}
                   {!isPlaying && (
@@ -399,7 +401,7 @@ export default function VideoTrimmerPage() {
                       max={duration || 100}
                       step={0.1}
                       value={currentTime}
-                      onChange={(e) => handleSeek(parseFloat(e.target.value))}
+                      onChange={(e) => handleSeek(Number.parseFloat(e.target.value))}
                       className="w-full accent-neutral-900 dark:accent-neutral-100 cursor-pointer h-1.5 rounded-lg bg-neutral-200 dark:bg-neutral-800"
                     />
                   </div>
@@ -460,154 +462,35 @@ export default function VideoTrimmerPage() {
 
               {/* Trim & Crop Settings Grid */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {/* Trim Points Card */}
-                <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-5 shadow-sm flex flex-col gap-4">
-                  <h3 className="text-sm font-semibold flex items-center gap-2 text-neutral-900 dark:text-neutral-100">
-                    <Clock size={16} className="text-neutral-500" />
-                    Trim Cut Points
-                  </h3>
+                <TrimPointsCard
+                  duration={duration}
+                  startTime={startTime}
+                  endTime={endTime}
+                  trimDuration={trimDuration}
+                  onStartTimeChange={setStartTime}
+                  onEndTimeChange={setEndTime}
+                />
 
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <label className="block text-xs font-medium text-neutral-500 mb-1">
-                        Start Time (seconds)
-                      </label>
-                      <input
-                        type="number"
-                        min={0}
-                        max={duration}
-                        step={0.1}
-                        value={Number(startTime.toFixed(1))}
-                        onChange={(e) => setStartTime(clampTime(parseFloat(e.target.value) || 0, 0, duration))}
-                        className="w-full px-3 py-2 text-xs font-mono rounded-lg border border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-xs font-medium text-neutral-500 mb-1">
-                        End Time (seconds)
-                      </label>
-                      <input
-                        type="number"
-                        min={0}
-                        max={duration}
-                        step={0.1}
-                        value={Number(endTime.toFixed(1))}
-                        onChange={(e) => setEndTime(clampTime(parseFloat(e.target.value) || 0, 0, duration))}
-                        className="w-full px-3 py-2 text-xs font-mono rounded-lg border border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="text-xs flex items-center justify-between">
-                    <span className="text-neutral-500">Selected Clip:</span>
-                    <span
-                      className={`font-mono font-medium ${
-                        trimDuration > MAX_DURATION_SECONDS
-                          ? 'text-red-600 dark:text-red-400 font-semibold'
-                          : 'text-neutral-800 dark:text-neutral-200'
-                      }`}
-                    >
-                      {trimDuration.toFixed(1)}s ({formatTimestamp(trimDuration)})
-                      {trimDuration > MAX_DURATION_SECONDS && ' (Max 5 mins)'}
-                    </span>
-                  </div>
-                </div>
-
-                {/* Aspect Ratio / Crop Card */}
-                <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-5 shadow-sm flex flex-col gap-4">
-                  <h3 className="text-sm font-semibold flex items-center gap-2 text-neutral-900 dark:text-neutral-100">
-                    <CropIcon size={16} className="text-neutral-500" />
-                    Crop Aspect Ratio
-                  </h3>
-
-                  <div className="grid grid-cols-2 gap-2">
-                    {ASPECT_RATIO_PRESETS.map((preset) => (
-                      <button
-                        key={preset.value}
-                        onClick={() => setAspectRatio(preset.value)}
-                        className={`px-3 py-2 text-xs rounded-lg border text-left transition-all ${
-                          aspectRatio === preset.value
-                            ? 'border-neutral-900 dark:border-neutral-100 bg-neutral-100 dark:bg-neutral-800 font-medium'
-                            : 'border-neutral-200 dark:border-neutral-800 hover:bg-neutral-50 dark:hover:bg-neutral-800/50 text-neutral-600 dark:text-neutral-400'
-                        }`}
-                      >
-                        {preset.label}
-                      </button>
-                    ))}
-                  </div>
-
-                  <div className="text-xs text-neutral-500 flex items-center justify-between">
-                    <span>Source Resolution:</span>
-                    <span className="font-mono text-neutral-700 dark:text-neutral-300">
-                      {videoDimensions.width} × {videoDimensions.height} px
-                    </span>
-                  </div>
-                </div>
+                <AspectRatioCard
+                  aspectRatio={aspectRatio}
+                  onAspectRatioChange={setAspectRatio}
+                  videoDimensions={videoDimensions}
+                />
               </div>
 
               </fieldset>
 
-              {/* Action & Export Card */}
-              <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-5 shadow-sm flex flex-col gap-4">
-                <div className="flex flex-wrap items-center justify-between gap-3">
-                  <div>
-                    <h4 className="text-sm font-semibold text-neutral-900 dark:text-neutral-100">
-                      Export Trimmed Video
-                    </h4>
-                    <p className="text-xs text-neutral-500">
-                      Estimated file size: ~{(estimatedSize / (1024 * 1024)).toFixed(1)} MB
-                    </p>
-                  </div>
-
-                  {isProcessing && (
-                    <button
-                      onClick={() => {
-                        abortRef.current?.abort();
-                      }}
-                      className="px-4 py-2.5 text-xs font-medium rounded-lg border border-neutral-300 dark:border-neutral-700 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
-                    >
-                      Cancel
-                    </button>
-                  )}
-                  <button
-                    onClick={handleTrimAndExport}
-                    disabled={!!supportError || isProcessing || trimDuration <= 0 || trimDuration > MAX_DURATION_SECONDS}
-                    className="flex items-center gap-2 px-5 py-2.5 text-xs font-medium rounded-lg bg-neutral-900 hover:bg-neutral-800 dark:bg-white dark:hover:bg-neutral-100 text-white dark:text-neutral-950 disabled:opacity-40 disabled:cursor-not-allowed transition-all shadow-sm"
-                  >
-                    <Scissors size={14} />
-                    <span>{isProcessing ? `Trimming... ${progress}%` : 'Trim & Export Video'}</span>
-                  </button>
-                </div>
-
-                {/* Progress bar during export */}
-                {isProcessing && (
-                  <div className="w-full bg-neutral-100 dark:bg-neutral-800 h-2 rounded-full overflow-hidden">
-                    <div
-                      className="bg-neutral-900 dark:bg-white h-full transition-all duration-150"
-                      style={{ width: `${progress}%` }}
-                    />
-                  </div>
-                )}
-
-                {/* Export Result Card */}
-                {trimmedResultUrl && !isProcessing && (
-                  <div className="mt-2 p-4 rounded-xl bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800 flex flex-wrap items-center justify-between gap-3">
-                    <div className="flex items-center gap-2 text-emerald-800 dark:text-emerald-300">
-                      <Check size={18} />
-                      <span className="text-xs font-medium">Video trimmed successfully!</span>
-                    </div>
-
-                    <button
-                      onClick={handleDownloadResult}
-                      className="flex items-center gap-1.5 px-4 py-2 text-xs font-medium rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white shadow-sm transition-colors"
-                    >
-                      <Download size={14} />
-                      <span>Download Trimmed MP4</span>
-                    </button>
-                  </div>
-                )}
-              </div>
+              <ExportActionCard
+                estimatedSize={estimatedSize}
+                isProcessing={isProcessing}
+                progress={progress}
+                supportError={supportError}
+                trimDuration={trimDuration}
+                trimmedResultUrl={trimmedResultUrl}
+                onCancel={() => abortRef.current?.abort()}
+                onExport={handleTrimAndExport}
+                onDownload={handleDownloadResult}
+              />
             </div>
           ) : (
             /* Upload / Drop Placeholder */
@@ -662,6 +545,207 @@ export default function VideoTrimmerPage() {
           className="hidden"
         />
       </div>
+    </div>
+  );
+}
+
+interface TrimPointsCardProps {
+  duration: number;
+  startTime: number;
+  endTime: number;
+  trimDuration: number;
+  onStartTimeChange: (val: number) => void;
+  onEndTimeChange: (val: number) => void;
+}
+
+function TrimPointsCard({
+  duration,
+  startTime,
+  endTime,
+  trimDuration,
+  onStartTimeChange,
+  onEndTimeChange,
+}: TrimPointsCardProps) {
+  return (
+    <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-5 shadow-sm flex flex-col gap-4">
+      <h3 className="text-sm font-semibold flex items-center gap-2 text-neutral-900 dark:text-neutral-100">
+        <Clock size={16} className="text-neutral-500" />
+        Trim Cut Points
+      </h3>
+
+      <div className="grid grid-cols-2 gap-3">
+        <div>
+          <label htmlFor="start-time-input" className="block text-xs font-medium text-neutral-500 mb-1">
+            Start Time (seconds)
+          </label>
+          <input
+            id="start-time-input"
+            type="number"
+            min={0}
+            max={duration}
+            step={0.1}
+            value={Number(startTime.toFixed(1))}
+            onChange={(e) => onStartTimeChange(clampTime(Number.parseFloat(e.target.value) || 0, 0, duration))}
+            className="w-full px-3 py-2 text-xs font-mono rounded-lg border border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100"
+          />
+        </div>
+
+        <div>
+          <label htmlFor="end-time-input" className="block text-xs font-medium text-neutral-500 mb-1">
+            End Time (seconds)
+          </label>
+          <input
+            id="end-time-input"
+            type="number"
+            min={0}
+            max={duration}
+            step={0.1}
+            value={Number(endTime.toFixed(1))}
+            onChange={(e) => onEndTimeChange(clampTime(Number.parseFloat(e.target.value) || 0, 0, duration))}
+            className="w-full px-3 py-2 text-xs font-mono rounded-lg border border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100"
+          />
+        </div>
+      </div>
+
+      <div className="text-xs flex items-center justify-between">
+        <span className="text-neutral-500">Selected Clip:</span>
+        <span
+          className={`font-mono font-medium ${
+            trimDuration > MAX_DURATION_SECONDS
+              ? 'text-red-600 dark:text-red-400 font-semibold'
+              : 'text-neutral-800 dark:text-neutral-200'
+          }`}
+        >
+          {trimDuration.toFixed(1)}s ({formatTimestamp(trimDuration)})
+          {trimDuration > MAX_DURATION_SECONDS && ' (Max 5 mins)'}
+        </span>
+      </div>
+    </div>
+  );
+}
+
+interface AspectRatioCardProps {
+  aspectRatio: string;
+  onAspectRatioChange: (val: string) => void;
+  videoDimensions: { width: number; height: number };
+}
+
+function AspectRatioCard({
+  aspectRatio,
+  onAspectRatioChange,
+  videoDimensions,
+}: AspectRatioCardProps) {
+  return (
+    <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-5 shadow-sm flex flex-col gap-4">
+      <h3 className="text-sm font-semibold flex items-center gap-2 text-neutral-900 dark:text-neutral-100">
+        <CropIcon size={16} className="text-neutral-500" />
+        Crop Aspect Ratio
+      </h3>
+
+      <div className="grid grid-cols-2 gap-2">
+        {ASPECT_RATIO_PRESETS.map((preset) => (
+          <button
+            key={preset.value}
+            onClick={() => onAspectRatioChange(preset.value)}
+            className={`px-3 py-2 text-xs rounded-lg border text-left transition-all ${
+              aspectRatio === preset.value
+                ? 'border-neutral-900 dark:border-neutral-100 bg-neutral-100 dark:bg-neutral-800 font-medium'
+                : 'border-neutral-200 dark:border-neutral-800 hover:bg-neutral-50 dark:hover:bg-neutral-800/50 text-neutral-600 dark:text-neutral-400'
+            }`}
+          >
+            {preset.label}
+          </button>
+        ))}
+      </div>
+
+      <div className="text-xs text-neutral-500 flex items-center justify-between">
+        <span>Source Resolution:</span>
+        <span className="font-mono text-neutral-700 dark:text-neutral-300">
+          {videoDimensions.width} x {videoDimensions.height} px
+        </span>
+      </div>
+    </div>
+  );
+}
+
+interface ExportActionCardProps {
+  estimatedSize: number;
+  isProcessing: boolean;
+  progress: number;
+  supportError: string | null;
+  trimDuration: number;
+  trimmedResultUrl: string | null;
+  onCancel: () => void;
+  onExport: () => void;
+  onDownload: () => void;
+}
+
+function ExportActionCard({
+  estimatedSize,
+  isProcessing,
+  progress,
+  supportError,
+  trimDuration,
+  trimmedResultUrl,
+  onCancel,
+  onExport,
+  onDownload,
+}: ExportActionCardProps) {
+  return (
+    <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-5 shadow-sm flex flex-col gap-4">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <h4 className="text-sm font-semibold text-neutral-900 dark:text-neutral-100">
+            Export Trimmed Video
+          </h4>
+          <p className="text-xs text-neutral-500">
+            Estimated file size: ~{(estimatedSize / (1024 * 1024)).toFixed(1)} MB
+          </p>
+        </div>
+
+        {isProcessing && (
+          <button
+            onClick={onCancel}
+            className="px-4 py-2.5 text-xs font-medium rounded-lg border border-neutral-300 dark:border-neutral-700 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+          >
+            Cancel
+          </button>
+        )}
+        <button
+          onClick={onExport}
+          disabled={!!supportError || isProcessing || trimDuration <= 0 || trimDuration > MAX_DURATION_SECONDS}
+          className="flex items-center gap-2 px-5 py-2.5 text-xs font-medium rounded-lg bg-neutral-900 hover:bg-neutral-800 dark:bg-white dark:hover:bg-neutral-100 text-white dark:text-neutral-950 disabled:opacity-40 disabled:cursor-not-allowed transition-all shadow-sm"
+        >
+          <Scissors size={14} />
+          <span>{isProcessing ? `Trimming... ${progress}%` : 'Trim & Export Video'}</span>
+        </button>
+      </div>
+
+      {isProcessing && (
+        <div className="w-full bg-neutral-100 dark:bg-neutral-800 h-2 rounded-full overflow-hidden">
+          <div
+            className="bg-neutral-900 dark:bg-white h-full transition-all duration-150"
+            style={{ width: `${progress}%` }}
+          />
+        </div>
+      )}
+
+      {trimmedResultUrl && !isProcessing && (
+        <div className="mt-2 p-4 rounded-xl bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800 flex flex-wrap items-center justify-between gap-3">
+          <div className="flex items-center gap-2 text-emerald-800 dark:text-emerald-300">
+            <Check size={18} />
+            <span className="text-xs font-medium">Video trimmed successfully!</span>
+          </div>
+
+          <button
+            onClick={onDownload}
+            className="flex items-center gap-1.5 px-4 py-2 text-xs font-medium rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white shadow-sm transition-colors"
+          >
+            <Download size={14} />
+            <span>Download Trimmed MP4</span>
+          </button>
+        </div>
+      )}
     </div>
   );
 }

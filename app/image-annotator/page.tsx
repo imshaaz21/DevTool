@@ -246,8 +246,7 @@ export default function ImageAnnotatorPage() {
       const items = e.clipboardData?.items;
       if (!items) return;
 
-      for (let i = 0; i < items.length; i++) {
-        const item = items[i];
+      for (const item of Array.from(items)) {
         if (item.type.startsWith('image/')) {
           const file = item.getAsFile();
           if (file) {
@@ -267,7 +266,7 @@ export default function ImageAnnotatorPage() {
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
     const file = e.dataTransfer.files?.[0];
-    if (file && file.type.startsWith('image/')) {
+    if (file?.type.startsWith('image/')) {
       loadImage(URL.createObjectURL(file), file.size);
       toast.success('Image loaded successfully');
     }
@@ -301,11 +300,10 @@ export default function ImageAnnotatorPage() {
     // an offscreen layer and reused until they change, so mouse-move redraws stay cheap
     let layer = layerRef.current;
     if (
-      !layer ||
-      layer.annotations !== annotations ||
-      layer.baseImg !== baseImg ||
-      layer.canvas.width !== canvas.width ||
-      layer.canvas.height !== canvas.height
+      layer?.annotations !== annotations ||
+      layer?.baseImg !== baseImg ||
+      layer?.canvas.width !== canvas.width ||
+      layer?.canvas.height !== canvas.height
     ) {
       const layerCanvas = document.createElement('canvas');
       layerCanvas.width = canvas.width;
@@ -700,7 +698,7 @@ export default function ImageAnnotatorPage() {
           {imageSrc && (
             <div className="flex items-center gap-2">
               <button
-                onClick={() => handleRunOcr(false)}
+                onClick={() => void handleRunOcr(false)}
                 className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg border border-neutral-300 dark:border-neutral-700 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
                 title="Extract all text from image using OCR"
               >
@@ -709,7 +707,7 @@ export default function ImageAnnotatorPage() {
               </button>
 
               <button
-                onClick={handleCopyClipboard}
+                onClick={() => void handleCopyClipboard()}
                 className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg bg-neutral-900 hover:bg-neutral-800 dark:bg-white dark:hover:bg-neutral-100 text-white dark:text-neutral-950 transition-colors shadow-sm"
                 title="Copy annotated image to clipboard"
               >
@@ -794,7 +792,7 @@ export default function ImageAnnotatorPage() {
                 )}
 
                 {/* Stroke Width / Font Size Sliders */}
-                {activeTool === 'text' ? (
+                {activeTool === 'text' && (
                   <div className="flex items-center gap-2 bg-neutral-100 dark:bg-neutral-800/80 px-2 py-1 rounded-lg">
                     <span className="text-[11px] font-mono text-neutral-500">Size:</span>
                     <input
@@ -811,7 +809,9 @@ export default function ImageAnnotatorPage() {
                       {fontSize}px
                     </span>
                   </div>
-                ) : activeTool !== 'crop' ? (
+                )}
+
+                {activeTool !== 'text' && activeTool !== 'crop' && (
                   <div className="flex items-center gap-2 bg-neutral-100 dark:bg-neutral-800/80 px-2 py-1 rounded-lg">
                     <span className="text-[11px] font-mono text-neutral-500">Width:</span>
                     <input
@@ -828,7 +828,7 @@ export default function ImageAnnotatorPage() {
                       {strokeWidth}px
                     </span>
                   </div>
-                ) : null}
+                )}
 
                 {/* History & Reset actions */}
                 <div className="flex items-center gap-1 border-l border-neutral-200 dark:border-neutral-800 pl-3">
@@ -907,7 +907,7 @@ export default function ImageAnnotatorPage() {
                   Cancel
                 </button>
                 <button
-                  onClick={() => handleRunOcr(true)}
+                  onClick={() => void handleRunOcr(true)}
                   className="px-2.5 py-1 rounded bg-blue-600 hover:bg-blue-500 text-white font-medium shadow-sm"
                 >
                   Extract Selected Text
@@ -933,11 +933,7 @@ export default function ImageAnnotatorPage() {
                   onTouchMove={handlePointerMove}
                   onTouchEnd={handlePointerUp}
                   className={`block max-w-full max-h-[75vh] object-contain ${
-                    activeTool === 'crop'
-                      ? 'cursor-crosshair'
-                      : activeTool === 'text'
-                      ? 'cursor-text'
-                      : 'cursor-crosshair'
+                    activeTool === 'text' ? 'cursor-text' : 'cursor-crosshair'
                   }`}
                   style={{ touchAction: 'none' }}
                 />
@@ -1011,7 +1007,6 @@ export default function ImageAnnotatorPage() {
               </p>
               <input
                 type="text"
-                autoFocus
                 value={textInput}
                 onChange={(e) => setTextInput(e.target.value)}
                 onKeyDown={(e) => {
@@ -1100,7 +1095,7 @@ export default function ImageAnnotatorPage() {
 
                       <button
                         onClick={() => {
-                          navigator.clipboard.writeText(ocrResultText);
+                          void navigator.clipboard.writeText(ocrResultText);
                           toast.success('Text copied to clipboard!');
                         }}
                         className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg bg-neutral-900 hover:bg-neutral-800 dark:bg-white dark:hover:bg-neutral-100 text-white dark:text-neutral-950 shadow-sm"
