@@ -30,7 +30,8 @@ import {
   Bug,
   Lightbulb,
   Crop,
-  Scissors
+  Scissors,
+  FileText,
 } from 'lucide-react';
 
 export function Sidebar() {
@@ -66,6 +67,7 @@ export function Sidebar() {
     { name: 'JSON Path & Sum', path: '/json-path-aggregator', icon: Calculator },
     { name: 'JSON Formatter', path: '/json-formatter', icon: FileJson },
     { name: 'HTML Viewer', path: '/html-viewer', icon: Code2 },
+    { name: 'Markdown Viewer', path: '/markdown-viewer', icon: FileText },
     { name: 'Screen Permission', path: '/screen-permission-decode', icon: ShieldCheck },
     { name: 'Base64 Media / PDF', path: '/base64-viewer', icon: ImageIcon },
     { name: 'Image Annotator', path: '/image-annotator', icon: Crop },
