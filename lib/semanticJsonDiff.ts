@@ -651,7 +651,18 @@ export function computeSemanticDiff(
   // Re-assign 1-based IDs and attach dotPath
   diffs.forEach((d, idx) => {
     d.id = idx + 1;
-    d.dotPath = formatPathToDotNotation(d.path1.path || d.path2.path);
+    const pathCandidate =
+      d.path1.path && d.path1.path !== '/' && d.path1.path !== '//'
+        ? d.path1.path
+        : d.path2.path || d.path1.path;
+    let dot = formatPathToDotNotation(pathCandidate);
+    if (dot === 'root') {
+      const match = d.rawMsg.match(/Missing property "([^"]+)"/);
+      if (match) {
+        dot = match[1];
+      }
+    }
+    d.dotPath = dot;
   });
 
   const eqCount = diffs.filter((d) => d.type === 'eq').length;
@@ -670,4 +681,204 @@ export function computeSemanticDiff(
     totalKeysLeft: countJsonKeys(data1),
     totalKeysRight: countJsonKeys(data2),
   };
+}
+
+export interface DiffReportOptions {
+  title?: string;
+  timestamp?: string;
+}
+
+/**
+ * Generates a comprehensive Markdown (.md) diff report from a DiffSummary.
+ */
+export function generateMarkdownReport(
+  summary: DiffSummary,
+  options: DiffReportOptions = {}
+): string {
+  const title = options.title || 'JSON Diff Report';
+  const timestamp =
+    options.timestamp ||
+    new Date().toISOString().replace('T', ' ').substring(0, 19) + ' UTC';
+
+  const lines: string[] = [];
+  lines.push(`# ${title}`);
+  lines.push('');
+  lines.push(`- **Generated**: ${timestamp}`);
+  lines.push(
+    `- **Status**: ${
+      summary.diffs.length === 0
+        ? 'Semantically Identical (0 differences)'
+        : `${summary.diffs.length} Semantic Difference${summary.diffs.length === 1 ? '' : 's'} Found`
+    }`
+  );
+  lines.push('');
+  lines.push('## Summary');
+  lines.push('');
+  lines.push('| Category | Count |');
+  lines.push('| :--- | :--- |');
+  lines.push(`| Total Differences | ${summary.diffs.length} |`);
+  lines.push(`| Missing Properties | ${summary.missingCount} |`);
+  lines.push(`| Type Mismatches | ${summary.typeCount} |`);
+  lines.push(`| Unequal Values | ${summary.eqCount} |`);
+  if (typeof summary.totalKeysLeft === 'number') {
+    lines.push(`| Total Keys (Left) | ${summary.totalKeysLeft} |`);
+  }
+  if (typeof summary.totalKeysRight === 'number') {
+    lines.push(`| Total Keys (Right) | ${summary.totalKeysRight} |`);
+  }
+  lines.push('');
+
+  if (summary.diffs.length === 0) {
+    lines.push('## Result');
+    lines.push('');
+    lines.push('No differences detected. Both JSON documents are semantically identical.');
+    return lines.join('\n');
+  }
+
+  lines.push('## Detailed Differences');
+  lines.push('');
+
+  summary.diffs.forEach((diff) => {
+    const badge =
+      diff.type === 'missing'
+        ? 'MISSING PROPERTY'
+        : diff.type === 'type'
+        ? 'TYPE MISMATCH'
+        : 'VALUE DIFFERENCE';
+    const path = diff.dotPath || 'root';
+
+    lines.push(`### #${diff.id}. \`${path}\` [${badge}]`);
+    lines.push('');
+    lines.push(`- **Left Location**: Line ${diff.path1.line > 0 ? diff.path1.line : '-'}`);
+    lines.push(`- **Right Location**: Line ${diff.path2.line > 0 ? diff.path2.line : '-'}`);
+    lines.push(`- **Description**: ${diff.rawMsg}`);
+    lines.push('');
+
+    const leftSnippet =
+      summary.leftLines && diff.path1.line > 0 && diff.path1.line <= summary.leftLines.length
+        ? summary.leftLines[diff.path1.line - 1]?.trim()
+        : '';
+    const rightSnippet =
+      summary.rightLines && diff.path2.line > 0 && diff.path2.line <= summary.rightLines.length
+        ? summary.rightLines[diff.path2.line - 1]?.trim()
+        : '';
+
+    const isLeftMissing = diff.rawMsg.toLowerCase().includes('left side');
+    const isRightMissing = diff.rawMsg.toLowerCase().includes('right side');
+
+    lines.push('```diff');
+    if (isLeftMissing && rightSnippet) {
+      lines.push(`+ Right (L${diff.path2.line}): ${rightSnippet}`);
+    } else if (isRightMissing && leftSnippet) {
+      lines.push(`- Left  (L${diff.path1.line}): ${leftSnippet}`);
+    } else {
+      if (leftSnippet) {
+        lines.push(`- Left  (L${diff.path1.line}): ${leftSnippet}`);
+      }
+      if (rightSnippet) {
+        lines.push(`+ Right (L${diff.path2.line}): ${rightSnippet}`);
+      }
+    }
+    lines.push('```');
+    lines.push('');
+  });
+
+  return lines.join('\n');
+}
+
+/**
+ * Generates a clean Plain Text (.txt) diff report from a DiffSummary.
+ */
+export function generateTextReport(
+  summary: DiffSummary,
+  options: DiffReportOptions = {}
+): string {
+  const title = options.title || 'JSON DIFF REPORT';
+  const timestamp =
+    options.timestamp ||
+    new Date().toISOString().replace('T', ' ').substring(0, 19) + ' UTC';
+
+  const sep = '='.repeat(80);
+  const subSep = '-'.repeat(80);
+  const lines: string[] = [];
+
+  lines.push(sep);
+  lines.push(title.toUpperCase());
+  lines.push(sep);
+  lines.push(`Generated: ${timestamp}`);
+  lines.push(
+    `Status:    ${
+      summary.diffs.length === 0
+        ? 'Semantically Identical (0 differences)'
+        : `${summary.diffs.length} Semantic Difference${summary.diffs.length === 1 ? '' : 's'} Found`
+    }`
+  );
+  lines.push('');
+  lines.push('SUMMARY:');
+  lines.push(`  Total Differences:   ${summary.diffs.length}`);
+  lines.push(`  Missing Properties:  ${summary.missingCount}`);
+  lines.push(`  Type Mismatches:     ${summary.typeCount}`);
+  lines.push(`  Unequal Values:      ${summary.eqCount}`);
+  if (typeof summary.totalKeysLeft === 'number') {
+    lines.push(`  Total Keys (Left):   ${summary.totalKeysLeft}`);
+  }
+  if (typeof summary.totalKeysRight === 'number') {
+    lines.push(`  Total Keys (Right):  ${summary.totalKeysRight}`);
+  }
+  lines.push('');
+
+  if (summary.diffs.length === 0) {
+    lines.push(subSep);
+    lines.push('No differences detected. Both JSON documents are semantically identical.');
+    lines.push(subSep);
+    return lines.join('\n');
+  }
+
+  lines.push(subSep);
+  lines.push('DETAILED DIFFERENCES:');
+  lines.push(subSep);
+  lines.push('');
+
+  summary.diffs.forEach((diff) => {
+    const badge =
+      diff.type === 'missing'
+        ? 'MISSING'
+        : diff.type === 'type'
+        ? 'TYPE'
+        : 'VALUE';
+    const path = diff.dotPath || 'root';
+
+    lines.push(`#${diff.id}. [${badge}] ${path}`);
+    lines.push(`    Left:        Line ${diff.path1.line > 0 ? diff.path1.line : '-'}`);
+    lines.push(`    Right:       Line ${diff.path2.line > 0 ? diff.path2.line : '-'}`);
+    lines.push(`    Description: ${diff.rawMsg}`);
+
+    const leftSnippet =
+      summary.leftLines && diff.path1.line > 0 && diff.path1.line <= summary.leftLines.length
+        ? summary.leftLines[diff.path1.line - 1]?.trim()
+        : '';
+    const rightSnippet =
+      summary.rightLines && diff.path2.line > 0 && diff.path2.line <= summary.rightLines.length
+        ? summary.rightLines[diff.path2.line - 1]?.trim()
+        : '';
+
+    const isLeftMissing = diff.rawMsg.toLowerCase().includes('left side');
+    const isRightMissing = diff.rawMsg.toLowerCase().includes('right side');
+
+    if (isLeftMissing && rightSnippet) {
+      lines.push(`    + Right:     ${rightSnippet}`);
+    } else if (isRightMissing && leftSnippet) {
+      lines.push(`    - Left:      ${leftSnippet}`);
+    } else {
+      if (leftSnippet) {
+        lines.push(`    - Left:      ${leftSnippet}`);
+      }
+      if (rightSnippet) {
+        lines.push(`    + Right:     ${rightSnippet}`);
+      }
+    }
+    lines.push('');
+  });
+
+  return lines.join('\n');
 }

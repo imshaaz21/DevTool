@@ -13,6 +13,13 @@ jest.mock('next/navigation', () => ({
   }),
 }));
 
+// Mock clipboard
+Object.assign(navigator, {
+  clipboard: {
+    writeText: jest.fn().mockResolvedValue(undefined),
+  },
+});
+
 describe('JsonDiffV2Page', () => {
   it('renders with clean empty inputs by default (no dummy data loaded)', () => {
     render(
@@ -108,10 +115,35 @@ describe('JsonDiffV2Page', () => {
     // Switch to Summary
     fireEvent.click(screen.getByText('Summary'));
     expect(screen.getByText('Total Diffs')).toBeInTheDocument();
-    expect(screen.getByText('Copy Summary Report')).toBeInTheDocument();
+    expect(screen.getByText('Copy Full Report (.md)')).toBeInTheDocument();
+    expect(screen.getByText('Copy Summary Stats')).toBeInTheDocument();
 
     // Switch back to Visual Diff
     fireEvent.click(screen.getByText('Visual Diff'));
     expect(screen.getByText('Left (Original)')).toBeInTheDocument();
+    expect(screen.getByText('Difference Inspector')).toBeInTheDocument();
+    expect(screen.getByText('Copy .md')).toBeInTheDocument();
+  });
+
+  it('supports copying and downloading reports from Difference Inspector and Summary tab', () => {
+    render(
+      <SidebarProvider>
+        <JsonDiffV2Page />
+      </SidebarProvider>
+    );
+
+    fireEvent.click(screen.getByText('Sample Data'));
+
+    // Check Difference Inspector buttons
+    const copyMdBtn = screen.getByText('Copy .md');
+    expect(copyMdBtn).toBeInTheDocument();
+    fireEvent.click(copyMdBtn);
+    expect(screen.getByText('Copied')).toBeInTheDocument();
+
+    // Switch to Summary tab
+    fireEvent.click(screen.getByText('Summary'));
+    const fullReportBtn = screen.getByText('Copy Full Report (.md)');
+    fireEvent.click(fullReportBtn);
+    expect(screen.getByText('Copied Full Report')).toBeInTheDocument();
   });
 });
