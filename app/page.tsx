@@ -23,7 +23,9 @@ import {
   CaseSensitive,
   CalendarRange,
   Palette,
-  Key
+  Key,
+  Crop,
+  Scissors
 } from 'lucide-react';
 
 interface Tool {
@@ -117,6 +119,22 @@ const TOOLS: Tool[] = [
     category: 'Utilities',
     icon: Code2,
     tags: ['html', 'viewer', 'sandbox', 'preview', 'responsive', 'mobile', 'tablet', 'format', 'beautify']
+  },
+  {
+    title: 'Image Annotator & Redactor',
+    desc: 'Annotate bug screenshots with arrows, shapes, text, crop, and pixelate sensitive secrets with instant clipboard copy.',
+    href: '/image-annotator',
+    category: 'Utilities',
+    icon: Crop,
+    tags: ['image', 'screenshot', 'annotate', 'redact', 'pixelate', 'blur', 'crop', 'arrow', 'markup', 'canvas']
+  },
+  {
+    title: 'Video Trimmer & Cropper',
+    desc: 'Trim screen recording segments, crop aspect ratios (16:9, 9:16, 1:1, 4:3), and export lightweight clips in browser.',
+    href: '/video-trimmer',
+    category: 'Utilities',
+    icon: Scissors,
+    tags: ['video', 'trim', 'crop', 'screen recording', 'clipper', 'aspect ratio', 'webm', 'cutter']
   },
   {
     title: 'UUID Generator',

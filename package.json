@@ -20,6 +20,7 @@
     "diff-match-patch": "^1.0.5",
     "jsoneditor": "^10.4.2",
     "lucide-react": "^0.555.0",
+    "mediabunny": "^1.61.3",
     "next": "^14.0.3",
     "next-themes": "^0.2.1",
     "pako": "^3.0.2",
@@ -27,6 +28,7 @@
     "react-dom": "^18.2.0",
     "react-hot-toast": "^2.6.0",
     "tailwindcss": "^3.3.0",
+    "tesseract.js": "^7.0.0",
     "typescript": "^5.0.0"
   },
   "devDependencies": {
