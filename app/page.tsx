@@ -25,7 +25,8 @@ import {
   Palette,
   Key,
   Crop,
-  Scissors
+  Scissors,
+  FileText,
 } from 'lucide-react';
 
 interface Tool {
@@ -119,6 +120,14 @@ const TOOLS: Tool[] = [
     category: 'Utilities',
     icon: Code2,
     tags: ['html', 'viewer', 'sandbox', 'preview', 'responsive', 'mobile', 'tablet', 'format', 'beautify']
+  },
+  {
+    title: 'Markdown Viewer & Preview',
+    desc: 'Live GitHub Flavored Markdown (GFM) preview with tables, task lists, code blocks, and HTML export.',
+    href: '/markdown-viewer',
+    category: 'Utilities',
+    icon: FileText,
+    tags: ['markdown', 'md', 'gfm', 'viewer', 'preview', 'readme', 'table', 'code', 'html']
   },
   {
     title: 'Image Annotator & Redactor',
