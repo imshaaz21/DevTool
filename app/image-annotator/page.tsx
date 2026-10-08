@@ -695,7 +695,7 @@ export default function ImageAnnotatorPage() {
         <PageHeader
           icon={ImageIcon}
           title="Image Annotator & Screenshot Redactor"
-          description="Annotate bug reports, redact sensitive secrets, crop, and copy directly to clipboard."
+          description="Annotate bug reports, redact sensitive secrets, crop, extract text with client-side OCR, and copy directly to clipboard."
         >
           {imageSrc && (
             <div className="flex items-center gap-2">
@@ -951,7 +951,7 @@ export default function ImageAnnotatorPage() {
                   Upload or Drop Image
                 </h3>
                 <p className="text-xs text-neutral-500 dark:text-neutral-400 mb-6 leading-relaxed">
-                  Drop an image file or browse from your device to start annotating and redacting.
+                  Drop an image file or browse from your device to annotate, redact, crop, and extract text with OCR.
                 </p>
 
                 <div className="flex flex-wrap items-center justify-center gap-3">
