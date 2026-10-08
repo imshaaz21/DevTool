@@ -28,7 +28,9 @@ import {
   Palette,
   Key,
   Bug,
-  Lightbulb
+  Lightbulb,
+  Crop,
+  Scissors
 } from 'lucide-react';
 
 export function Sidebar() {
@@ -66,6 +68,8 @@ export function Sidebar() {
     { name: 'HTML Viewer', path: '/html-viewer', icon: Code2 },
     { name: 'Screen Permission', path: '/screen-permission-decode', icon: ShieldCheck },
     { name: 'Base64 Media / PDF', path: '/base64-viewer', icon: ImageIcon },
+    { name: 'Image Annotator', path: '/image-annotator', icon: Crop },
+    { name: 'Video Trimmer', path: '/video-trimmer', icon: Scissors },
     { name: 'UUID Generator', path: '/uuid-generator', icon: Fingerprint },
     { name: 'Encoder / Decoder', path: '/encoder-decoder', icon: Binary },
     { name: 'PKCE Generator', path: '/pkce-generator', icon: Key },

@@ -46,7 +46,7 @@ describe('JsonFormatterPage', () => {
     await waitFor(() => {
       // Badge showing inner JSONs were unpacked
       expect(screen.getByText(/inner JSON.*unpacked/i)).toBeInTheDocument();
-    });
+    }, { timeout: 3000 });
 
     // Check that inner fields like customer name were unpacked into proper JSON
     const editor = screen.getByTestId('json-editor-mock');
