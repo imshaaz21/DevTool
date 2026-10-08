@@ -74,7 +74,7 @@ export default function ListComparePage() {
   const [wrapper, setWrapper] = useState<WrapperOption>('none');
 
   // Active view tab & search filter
-  const [activeTab, setActiveTab] = useState<ResultTab>('common');
+  const [activeTab, setActiveTab] = useState<ResultTab>('onlyA');
   const [searchQuery, setSearchQuery] = useState('');
 
   // Parse inputs
@@ -165,6 +165,7 @@ export default function ListComparePage() {
   const handleLoadSample = () => {
     setListAText(SAMPLE_LIST_A);
     setListBText(SAMPLE_LIST_B);
+    setActiveTab('common');
   };
 
   // Quick action: clear all
@@ -172,6 +173,7 @@ export default function ListComparePage() {
     setListAText('');
     setListBText('');
     setSearchQuery('');
+    setActiveTab('onlyA');
   };
 
   // Quick action: swap lists
@@ -488,7 +490,12 @@ export default function ListComparePage() {
 
               <textarea
                 value={listAText}
-                onChange={(e) => setListAText(e.target.value)}
+                onChange={(e) => {
+                  setListAText(e.target.value);
+                  if (!listBText.trim()) {
+                    setActiveTab('onlyA');
+                  }
+                }}
                 placeholder="Paste items (one per line, comma-separated, or raw text)...&#10;e.g.&#10;INV-001&#10;INV-002&#10;INV-003"
                 className="w-full h-56 p-3 text-xs font-mono bg-transparent border-0 focus:ring-0 resize-y outline-none leading-relaxed text-neutral-800 dark:text-neutral-200 placeholder:text-neutral-400"
                 spellCheck={false}
