@@ -131,54 +131,182 @@ export function redactionBlockSize(strokeWidth: number, canvasWidth: number, can
  * Pure pixelation algorithm operating directly on an ImageData buffer.
  * Averages RGBA channels across each block and overwrites the pixel area.
  */
+function averageBlockChannel(
+  data: Uint8ClampedArray,
+  width: number,
+  blockX: number,
+  blockY: number,
+  blockW: number,
+  blockH: number
+): [number, number, number, number] {
+  let rSum = 0;
+  let gSum = 0;
+  let bSum = 0;
+  let aSum = 0;
+  const count = blockW * blockH;
+
+  for (let py = 0; py < blockH; py++) {
+    for (let px = 0; px < blockW; px++) {
+      const idx = ((blockY + py) * width + (blockX + px)) * 4;
+      rSum += data[idx];
+      gSum += data[idx + 1];
+      bSum += data[idx + 2];
+      aSum += data[idx + 3];
+    }
+  }
+
+  return [
+    Math.round(rSum / count),
+    Math.round(gSum / count),
+    Math.round(bSum / count),
+    Math.round(aSum / count),
+  ];
+}
+
+function applyBlockAverage(
+  data: Uint8ClampedArray,
+  width: number,
+  blockX: number,
+  blockY: number,
+  blockW: number,
+  blockH: number,
+  avg: [number, number, number, number]
+): void {
+  const [avgR, avgG, avgB, avgA] = avg;
+  for (let py = 0; py < blockH; py++) {
+    for (let px = 0; px < blockW; px++) {
+      const idx = ((blockY + py) * width + (blockX + px)) * 4;
+      data[idx] = avgR;
+      data[idx + 1] = avgG;
+      data[idx + 2] = avgB;
+      data[idx + 3] = avgA;
+    }
+  }
+}
+
+/**
+ * Pure pixelation algorithm operating directly on an ImageData buffer.
+ * Averages RGBA channels across each block and overwrites the pixel area.
+ */
 export function pixelateImageData(imageData: ImageData, blockSize = 10): ImageData {
   const { width, height, data } = imageData;
   const size = Math.max(2, Math.floor(blockSize));
 
   for (let blockY = 0; blockY < height; blockY += size) {
     for (let blockX = 0; blockX < width; blockX += size) {
-      let rSum = 0;
-      let gSum = 0;
-      let bSum = 0;
-      let aSum = 0;
-      let count = 0;
-
       const currentBlockWidth = Math.min(size, width - blockX);
       const currentBlockHeight = Math.min(size, height - blockY);
+      if (currentBlockWidth <= 0 || currentBlockHeight <= 0) continue;
 
-      // Accumulate color values in the block
-      for (let py = 0; py < currentBlockHeight; py++) {
-        for (let px = 0; px < currentBlockWidth; px++) {
-          const idx = ((blockY + py) * width + (blockX + px)) * 4;
-          rSum += data[idx];
-          gSum += data[idx + 1];
-          bSum += data[idx + 2];
-          aSum += data[idx + 3];
-          count++;
-        }
-      }
-
-      if (count === 0) continue;
-
-      const avgR = Math.round(rSum / count);
-      const avgG = Math.round(gSum / count);
-      const avgB = Math.round(bSum / count);
-      const avgA = Math.round(aSum / count);
-
-      // Write average color back to the block
-      for (let py = 0; py < currentBlockHeight; py++) {
-        for (let px = 0; px < currentBlockWidth; px++) {
-          const idx = ((blockY + py) * width + (blockX + px)) * 4;
-          data[idx] = avgR;
-          data[idx + 1] = avgG;
-          data[idx + 2] = avgB;
-          data[idx + 3] = avgA;
-        }
-      }
+      const avg = averageBlockChannel(data, width, blockX, blockY, currentBlockWidth, currentBlockHeight);
+      applyBlockAverage(data, width, blockX, blockY, currentBlockWidth, currentBlockHeight, avg);
     }
   }
 
   return imageData;
+}
+
+function drawPen(ctx: CanvasRenderingContext2D, item: AnnotationItem): void {
+  if (!item.points || item.points.length === 0) return;
+  ctx.beginPath();
+  ctx.moveTo(item.points[0].x, item.points[0].y);
+  for (let i = 1; i < item.points.length; i++) {
+    ctx.lineTo(item.points[i].x, item.points[i].y);
+  }
+  ctx.stroke();
+}
+
+function drawLine(ctx: CanvasRenderingContext2D, item: AnnotationItem): void {
+  const endX = item.endX ?? item.x;
+  const endY = item.endY ?? item.y;
+  ctx.beginPath();
+  ctx.moveTo(item.x, item.y);
+  ctx.lineTo(endX, endY);
+  ctx.stroke();
+}
+
+function drawArrow(ctx: CanvasRenderingContext2D, item: AnnotationItem): void {
+  const endX = item.endX ?? item.x;
+  const endY = item.endY ?? item.y;
+  ctx.beginPath();
+  ctx.moveTo(item.x, item.y);
+  ctx.lineTo(endX, endY);
+  ctx.stroke();
+
+  const head = calculateArrowHead(item.x, item.y, endX, endY, Math.max(14, item.strokeWidth * 3));
+  ctx.beginPath();
+  ctx.moveTo(endX, endY);
+  ctx.lineTo(head.left.x, head.left.y);
+  ctx.moveTo(endX, endY);
+  ctx.lineTo(head.right.x, head.right.y);
+  ctx.stroke();
+}
+
+function drawRectangle(ctx: CanvasRenderingContext2D, item: AnnotationItem): void {
+  const w = item.width ?? 0;
+  const h = item.height ?? 0;
+  if (item.fill) {
+    ctx.fillRect(item.x, item.y, w, h);
+  } else {
+    ctx.strokeRect(item.x, item.y, w, h);
+  }
+}
+
+function drawCircle(ctx: CanvasRenderingContext2D, item: AnnotationItem): void {
+  const w = Math.abs(item.width ?? 0);
+  const h = Math.abs(item.height ?? 0);
+  const radiusX = w / 2;
+  const radiusY = h / 2;
+  const centerX = item.x + radiusX;
+  const centerY = item.y + radiusY;
+
+  ctx.beginPath();
+  ctx.ellipse(centerX, centerY, Math.max(1, radiusX), Math.max(1, radiusY), 0, 0, 2 * Math.PI);
+  if (item.fill) {
+    ctx.fill();
+  } else {
+    ctx.stroke();
+  }
+}
+
+function drawText(ctx: CanvasRenderingContext2D, item: AnnotationItem): void {
+  if (!item.text) return;
+  const size = item.fontSize ?? 20;
+  ctx.font = `600 ${size}px ui-sans-serif, system-ui, -apple-system, sans-serif`;
+  ctx.textBaseline = 'top';
+  ctx.shadowColor = 'rgba(0, 0, 0, 0.45)';
+  ctx.shadowBlur = 4;
+  ctx.shadowOffsetX = 1;
+  ctx.shadowOffsetY = 1;
+  ctx.fillText(item.text, item.x, item.y);
+}
+
+function drawPixelate(ctx: CanvasRenderingContext2D, item: AnnotationItem): void {
+  const w = Math.round(item.width ?? 0);
+  const h = Math.round(item.height ?? 0);
+  if (w <= 0 || h <= 0) return;
+
+  const safeX = Math.max(0, Math.round(item.x));
+  const safeY = Math.max(0, Math.round(item.y));
+  const safeW = Math.min(w, ctx.canvas.width - safeX);
+  const safeH = Math.min(h, ctx.canvas.height - safeY);
+  if (safeW <= 0 || safeH <= 0) return;
+
+  try {
+    const region = ctx.getImageData(safeX, safeY, safeW, safeH);
+    pixelateImageData(region, redactionBlockSize(item.strokeWidth, ctx.canvas.width, ctx.canvas.height));
+    ctx.putImageData(region, safeX, safeY);
+
+    ctx.save();
+    ctx.strokeStyle = 'rgba(120, 120, 120, 0.5)';
+    ctx.lineWidth = 1;
+    ctx.setLineDash([4, 4]);
+    ctx.strokeRect(safeX, safeY, safeW, safeH);
+    ctx.restore();
+  } catch {
+    ctx.fillStyle = '#1e293b';
+    ctx.fillRect(safeX, safeY, safeW, safeH);
+  }
 }
 
 /**
@@ -193,122 +321,27 @@ export function drawAnnotation(ctx: CanvasRenderingContext2D, item: AnnotationIt
   ctx.lineJoin = 'round';
 
   switch (item.tool) {
-    case 'pen': {
-      if (!item.points || item.points.length === 0) break;
-      ctx.beginPath();
-      ctx.moveTo(item.points[0].x, item.points[0].y);
-      for (let i = 1; i < item.points.length; i++) {
-        ctx.lineTo(item.points[i].x, item.points[i].y);
-      }
-      ctx.stroke();
+    case 'pen':
+      drawPen(ctx, item);
       break;
-    }
-
-    case 'line': {
-      const endX = item.endX ?? item.x;
-      const endY = item.endY ?? item.y;
-      ctx.beginPath();
-      ctx.moveTo(item.x, item.y);
-      ctx.lineTo(endX, endY);
-      ctx.stroke();
+    case 'line':
+      drawLine(ctx, item);
       break;
-    }
-
-    case 'arrow': {
-      const endX = item.endX ?? item.x;
-      const endY = item.endY ?? item.y;
-      ctx.beginPath();
-      ctx.moveTo(item.x, item.y);
-      ctx.lineTo(endX, endY);
-      ctx.stroke();
-
-      // Draw arrowhead
-      const head = calculateArrowHead(item.x, item.y, endX, endY, Math.max(14, item.strokeWidth * 3));
-      ctx.beginPath();
-      ctx.moveTo(endX, endY);
-      ctx.lineTo(head.left.x, head.left.y);
-      ctx.moveTo(endX, endY);
-      ctx.lineTo(head.right.x, head.right.y);
-      ctx.stroke();
+    case 'arrow':
+      drawArrow(ctx, item);
       break;
-    }
-
-    case 'rectangle': {
-      const w = item.width ?? 0;
-      const h = item.height ?? 0;
-      if (item.fill) {
-        ctx.fillRect(item.x, item.y, w, h);
-      } else {
-        ctx.strokeRect(item.x, item.y, w, h);
-      }
+    case 'rectangle':
+      drawRectangle(ctx, item);
       break;
-    }
-
-    case 'circle': {
-      const w = Math.abs(item.width ?? 0);
-      const h = Math.abs(item.height ?? 0);
-      const radiusX = w / 2;
-      const radiusY = h / 2;
-      const centerX = item.x + radiusX;
-      const centerY = item.y + radiusY;
-
-      ctx.beginPath();
-      ctx.ellipse(centerX, centerY, Math.max(1, radiusX), Math.max(1, radiusY), 0, 0, 2 * Math.PI);
-      if (item.fill) {
-        ctx.fill();
-      } else {
-        ctx.stroke();
-      }
+    case 'circle':
+      drawCircle(ctx, item);
       break;
-    }
-
-    case 'text': {
-      if (!item.text) break;
-      const size = item.fontSize ?? 20;
-      ctx.font = `600 ${size}px ui-sans-serif, system-ui, -apple-system, sans-serif`;
-      ctx.textBaseline = 'top';
-
-      // Subtle drop shadow / text outline for readability against light and dark backgrounds
-      ctx.shadowColor = 'rgba(0, 0, 0, 0.45)';
-      ctx.shadowBlur = 4;
-      ctx.shadowOffsetX = 1;
-      ctx.shadowOffsetY = 1;
-      ctx.fillText(item.text, item.x, item.y);
+    case 'text':
+      drawText(ctx, item);
       break;
-    }
-
-    case 'pixelate': {
-      const w = Math.round(item.width ?? 0);
-      const h = Math.round(item.height ?? 0);
-      if (w <= 0 || h <= 0) break;
-
-      const safeX = Math.max(0, Math.round(item.x));
-      const safeY = Math.max(0, Math.round(item.y));
-      const safeW = Math.min(w, ctx.canvas.width - safeX);
-      const safeH = Math.min(h, ctx.canvas.height - safeY);
-
-      if (safeW > 0 && safeH > 0) {
-        try {
-          const region = ctx.getImageData(safeX, safeY, safeW, safeH);
-          pixelateImageData(region, redactionBlockSize(item.strokeWidth, ctx.canvas.width, ctx.canvas.height));
-          ctx.putImageData(region, safeX, safeY);
-
-          // Add a dashed border indicating redacted zone
-          ctx.save();
-          ctx.strokeStyle = 'rgba(120, 120, 120, 0.5)';
-          ctx.lineWidth = 1;
-          ctx.setLineDash([4, 4]);
-          ctx.strokeRect(safeX, safeY, safeW, safeH);
-          ctx.restore();
-        } catch {
-          // If canvas security origin prevents reading data, draw fallback solid box
-          ctx.fillStyle = '#1e293b';
-          ctx.fillRect(safeX, safeY, safeW, safeH);
-        }
-      }
+    case 'pixelate':
+      drawPixelate(ctx, item);
       break;
-    }
-
     default:
       break;
   }
@@ -355,7 +388,7 @@ export function downloadCanvas(
   link.href = url;
   document.body.appendChild(link);
   link.click();
-  document.body.removeChild(link);
+  link.remove();
 }
 
 /**
@@ -394,22 +427,20 @@ let ocrWorkerPromise: Promise<OcrWorker> | null = null;
 let ocrProgress: ((pct: number, status: string) => void) | undefined;
 
 function getOcrWorker(): Promise<OcrWorker> {
-  if (!ocrWorkerPromise) {
-    ocrWorkerPromise = import('tesseract.js')
-      .then(({ createWorker }) =>
-        createWorker('eng', 1, {
-          logger: (m) => {
-            if (ocrProgress && m.status) {
-              ocrProgress(Math.round((m.progress || 0) * 100), m.status);
-            }
-          },
-        })
-      )
-      .catch((err) => {
-        ocrWorkerPromise = null;
-        throw err;
-      });
-  }
+  ocrWorkerPromise ??= import('tesseract.js')
+    .then(({ createWorker }) =>
+      createWorker('eng', 1, {
+        logger: (m) => {
+          if (ocrProgress && m.status) {
+            ocrProgress(Math.round((m.progress || 0) * 100), m.status);
+          }
+        },
+      })
+    )
+    .catch((err) => {
+      ocrWorkerPromise = null;
+      throw err;
+    });
   return ocrWorkerPromise;
 }
 
@@ -428,7 +459,7 @@ export async function performOcr(
   onProgress?: (pct: number, status: string) => void
 ): Promise<string> {
   if (typeof WebAssembly === 'undefined') {
-    throw new Error('Text extraction needs WebAssembly, which this browser does not support. Please update your browser.');
+    throw new TypeError('Text extraction needs WebAssembly, which this browser does not support. Please update your browser.');
   }
   const worker = await getOcrWorker();
   ocrProgress = onProgress;
