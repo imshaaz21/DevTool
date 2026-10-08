@@ -122,11 +122,11 @@ const TOOLS: Tool[] = [
   },
   {
     title: 'Image Annotator & Redactor',
-    desc: 'Annotate bug screenshots with arrows, shapes, text, crop, and pixelate sensitive secrets with instant clipboard copy.',
+    desc: 'Annotate bug screenshots with arrows, shapes, text, crop, pixelate secrets, and extract text via client-side OCR.',
     href: '/image-annotator',
     category: 'Utilities',
     icon: Crop,
-    tags: ['image', 'screenshot', 'annotate', 'redact', 'pixelate', 'blur', 'crop', 'arrow', 'markup', 'canvas']
+    tags: ['image', 'screenshot', 'annotate', 'redact', 'ocr', 'text extraction', 'tesseract', 'pixelate', 'blur', 'crop', 'arrow', 'markup', 'canvas']
   },
   {
     title: 'Video Trimmer & Cropper',
