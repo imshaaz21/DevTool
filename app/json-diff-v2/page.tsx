@@ -19,13 +19,16 @@ import {
   CheckCircle2,
   Eye,
   Edit3,
+  Download,
 } from 'lucide-react';
 import {
   computeSemanticDiff,
   SemanticDiff,
   DiffSummary,
+  generateMarkdownReport,
+  generateTextReport,
 } from '@/lib/semanticJsonDiff';
-import { useCopyFeedback } from '@/lib/clipboard';
+import { useCopyFeedback, downloadTextFile } from '@/lib/clipboard';
 import { onKeyActivate } from '@/lib/a11y';
 
 const JsonEditorComponent = dynamic(
@@ -770,6 +773,61 @@ export default function JsonDiffV2Page() {
                       </span>
                     </div>
 
+                    {/* Report Export Bar */}
+                    <div className="p-2 rounded-lg bg-neutral-50 dark:bg-neutral-900/60 border border-neutral-200 dark:border-neutral-800 flex items-center justify-between gap-1.5 text-xs">
+                      <span className="text-[11px] font-medium text-neutral-500 dark:text-neutral-400">Report:</span>
+                      <div className="flex items-center gap-1">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (!diffSummary) return;
+                            const report = generateMarkdownReport(diffSummary);
+                            handleCopy(report, 'inspector-report-md');
+                          }}
+                          title="Copy Markdown Report (.md) to clipboard"
+                          className="px-2 py-1 rounded bg-white dark:bg-neutral-800 hover:bg-neutral-100 dark:hover:bg-neutral-700 text-neutral-700 dark:text-neutral-200 border border-neutral-200 dark:border-neutral-700 text-[11px] font-medium flex items-center gap-1 transition-colors"
+                        >
+                          {copiedKey === 'inspector-report-md' ? (
+                            <>
+                              <Check size={11} className="text-emerald-500" />
+                              <span>Copied</span>
+                            </>
+                          ) : (
+                            <>
+                              <Copy size={11} />
+                              <span>Copy .md</span>
+                            </>
+                          )}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (!diffSummary) return;
+                            const report = generateMarkdownReport(diffSummary);
+                            downloadTextFile(report, 'json-diff-report.md');
+                          }}
+                          title="Download Markdown Report (.md)"
+                          className="px-2 py-1 rounded bg-white dark:bg-neutral-800 hover:bg-neutral-100 dark:hover:bg-neutral-700 text-neutral-700 dark:text-neutral-200 border border-neutral-200 dark:border-neutral-700 text-[11px] font-medium flex items-center gap-1 transition-colors"
+                        >
+                          <Download size={11} />
+                          <span>.md</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (!diffSummary) return;
+                            const report = generateTextReport(diffSummary);
+                            downloadTextFile(report, 'json-diff-report.txt');
+                          }}
+                          title="Download Plain Text Report (.txt)"
+                          className="px-2 py-1 rounded bg-white dark:bg-neutral-800 hover:bg-neutral-100 dark:hover:bg-neutral-700 text-neutral-700 dark:text-neutral-200 border border-neutral-200 dark:border-neutral-700 text-[11px] font-medium flex items-center gap-1 transition-colors"
+                        >
+                          <Download size={11} />
+                          <span>.txt</span>
+                        </button>
+                      </div>
+                    </div>
+
                     {/* Diff explanation card list */}
                     <div className="h-[560px] overflow-y-auto space-y-1.5 pr-1">
                       {visibleDiffs.length === 0 ? (
@@ -1009,10 +1067,48 @@ export default function JsonDiffV2Page() {
                           : 'Comparison verified property existence, array ordering, data types, and value equality.'}
                       </p>
                     </div>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        const text = `# JSON Diff v2 Summary Report
+                    <div className="flex flex-wrap items-center justify-center gap-2 pt-2">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const report = generateMarkdownReport(diffSummary);
+                          handleCopy(report, 'full-report-md');
+                        }}
+                        className="btn-primary flex items-center gap-1.5 text-xs py-1.5 px-4 rounded-lg font-medium"
+                      >
+                        {copiedKey === 'full-report-md' ? (
+                          <Check size={13} className="text-emerald-300" />
+                        ) : (
+                          <Copy size={13} />
+                        )}
+                        <span>{copiedKey === 'full-report-md' ? 'Copied Full Report' : 'Copy Full Report (.md)'}</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const report = generateMarkdownReport(diffSummary);
+                          downloadTextFile(report, 'json-diff-report.md');
+                        }}
+                        className="btn-secondary flex items-center gap-1.5 text-xs py-1.5 px-4 rounded-lg border border-neutral-200 dark:border-neutral-700 font-medium"
+                      >
+                        <Download size={13} />
+                        <span>Download .md</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const report = generateTextReport(diffSummary);
+                          downloadTextFile(report, 'json-diff-report.txt');
+                        }}
+                        className="btn-secondary flex items-center gap-1.5 text-xs py-1.5 px-4 rounded-lg border border-neutral-200 dark:border-neutral-700 font-medium"
+                      >
+                        <Download size={13} />
+                        <span>Download .txt</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const text = `# JSON Diff v2 Summary Report
 - Status: ${diffSummary.diffs.length === 0 ? 'Semantically Identical' : `${diffSummary.diffs.length} Differences Found`}
 - Missing Properties: ${diffSummary.missingCount}
 - Type Mismatches: ${diffSummary.typeCount}
@@ -1020,17 +1116,18 @@ export default function JsonDiffV2Page() {
 - Total Keys in Left: ${diffSummary.totalKeysLeft ?? 0}
 - Total Keys in Right: ${diffSummary.totalKeysRight ?? 0}
 `;
-                        handleCopy(text, 'summary-report');
-                      }}
-                      className="btn-secondary flex items-center gap-1.5 text-xs py-1.5 px-4 rounded-lg border border-neutral-200 dark:border-neutral-700 font-medium"
-                    >
-                      {copiedKey === 'summary-report' ? (
-                        <Check size={13} className="text-emerald-500" />
-                      ) : (
-                        <Copy size={13} />
-                      )}
-                      <span>{copiedKey === 'summary-report' ? 'Copied Report' : 'Copy Summary Report'}</span>
-                    </button>
+                          handleCopy(text, 'summary-report');
+                        }}
+                        className="btn-secondary flex items-center gap-1.5 text-xs py-1.5 px-4 rounded-lg border border-neutral-200 dark:border-neutral-700 font-medium"
+                      >
+                        {copiedKey === 'summary-report' ? (
+                          <Check size={13} className="text-emerald-500" />
+                        ) : (
+                          <Copy size={13} />
+                        )}
+                        <span>{copiedKey === 'summary-report' ? 'Copied Stats' : 'Copy Summary Stats'}</span>
+                      </button>
+                    </div>
                   </div>
                 </div>
               )}

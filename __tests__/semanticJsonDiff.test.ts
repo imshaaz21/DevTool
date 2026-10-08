@@ -1,4 +1,8 @@
-import { computeSemanticDiff } from '../lib/semanticJsonDiff';
+import {
+  computeSemanticDiff,
+  generateMarkdownReport,
+  generateTextReport,
+} from '../lib/semanticJsonDiff';
 
 describe('semanticJsonDiff engine (jdd compatibility)', () => {
   it('passes object compare test with sample data matching jdd', () => {
@@ -165,5 +169,79 @@ describe('XSS safety', () => {
     expect(result.diffs[0].msg).toContain('&lt;img src=x onerror=alert(1)&gt;');
     // rawMsg keeps the unescaped plain-text key
     expect(result.diffs[0].rawMsg).toContain('"<img src=x onerror=alert(1)>"');
+  });
+});
+
+describe('generateMarkdownReport and generateTextReport', () => {
+  it('generates markdown report for identical JSON structures', () => {
+    const left = { a: 1, b: 'hello' };
+    const right = { b: 'hello', a: 1 };
+    const summary = computeSemanticDiff(left, right);
+
+    const report = generateMarkdownReport(summary, {
+      title: 'Custom Title',
+      timestamp: '2026-10-08 17:00:00 UTC',
+    });
+
+    expect(report).toContain('# Custom Title');
+    expect(report).toContain('**Generated**: 2026-10-08 17:00:00 UTC');
+    expect(report).toContain('Semantically Identical (0 differences)');
+    expect(report).toContain('| Total Differences | 0 |');
+    expect(report).toContain('No differences detected. Both JSON documents are semantically identical.');
+  });
+
+  it('generates markdown report with detailed differences, tables, and diff blocks', () => {
+    const left = {
+      name: 'Alice',
+      age: 30,
+      active: true,
+      extra: 'left only',
+    };
+    const right = {
+      name: 'Bob',
+      age: '30',
+      active: true,
+      added: 'right only',
+    };
+    const summary = computeSemanticDiff(left, right);
+
+    const report = generateMarkdownReport(summary, {
+      timestamp: '2026-10-08 17:00:00 UTC',
+    });
+
+    expect(report).toContain('# JSON Diff Report');
+    expect(report).toContain('## Summary');
+    expect(report).toContain('| Missing Properties | 2 |');
+    expect(report).toContain('| Type Mismatches | 1 |');
+    expect(report).toContain('| Unequal Values | 1 |');
+    expect(report).toContain('## Detailed Differences');
+    expect(report).toContain('```diff');
+    expect(report).toContain('`age` [TYPE MISMATCH]');
+    expect(report).toContain('`name` [VALUE DIFFERENCE]');
+    expect(report).toContain('`added` [MISSING PROPERTY]');
+  });
+
+  it('generates plain text report for identical and differing JSON', () => {
+    const left = { a: 1 };
+    const right = { a: 2 };
+    const summary = computeSemanticDiff(left, right);
+
+    const report = generateTextReport(summary, {
+      title: 'Audit Report',
+      timestamp: '2026-10-08 17:00:00 UTC',
+    });
+
+    expect(report).toContain('AUDIT REPORT');
+    expect(report).toContain('Generated: 2026-10-08 17:00:00 UTC');
+    expect(report).toContain('Total Differences:   1');
+    expect(report).toContain('DETAILED DIFFERENCES:');
+    expect(report).toContain('#1. [VALUE] a');
+    expect(report).toContain('Both sides should be equal numbers');
+
+    // Test identical text report
+    const identicalSummary = computeSemanticDiff({ a: 1 }, { a: 1 });
+    const identicalReport = generateTextReport(identicalSummary);
+    expect(identicalReport).toContain('Semantically Identical (0 differences)');
+    expect(identicalReport).toContain('No differences detected. Both JSON documents are semantically identical.');
   });
 });
