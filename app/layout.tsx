@@ -1,8 +1,9 @@
 import './globals.css';
 import type { Metadata, Viewport } from 'next';
 import { Inter } from 'next/font/google';
-import Script from 'next/script';
 import { Providers } from './providers';
+import { Analytics } from '@/components/Analytics';
+import { ConsentBanner } from '@/components/ConsentBanner';
 import { SITE_CONFIG, getJsonLdWebsite, getJsonLdWebApplication } from '@/lib/seo';
 
 const inter = Inter({ subsets: ['latin'] });
@@ -101,17 +102,10 @@ export default function RootLayout({
         />
       </head>
       <body className={`${inter.className} min-h-screen bg-[#fafafa] dark:bg-[#09090b] text-neutral-900 dark:text-neutral-100 antialiased`}>
-        <Script id="microsoft-clarity" strategy="afterInteractive">
-          {`
-            (function(c,l,a,r,i,t,y){
-                c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
-                t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
-                y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
-            })(window, document, "clarity", "script", "yrarppy1x1");
-          `}
-        </Script>
         <Providers>
           {children}
+          <ConsentBanner />
+          <Analytics />
         </Providers>
       </body>
     </html>
