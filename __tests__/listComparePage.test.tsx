@@ -1,4 +1,5 @@
 import { render, screen, fireEvent } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import '@testing-library/jest-dom';
 import ListComparePage from '@/app/list-compare/page';
 import { SidebarProvider } from '@/components/SidebarContext';
@@ -132,3 +133,42 @@ describe('ListComparePage', () => {
     expect(outputTextarea.value).toContain("'ORDER-103'");
   });
 });
+
+describe('ListComparePage format presets', () => {
+  it('converts a comma separated list to one item per line', async () => {
+    const user = userEvent.setup();
+    render(
+      <SidebarProvider>
+        <ListComparePage />
+      </SidebarProvider>
+    );
+
+    const inputA = screen.getAllByPlaceholderText(/Paste items/i)[0];
+    await user.clear(inputA);
+    await user.type(inputA, 'alpha, beta, gamma');
+
+    await user.click(screen.getByRole('button', { name: 'One per line' }));
+
+    // Queried by placeholder, because getByDisplayValue normalises away newlines.
+    expect(screen.getByPlaceholderText(/Formatted output/i)).toHaveValue('alpha\nbeta\ngamma');
+  });
+
+  it('marks the active preset and switches to SQL IN form', async () => {
+    const user = userEvent.setup();
+    render(
+      <SidebarProvider>
+        <ListComparePage />
+      </SidebarProvider>
+    );
+
+    const inputA = screen.getAllByPlaceholderText(/Paste items/i)[0];
+    await user.clear(inputA);
+    await user.type(inputA, 'alpha, beta');
+
+    const sqlPreset = screen.getByRole('button', { name: 'SQL IN ( )' });
+    await user.click(sqlPreset);
+
+    expect(sqlPreset).toHaveAttribute('aria-pressed', 'true');
+    expect(screen.getByDisplayValue("( 'alpha', 'beta' )")).toBeInTheDocument();
+  });
+})

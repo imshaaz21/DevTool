@@ -31,6 +31,62 @@ import {
 import { useCopyFeedback, downloadTextFile } from '@/lib/clipboard';
 import { onKeyActivate } from '@/lib/a11y';
 
+const QUOTE_BADGE: Record<QuoteOption, string> = {
+  none: 'plain',
+  single: "'single'",
+  double: '"double"',
+  backtick: '`backtick`',
+};
+
+const DELIMITER_BADGE: Record<string, string> = {
+  ', ': 'comma',
+  ',': 'comma',
+  '\n': 'newline',
+  '; ': 'semicolon',
+  ' | ': 'pipe',
+  ' ': 'space',
+};
+
+interface FormatPreset {
+  label: string;
+  hint: string;
+  quote: QuoteOption;
+  delimiter: string;
+  wrapper: WrapperOption;
+}
+
+/** One click sets quote, delimiter and wrapper together, which is how these are actually used. */
+const FORMAT_PRESETS: FormatPreset[] = [
+  {
+    label: 'One per line',
+    hint: 'Newline separated, no quotes. Turns a comma separated list into lines.',
+    quote: 'none',
+    delimiter: '\n',
+    wrapper: 'none',
+  },
+  {
+    label: 'Comma separated',
+    hint: 'Comma and space, no quotes. Turns a list of lines into a single row.',
+    quote: 'none',
+    delimiter: ', ',
+    wrapper: 'none',
+  },
+  {
+    label: 'SQL IN ( )',
+    hint: 'Single quoted and comma separated, wrapped for a SQL IN clause.',
+    quote: 'single',
+    delimiter: ', ',
+    wrapper: 'sql',
+  },
+  {
+    label: 'JSON array',
+    hint: 'Double quoted and comma separated, wrapped in brackets.',
+    quote: 'double',
+    delimiter: ', ',
+    wrapper: 'array',
+  },
+];
+
 const SAMPLE_LIST_A = `INV-S2026082369196656919665
 INV-S2026082770727072704
 INV-S2026082569839346983934
@@ -110,6 +166,13 @@ export default function ListComparePage() {
   }, [parsedA, parsedB, caseSensitive, sortOption, removeDuplicates]);
 
   // Determine items for current tab
+  // React batches these, so a preset costs a single render.
+  const applyPreset = (preset: FormatPreset) => {
+    setQuoteStyle(preset.quote);
+    setOutputDelimiter(preset.delimiter);
+    setWrapper(preset.wrapper);
+  };
+
   const currentTabItems = useMemo(() => {
     switch (activeTab) {
       case 'common':
@@ -237,6 +300,34 @@ export default function ListComparePage() {
               <span className="text-[11px] font-mono text-neutral-400">
                 A: {analysisA.unique.length} unique • B: {analysisB.unique.length} unique
               </span>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-1.5">
+              <span className="text-[11px] font-medium text-neutral-600 dark:text-neutral-400 mr-0.5">
+                Presets
+              </span>
+              {FORMAT_PRESETS.map((preset) => {
+                const active =
+                  quoteStyle === preset.quote &&
+                  outputDelimiter === preset.delimiter &&
+                  wrapper === preset.wrapper;
+                return (
+                  <button
+                    key={preset.label}
+                    type="button"
+                    onClick={() => applyPreset(preset)}
+                    aria-pressed={active}
+                    title={preset.hint}
+                    className={`px-2 py-1 rounded-md text-[11px] font-medium border transition-colors ${
+                      active
+                        ? 'bg-neutral-900 text-white border-neutral-900 dark:bg-white dark:text-neutral-950 dark:border-white'
+                        : 'bg-white dark:bg-neutral-900 text-neutral-600 dark:text-neutral-400 border-neutral-200 dark:border-neutral-800 hover:text-neutral-900 dark:hover:text-neutral-200'
+                    }`}
+                  >
+                    {preset.label}
+                  </button>
+                );
+              })}
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
@@ -769,8 +860,7 @@ export default function ListComparePage() {
               <div className="relative group">
                 <div className="absolute top-2 right-2 z-10 flex items-center gap-1 opacity-80 group-hover:opacity-100 transition-opacity">
                   <span className="text-[10px] font-mono uppercase tracking-wider px-1.5 py-0.5 rounded bg-neutral-200/80 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 border border-neutral-300 dark:border-neutral-700">
-                    {quoteStyle === 'single' ? "'single'" : quoteStyle === 'double' ? '"double"' : 'plain'}{' '}
-                    • {outputDelimiter === ', ' ? 'comma' : outputDelimiter === '\n' ? 'newline' : 'sep'}
+                    {QUOTE_BADGE[quoteStyle]} • {DELIMITER_BADGE[outputDelimiter] ?? 'custom'}
                   </span>
                 </div>
                 <textarea
