@@ -37,6 +37,8 @@ npm run test:coverage  # Jest with coverage (what CI runs)
 
 - Node: `.nvmrc`, CI and the Dockerfile all pin **22**. Keep them in step.
 - CI (`ci.yml`) runs on push/PR to `main`, `master`, `v2` - current branch is `v2`.
+  The runner is pinned to `ubuntu-24.04` on purpose; bump it in its own commit
+  rather than tracking `ubuntu-latest`.
 - Lint failures do NOT fail `next build` (eslint `ignoreDuringBuilds: true`), but they do fail CI.
 
 ## Project Structure

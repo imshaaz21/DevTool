@@ -12,7 +12,9 @@ env:
 
 jobs:
   test:
-    runs-on: ubuntu-latest
+    # Pinned, not ubuntu-latest: the label migrates to Ubuntu 26 and a runner
+    # image change should be a deliberate commit, not a surprise on a green build.
+    runs-on: ubuntu-24.04
 
     strategy:
       matrix:
