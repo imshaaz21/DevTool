@@ -131,6 +131,12 @@ public/                 # Static assets (favicons, etc.)
   duplicate identifiers. End those files with `export {};`.
 - jsdom ships no WebCrypto: a test that touches `crypto.subtle` (hashes,
   certificate fingerprints) must install Node's `webcrypto` in `beforeAll`.
+  Node 20's WebCrypto also rejects a bare `ArrayBuffer` that came from the jsdom
+  realm, so pass a freshly allocated view to `subtle.digest`, never `.buffer`.
+- **Three Node versions are in play**: CI pins **20.x**, `.nvmrc` says 22, and
+  this machine runs 24. A green local run proves nothing about CI, so verify
+  anything touching platform APIs with
+  `mise exec node@20 -- npx jest --ci --maxWorkers=2` before pushing.
 - `userEvent.type` reads `[` and `{` as keyboard syntax, so a regex or JSON
   payload has to go in with `fireEvent.change` instead.
 - `userEvent.setup()` installs its own clipboard stub, so a `navigator.clipboard`

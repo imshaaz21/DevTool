@@ -485,6 +485,12 @@ export function checkValidity(
 
 /** SHA-1 and SHA-256 fingerprints of the DER bytes, as openssl prints them. */
 export async function fingerprint(der: Uint8Array, algorithm: 'SHA-1' | 'SHA-256'): Promise<string> {
-  const digest = await crypto.subtle.digest(algorithm, der.slice().buffer as ArrayBuffer);
+  // Digest a freshly allocated view rather than der.slice().buffer: WebCrypto
+  // under Node 20 rejects a bare ArrayBuffer that came from another realm, and
+  // a view keeps the byte offset honest when der is a subarray of a larger
+  // buffer. The copy also pins the buffer type, which BufferSource requires.
+  const data = new Uint8Array(der.length);
+  data.set(der);
+  const digest = await crypto.subtle.digest(algorithm, data);
   return toHex(new Uint8Array(digest), ':').toUpperCase();
 }
