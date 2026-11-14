@@ -16,7 +16,7 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [20.x]
+        node-version: [22.x]
 
     steps:
     - name: Checkout code
@@ -45,8 +45,8 @@ jobs:
         SKIP_ENV_VALIDATION: true
         NEXT_TELEMETRY_DISABLED: 1
 
-    - name: Upload coverage reports (Node 20.x only)
-      if: matrix.node-version == '20.x'
+    - name: Upload coverage reports (Node 22.x only)
+      if: matrix.node-version == '22.x'
       uses: actions/upload-artifact@v7
       with:
         name: coverage-report
@@ -54,8 +54,8 @@ jobs:
         retention-days: 7
         if-no-files-found: ignore
 
-    - name: SonarCloud Scan (Node 20.x only)
-      if: matrix.node-version == '20.x'
+    - name: SonarCloud Scan (Node 22.x only)
+      if: matrix.node-version == '22.x'
       uses: SonarSource/sonarqube-scan-action@59202af334b4ba7b5db01b701b8e79f8b3bef0f4 # v8.5.0
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
