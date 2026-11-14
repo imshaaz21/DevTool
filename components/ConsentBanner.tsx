@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { BarChart3 } from 'lucide-react';
+import { BarChart3, ChevronRight } from 'lucide-react';
 import { setConsent } from '@/lib/consent';
 import { useConsent } from './useConsent';
 
@@ -35,11 +35,29 @@ export function ConsentBanner() {
             Help improve these tools?
           </p>
           <p className="text-[11px] leading-relaxed text-neutral-500 dark:text-neutral-400">
-            A third party analytics service can record anonymised usage, including session
-            replay, which captures what is on screen. It stays off unless you allow it, and you
-            can change your mind any time under Privacy in the sidebar. The tools work the same
-            either way, and nothing you paste is ever sent to a server.
+            Anonymous usage analytics help me see which tools are worth the work. It stays off
+            unless you allow it.
           </p>
+
+          {/*
+            Layered notice: the headline stays short so the banner is not alarming, and the
+            specifics that consent has to be informed about sit one click away rather than
+            being left out.
+          */}
+          <details className="group">
+            <summary className="text-[11px] font-medium text-neutral-600 dark:text-neutral-300 cursor-pointer hover:text-neutral-900 dark:hover:text-neutral-100 transition-colors list-none flex items-center gap-1">
+              <ChevronRight
+                size={11}
+                className="shrink-0 transition-transform group-open:rotate-90"
+              />
+              What is collected
+            </summary>
+            <p className="mt-1.5 text-[11px] leading-relaxed text-neutral-500 dark:text-neutral-400">
+              Which pages you open and how you move around them, through a third party analytics
+              service. That includes session replay, so it can record what is on screen. No
+              account, no ads, and you can change your mind any time under Privacy in the sidebar.
+            </p>
+          </details>
         </div>
       </div>
 

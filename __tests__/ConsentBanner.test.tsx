@@ -31,10 +31,21 @@ describe('analytics consent UI', () => {
     expect(screen.getByRole('button', { name: 'No thanks' })).toBeInTheDocument();
   });
 
-  it('says plainly that session replay can capture the screen', async () => {
+  it('keeps the headline short and free of the alarming detail', async () => {
     render(<ConsentBanner />);
 
-    expect(await screen.findByText(/session replay/i)).toBeInTheDocument();
+    const headline = await screen.findByText(/Anonymous usage analytics/i);
+    expect(headline).toBeInTheDocument();
+    expect(headline.textContent).not.toMatch(/session replay/i);
+  });
+
+  it('still discloses session replay, one click away', async () => {
+    render(<ConsentBanner />);
+
+    // The disclosure is a details element, so the text ships with the banner
+    // rather than being fetched or omitted: consent stays informed either way.
+    expect(await screen.findByText(/What is collected/i)).toBeInTheDocument();
+    expect(screen.getByText(/session replay/i)).toBeInTheDocument();
   });
 
   it('stores a grant and dismisses itself', async () => {
