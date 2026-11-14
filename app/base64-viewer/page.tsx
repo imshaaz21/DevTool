@@ -12,7 +12,7 @@ import {
   formatFileSize,
   normalizeBase64,
   ImageMetadata,
-} from '@/utils/base64ImageViewer';
+} from '@/lib/base64ImageViewer';
 import { ImageModal } from '@/components/ImageModal';
 import { AutoToggle } from '@/components/AutoToggle';
 import {

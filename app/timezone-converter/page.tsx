@@ -13,7 +13,7 @@ import {
   getUnixEpoch,
   TIME_ZONES,
   TimeZoneId,
-} from '@/utils/timezoneConverter';
+} from '@/lib/timezoneConverter';
 import {
   Copy,
   Clock,

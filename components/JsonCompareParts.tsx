@@ -1,5 +1,5 @@
 import { CheckCircle2 } from 'lucide-react';
-import type { ValueDiff } from '@/utils/jsonComparator';
+import type { ValueDiff } from '@/lib/jsonComparator';
 
 export function ViewTab({ active, onClick, label }: { active: boolean, onClick: () => void, label: string }) {
   return (

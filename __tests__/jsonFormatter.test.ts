@@ -4,7 +4,7 @@ import {
   minifyJSON,
   cleanAndParseJsonString,
   unwrapNestedStrings,
-} from '../utils/jsonFormatter';
+} from '../lib/jsonFormatter';
 
 describe('jsonFormatter utility', () => {
   describe('cleanAndParseJsonString', () => {

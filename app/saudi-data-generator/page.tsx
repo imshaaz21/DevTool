@@ -5,7 +5,7 @@ import { toast } from 'react-hot-toast';
 import { Sidebar } from '@/components/Sidebar';
 import { useSidebar } from '@/components/SidebarContext';
 import { PageHeader } from '@/components/PageHeader';
-import { Person, generatePeople } from '@/utils/saudiDataGenerator';
+import { Person, generatePeople } from '@/lib/saudiDataGenerator';
 import { InteractiveJson } from '@/components/InteractiveJson';
 import { CustomSelect } from '@/components/CustomSelect';
 import { AutoToggle } from '@/components/AutoToggle';

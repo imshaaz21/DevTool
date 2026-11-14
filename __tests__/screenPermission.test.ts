@@ -6,7 +6,7 @@ import {
   base64ToUint8Array,
   SAMPLE_SCREEN_PERMISSION_JSON,
   SAMPLE_SCREEN_PERMISSION_BASE64_GZIP
-} from '@/utils/screenPermission';
+} from '@/lib/screenPermission';
 
 describe('Screen Permission Gzip Utility', () => {
   it('should normalize base64 strings with whitespace and quotes', () => {

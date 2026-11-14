@@ -3,7 +3,7 @@ import {
   getImageMetadata,
   normalizeBase64,
   formatFileSize,
-} from '@/utils/base64ImageViewer';
+} from '@/lib/base64ImageViewer';
 
 describe('base64ImageViewer utility', () => {
   const samplePdfBase64 = 'JVBERi0xLjQKJeLjz9MKMSAwIG9iajw8L1R5cGUvQ2F0YWxvZy9QYWdlcyAyIDAgUj4+ZW5kb2JqCnRyYWlsZXI8PC9Sb290IDEgMCBSL1NpemUgNT4+CnN0YXJ0eHJlZgoyNzIKJSVFT0Y=';

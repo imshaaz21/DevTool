@@ -19,7 +19,7 @@ import {
   formatJSON,
   minifyJSON,
   FormatterResult,
-} from '@/utils/jsonFormatter';
+} from '@/lib/jsonFormatter';
 import {
   Copy,
   Wand2,

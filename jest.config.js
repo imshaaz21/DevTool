@@ -17,14 +17,14 @@ const customJestConfig = {
         'app/**/*.{js,jsx,ts,tsx}',
         'components/**/*.{js,jsx,ts,tsx}',
         'lib/**/*.{js,jsx,ts,tsx}',
-        'utils/**/*.{js,jsx,ts,tsx}',
         '!**/*.d.ts',
         '!**/node_modules/**',
         '!**/.next/**',
         '!**/coverage/**',
         '!**/jest.config.js',
     ],
-    testPathIgnorePatterns: ['<rootDir>/node_modules/', '<rootDir>/.next/'],
+    // fixtures/ holds shared test data, not suites.
+    testPathIgnorePatterns: ['<rootDir>/node_modules/', '<rootDir>/.next/', '<rootDir>/__tests__/fixtures/'],
     modulePathIgnorePatterns: ['<rootDir>/.next/'],
     transformIgnorePatterns: [
         '/node_modules/',

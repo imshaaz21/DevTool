@@ -5,7 +5,7 @@ import dynamic from 'next/dynamic';
 import { Sidebar } from '@/components/Sidebar';
 import { useSidebar } from '@/components/SidebarContext';
 import { PageHeader } from '@/components/PageHeader';
-import { compareJsonObjects, type JsonComparisonResult } from '@/utils/jsonComparator';
+import { compareJsonObjects, type JsonComparisonResult } from '@/lib/jsonComparator';
 const JsonEditorComponent = dynamic(() => import('@/components/JsonEditorComponent').then(mod => ({ default: mod.JsonEditorComponent })), { ssr: false, loading: () => <EditorSkeleton /> });
 import { EditorSkeleton } from '@/components/EditorSkeleton';
 import { ViewTab, StatBox, KeyDiffList, ValueDiffRow, EmptyState } from '@/components/JsonCompareParts';

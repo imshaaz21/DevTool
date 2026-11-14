@@ -28,7 +28,7 @@ import {
   formatExtractedValues,
   ExtractedItem,
 } from '@/lib/jsonAggregator';
-import { cleanAndParseJsonString, unwrapNestedStrings } from '@/utils/jsonFormatter';
+import { cleanAndParseJsonString, unwrapNestedStrings } from '@/lib/jsonFormatter';
 import { useCopyFeedback, downloadTextFile } from '@/lib/clipboard';
 
 const SAMPLE_HEALTHCARE_JSON = `[

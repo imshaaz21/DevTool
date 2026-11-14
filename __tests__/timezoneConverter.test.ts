@@ -4,7 +4,7 @@ import {
   getTimezoneOffsetMs,
   getUnixEpoch,
   TIME_ZONES,
-} from '../utils/timezoneConverter';
+} from '../lib/timezoneConverter';
 
 describe('timezoneConverter utility', () => {
   describe('getUnixEpoch', () => {

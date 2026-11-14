@@ -14,7 +14,7 @@ import {
   hashSHA1,
   hashSHA256,
   hashSHA512
-} from '@/utils/encoderDecoder';
+} from '@/lib/encoderDecoder';
 import {
   Copy,
   ArrowLeftRight,

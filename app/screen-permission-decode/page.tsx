@@ -11,7 +11,7 @@ import {
   compressScreenPermission,
   SAMPLE_SCREEN_PERMISSION_JSON,
   SAMPLE_SCREEN_PERMISSION_BASE64_GZIP
-} from '@/utils/screenPermission';
+} from '@/lib/screenPermission';
 import {
   Copy,
   Check,
