@@ -39,6 +39,7 @@ import {
   Table,
 } from 'lucide-react';
 import { copyTextToClipboard } from '@/lib/clipboard';
+import { checkUpload, MARKUP_UPLOAD_RULE } from '@/lib/fileGuards';
 
 export type ViewportMode = 'desktop' | 'laptop' | 'tablet' | 'mobile';
 export type ViewLayout = 'split' | 'preview' | 'code';
@@ -171,6 +172,13 @@ function example(): void {
     const file = e.target.files?.[0];
     if (!file) return;
 
+    const check = checkUpload(file, MARKUP_UPLOAD_RULE);
+    if (!check.ok) {
+      toast.error(check.error ?? 'That file cannot be opened');
+      e.target.value = '';
+      return;
+    }
+
     const reader = new FileReader();
     reader.onload = (event) => {
       const content = event.target?.result as string;
@@ -181,7 +189,9 @@ function example(): void {
       }
       toast.success(`Loaded ${file.name}`);
     };
+    reader.onerror = () => toast.error(`Could not read ${file.name}`);
     reader.readAsText(file);
+    e.target.value = '';
   };
 
   // Clear all

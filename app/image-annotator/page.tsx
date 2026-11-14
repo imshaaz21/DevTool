@@ -43,6 +43,7 @@ import {
   terminateOcrWorker,
   extractCanvasRegion,
 } from '@/lib/image-annotator';
+import { checkUpload, checkImagePixels, IMAGE_UPLOAD_RULE } from '@/lib/fileGuards';
 
 // Fallback sample image generator using canvas
 function createSampleImage(): string {
@@ -199,6 +200,13 @@ export default function ImageAnnotatorPage() {
     const img = new Image();
     img.crossOrigin = 'anonymous';
     img.onload = () => {
+      const pixels = checkImagePixels(img.naturalWidth || img.width, img.naturalHeight || img.height);
+      if (!pixels.ok) {
+        if (src.startsWith('blob:') && src !== blobSrcRef.current) URL.revokeObjectURL(src);
+        toast.error(pixels.error ?? 'That image is too large to open');
+        return;
+      }
+
       baseImageRef.current = img;
       // Drop the previous image's object URL now that the new one is decoded
       if (blobSrcRef.current?.startsWith('blob:') && blobSrcRef.current !== src) {
@@ -228,8 +236,10 @@ export default function ImageAnnotatorPage() {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    if (!file.type.startsWith('image/')) {
-      toast.error('Please select a valid image file');
+    const check = checkUpload(file, IMAGE_UPLOAD_RULE);
+    if (!check.ok) {
+      toast.error(check.error ?? 'Please select a valid image file');
+      e.target.value = '';
       return;
     }
 
@@ -250,6 +260,11 @@ export default function ImageAnnotatorPage() {
         if (item.type.startsWith('image/')) {
           const file = item.getAsFile();
           if (file) {
+            const check = checkUpload(file, IMAGE_UPLOAD_RULE);
+            if (!check.ok) {
+              toast.error(check.error ?? 'That image cannot be opened');
+              return;
+            }
             loadImage(URL.createObjectURL(file), file.size);
             toast.success('Pasted image from clipboard');
             return;
@@ -266,10 +281,16 @@ export default function ImageAnnotatorPage() {
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
     const file = e.dataTransfer.files?.[0];
-    if (file?.type.startsWith('image/')) {
-      loadImage(URL.createObjectURL(file), file.size);
-      toast.success('Image loaded successfully');
+    if (!file) return;
+
+    const check = checkUpload(file, IMAGE_UPLOAD_RULE);
+    if (!check.ok) {
+      toast.error(check.error ?? 'Please drop a valid image file');
+      return;
     }
+
+    loadImage(URL.createObjectURL(file), file.size);
+    toast.success('Image loaded successfully');
   };
 
   const layerRef = useRef<{

@@ -30,6 +30,7 @@ import {
 } from 'lucide-react';
 import { copyTextToClipboard } from '@/lib/clipboard';
 import { onKeyActivate } from '@/lib/a11y';
+import { checkUpload, ENCODABLE_UPLOAD_RULE } from '@/lib/fileGuards';
 
 const SAMPLE_IMAGE_BASE64 = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAABMSURBVHgB7dKxCQAgEMDA3P2ndIsU8RCGfEDjQyU512Nf/wE4gAAIIAACIIAACIAACIAACIAACIAACIAACIAACIAACIAACIAACIBAMHMAkR4E2cM3Qd8AAAAASUVORK5CYII=';
 
@@ -145,12 +146,13 @@ export default function Base64ViewerPage() {
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
-    const isPdf = file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf');
-    if (!file.type.startsWith('image/') && !isPdf) {
-      setError('Please select an image or PDF file');
+    const check = checkUpload(file, ENCODABLE_UPLOAD_RULE);
+    if (!check.ok) {
+      setError(check.error ?? 'Please select an image or PDF file');
       if (fileInputRef.current) fileInputRef.current.value = '';
       return;
     }
+    const isPdf = file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf');
     const targetMode: 'image' | 'pdf' = isPdf ? 'pdf' : 'image';
     setMediaType(targetMode);
 
