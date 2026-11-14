@@ -14,6 +14,7 @@ import {
   Layers
 } from 'lucide-react';
 import { copyTextToClipboard } from '@/lib/clipboard';
+import { generateUuids } from '@/lib/uuid';
 
 export default function UuidGenerator() {
   const { width } = useSidebar();
@@ -23,7 +24,7 @@ export default function UuidGenerator() {
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
 
   const generateUuid = useCallback((showToast = true) => {
-    const newUuids = Array.from({ length: count }, () => crypto.randomUUID());
+    const newUuids = generateUuids(count);
     setUuids(newUuids);
     if (showToast) {
       toast.success(`Generated ${count} UUID${count > 1 ? 's' : ''}`);
