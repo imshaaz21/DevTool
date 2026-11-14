@@ -1,7 +1,11 @@
 'use client';
 
-import React from 'react';
-import { LucideIcon } from 'lucide-react';
+import React, { useEffect } from 'react';
+import { usePathname } from 'next/navigation';
+import { toast } from 'react-hot-toast';
+import { LucideIcon, Star } from 'lucide-react';
+import { useFavourites } from './useFavourites';
+import { recordToolVisit } from '@/lib/recentTools';
 
 interface PageHeaderProps {
   icon: LucideIcon;
@@ -20,6 +24,25 @@ export function PageHeader({
   badgeVariant,
   children
 }: PageHeaderProps) {
+  const pathname = usePathname();
+  const { isFavourite, toggle } = useFavourites();
+  const canFavourite = Boolean(pathname) && pathname !== '/';
+
+  // Every tool page renders this header, so it is the one place a visit is known.
+  useEffect(() => {
+    if (pathname) recordToolVisit(pathname);
+  }, [pathname]);
+  const favourited = canFavourite && isFavourite(pathname);
+
+  const handleToggleFavourite = () => {
+    const { favourited: nowFavourited, persisted } = toggle(pathname);
+    if (!persisted) {
+      toast.error('Favourites cannot be saved in this browser');
+      return;
+    }
+    toast.success(nowFavourited ? `Pinned ${title}` : `Unpinned ${title}`);
+  };
+
   const isDeprecated = badgeVariant === 'deprecated' || badge?.toLowerCase() === 'deprecated';
   return (
     <header className="flex items-center justify-between gap-3 px-6 py-3 border-b border-neutral-200 dark:border-neutral-800 bg-white dark:bg-[#0a0a0c] sticky top-0 z-20 shrink-0">
@@ -50,8 +73,24 @@ export function PageHeader({
         </div>
       </div>
 
-      {children && (
+      {(canFavourite || children) && (
         <div className="flex items-center gap-2 shrink-0">
+          {canFavourite && (
+            <button
+              type="button"
+              onClick={handleToggleFavourite}
+              aria-pressed={favourited}
+              aria-label={favourited ? 'Remove from favourites' : 'Add to favourites'}
+              title={favourited ? 'Remove from favourites' : 'Add to favourites'}
+              className="p-1.5 rounded-md text-neutral-400 dark:text-neutral-500 hover:text-amber-500 dark:hover:text-amber-400 hover:bg-neutral-100 dark:hover:bg-neutral-800 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-amber-400 transition-colors"
+            >
+              <Star
+                size={15}
+                strokeWidth={2}
+                className={favourited ? 'fill-amber-400 text-amber-500 dark:text-amber-400' : ''}
+              />
+            </button>
+          )}
           {children}
         </div>
       )}

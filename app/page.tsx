@@ -1,9 +1,14 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import Link from 'next/link';
+import { toast } from 'react-hot-toast';
 import { Sidebar } from '@/components/Sidebar';
 import { useSidebar } from '@/components/SidebarContext';
+import { useFavourites } from '@/components/useFavourites';
+import { useRecentTools } from '@/components/useRecentTools';
+import { pruneFavourites } from '@/lib/favourites';
+import { pruneRecentTools } from '@/lib/recentTools';
 import {
   Database,
   Diff,
@@ -27,6 +32,15 @@ import {
   Crop,
   Scissors,
   FileText,
+  Star,
+  History,
+  Timer,
+  Regex,
+  FileDiff,
+  Clock,
+  Braces,
+  FileKey,
+  BadgeCheck,
 } from 'lucide-react';
 
 interface Tool {
@@ -217,18 +231,107 @@ const TOOLS: Tool[] = [
     icon: Globe,
     tags: ['time', 'timezone', 'utc', 'ast', 'ist', 'clock', 'date']
   },
+  {
+    title: 'Text Diff',
+    desc: 'Compare two blocks of text line by line or character by character, with case and whitespace options, and export a unified diff.',
+    href: '/text-diff',
+    category: 'JSON & Diff',
+    icon: FileDiff,
+    tags: ['text', 'diff', 'compare', 'unified diff', 'patch', 'changes', 'merge', 'lines']
+  },
+  {
+    title: 'YAML and JSON Converter',
+    desc: 'Convert YAML to JSON and back with anchors expanded, custom tags refused, optional key sorting, and indent control.',
+    href: '/yaml-json',
+    category: 'Encoders',
+    icon: Braces,
+    tags: ['yaml', 'json', 'convert', 'yml', 'kubernetes', 'helm', 'config', 'anchors']
+  },
+  {
+    title: 'Regex Tester',
+    desc: 'Test a JavaScript regular expression live, inspect positional and named capture groups, and preview a replacement.',
+    href: '/regex-tester',
+    category: 'Utilities',
+    icon: Regex,
+    tags: ['regex', 'regular expression', 'pattern', 'match', 'capture group', 'replace', 'test']
+  },
+  {
+    title: 'Cron Expression Explainer',
+    desc: 'Read a cron expression in plain English, check each field, and list the next run times in UTC.',
+    href: '/cron-explainer',
+    category: 'Utilities',
+    icon: Timer,
+    tags: ['cron', 'crontab', 'schedule', 'expression', 'quartz', 'next run', 'explain']
+  },
+  {
+    title: 'Epoch Converter',
+    desc: 'Convert Unix timestamps in seconds, milliseconds, microseconds or nanoseconds to a readable date, and back again.',
+    href: '/epoch-converter',
+    category: 'Utilities',
+    icon: Clock,
+    tags: ['epoch', 'unix timestamp', 'time', 'date', 'milliseconds', 'convert', 'iso 8601']
+  },
+  {
+    title: '.env Parser',
+    desc: 'Parse a dotenv file into structured values, flag duplicates and bad lines, and export it as JSON, shell exports, Docker args or YAML.',
+    href: '/env-parser',
+    category: 'Utilities',
+    icon: FileKey,
+    tags: ['env', 'dotenv', 'environment variables', 'config', 'parse', 'json', 'docker', 'shell']
+  },
+  {
+    title: 'X.509 Certificate Decoder',
+    desc: 'Decode a PEM or DER certificate to read its subject, issuer, validity, key, alternative names, extensions and fingerprints.',
+    href: '/cert-decoder',
+    category: 'Data & Security',
+    icon: BadgeCheck,
+    tags: ['x509', 'certificate', 'ssl', 'tls', 'pem', 'der', 'crt', 'decoder', 'fingerprint', 'san']
+  },
 ];
 
-const CATEGORIES = ['All', 'Data & Security', 'JSON & Diff', 'Encoders', 'Utilities'] as const;
+const CATEGORIES = ['All', 'Favourites', 'Data & Security', 'JSON & Diff', 'Encoders', 'Utilities'] as const;
 
 export default function Home() {
   const { width } = useSidebar();
   const [search, setSearch] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<typeof CATEGORIES[number]>('All');
+  const { count: favouriteCount, isFavourite, toggle } = useFavourites();
+  const recentPaths = useRecentTools();
+
+  // TOOLS is the canonical list, so stale entries are dropped here.
+  useEffect(() => {
+    const known = TOOLS.map(tool => tool.href);
+    pruneFavourites(known);
+    pruneRecentTools(known);
+  }, []);
+
+  const recentTools = useMemo(
+    () =>
+      recentPaths
+        .map(path => TOOLS.find(tool => tool.href === path))
+        .filter((tool): tool is Tool => Boolean(tool)),
+    [recentPaths]
+  );
+
+  const handleToggleFavourite = (tool: Tool) => {
+    const { favourited, persisted } = toggle(tool.href);
+    if (!persisted) {
+      toast.error('Favourites cannot be saved in this browser');
+      return;
+    }
+    toast.success(favourited ? `Pinned ${tool.title}` : `Unpinned ${tool.title}`);
+  };
 
   const filteredTools = useMemo(() => {
-    return TOOLS.filter(tool => {
-      const matchesCategory = selectedCategory === 'All' || tool.category === selectedCategory;
+    const matches = TOOLS.filter(tool => {
+      let matchesCategory: boolean;
+      if (selectedCategory === 'All') {
+        matchesCategory = true;
+      } else if (selectedCategory === 'Favourites') {
+        matchesCategory = isFavourite(tool.href);
+      } else {
+        matchesCategory = tool.category === selectedCategory;
+      }
       const q = search.toLowerCase().trim();
       const matchesSearch = !q ||
         tool.title.toLowerCase().includes(q) ||
@@ -236,7 +339,12 @@ export default function Home() {
         tool.tags.some(tag => tag.includes(q));
       return matchesCategory && matchesSearch;
     });
-  }, [search, selectedCategory]);
+
+    // Favourites float to the top; sort is stable, so each group keeps its order.
+    return matches.sort(
+      (a, b) => Number(isFavourite(b.href)) - Number(isFavourite(a.href))
+    );
+  }, [search, selectedCategory, isFavourite]);
 
   return (
     <div className="flex bg-[#fafafa] dark:bg-[#09090b] min-h-screen text-neutral-900 dark:text-neutral-100">
@@ -297,31 +405,82 @@ export default function Home() {
                     }`}
                   >
                     {category}
+                    {category === 'Favourites' && favouriteCount > 0 && (
+                      <span className="ml-1.5 font-mono text-[10px] opacity-70">
+                        {favouriteCount}
+                      </span>
+                    )}
                   </button>
                 ))}
               </div>
             </div>
           </div>
 
+          {/* Recently used: automatic, unlike favourites, and only while nothing is filtered */}
+          {recentTools.length > 0 && selectedCategory === 'All' && !search && (
+            <div className="flex flex-wrap items-center gap-1.5">
+              <span className="flex items-center gap-1 text-[11px] font-medium text-neutral-500 dark:text-neutral-400 mr-0.5">
+                <History size={12} />
+                Recent
+              </span>
+              {recentTools.map(tool => (
+                <Link
+                  key={tool.href}
+                  href={tool.href}
+                  className="flex items-center gap-1.5 px-2 py-1 rounded-md text-[11px] font-medium border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-200 hover:border-neutral-300 dark:hover:border-neutral-700 transition-colors"
+                >
+                  <tool.icon size={12} strokeWidth={1.8} />
+                  {tool.title}
+                </Link>
+              ))}
+            </div>
+          )}
+
           {/* Tools Grid */}
           {filteredTools.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {filteredTools.map((tool) => {
                 const Icon = tool.icon;
+                const favourited = isFavourite(tool.href);
                 return (
-                  <Link
+                  <div
                     key={tool.href}
-                    href={tool.href}
-                    className="group flex flex-col justify-between p-4 rounded-xl border border-neutral-200/80 dark:border-neutral-800/80 bg-white dark:bg-[#111113] hover:border-neutral-300 dark:hover:border-neutral-700 hover:bg-neutral-50/50 dark:hover:bg-neutral-900 transition-all shadow-[0_1px_2px_rgba(0,0,0,0.02)]"
+                    className="group relative flex flex-col justify-between p-4 rounded-xl border border-neutral-200/80 dark:border-neutral-800/80 bg-white dark:bg-[#111113] hover:border-neutral-300 dark:hover:border-neutral-700 hover:bg-neutral-50/50 dark:hover:bg-neutral-900 transition-all shadow-[0_1px_2px_rgba(0,0,0,0.02)] focus-within:border-neutral-400 dark:focus-within:border-neutral-600"
                   >
+                    {/* Covering link: keeps the whole card clickable while leaving the star a real button */}
+                    <Link
+                      href={tool.href}
+                      aria-label={`Open ${tool.title}`}
+                      className="absolute inset-0 z-10 rounded-xl"
+                    />
                     <div>
                       <div className="flex items-start justify-between gap-2 mb-3">
                         <div className="w-8 h-8 rounded-lg bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 flex items-center justify-center border border-neutral-200/60 dark:border-neutral-700/60 group-hover:bg-neutral-900 group-hover:text-white dark:group-hover:bg-white dark:group-hover:text-neutral-950 transition-colors">
                           <Icon size={16} strokeWidth={1.8} />
                         </div>
-                        <span className="text-[10px] font-mono text-neutral-400 dark:text-neutral-500 bg-neutral-50 dark:bg-neutral-800/60 px-2 py-0.5 rounded border border-neutral-100 dark:border-neutral-800">
-                          {tool.category}
-                        </span>
+                        <div className="flex items-center gap-1.5 shrink-0">
+                          <button
+                            type="button"
+                            onClick={() => handleToggleFavourite(tool)}
+                            aria-pressed={favourited}
+                            aria-label={
+                              favourited
+                                ? `Remove ${tool.title} from favourites`
+                                : `Add ${tool.title} to favourites`
+                            }
+                            title={favourited ? 'Remove from favourites' : 'Add to favourites'}
+                            className="relative z-20 p-1 -m-1 rounded-md text-neutral-300 dark:text-neutral-600 hover:text-amber-500 dark:hover:text-amber-400 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-amber-400 transition-colors"
+                          >
+                            <Star
+                              size={14}
+                              strokeWidth={2}
+                              className={favourited ? 'fill-amber-400 text-amber-500 dark:text-amber-400' : ''}
+                            />
+                          </button>
+                          <span className="text-[10px] font-mono text-neutral-400 dark:text-neutral-500 bg-neutral-50 dark:bg-neutral-800/60 px-2 py-0.5 rounded border border-neutral-100 dark:border-neutral-800">
+                            {tool.category}
+                          </span>
+                        </div>
                       </div>
 
                       <div className="flex items-center gap-2">
@@ -343,13 +502,19 @@ export default function Home() {
                       <span>Open tool</span>
                       <ArrowRight size={13} className="transition-transform group-hover:translate-x-0.5" />
                     </div>
-                  </Link>
+                  </div>
                 );
               })}
             </div>
           ) : (
             <div className="p-12 text-center border border-dashed border-neutral-200 dark:border-neutral-800 rounded-xl bg-white dark:bg-neutral-900/30">
-              <p className="text-xs text-neutral-500">No utilities match &ldquo;{search}&rdquo;</p>
+              {selectedCategory === 'Favourites' && !search ? (
+                <p className="text-xs text-neutral-500">
+                  No favourites yet. Use the star on any tool card to pin it here.
+                </p>
+              ) : (
+                <p className="text-xs text-neutral-500">No utilities match &ldquo;{search}&rdquo;</p>
+              )}
               <button
                 onClick={() => { setSearch(''); setSelectedCategory('All'); }}
                 className="mt-2 text-xs font-medium text-neutral-900 dark:text-neutral-100 underline hover:no-underline"

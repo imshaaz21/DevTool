@@ -5,6 +5,9 @@ import { usePathname } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import { ThemeToggle } from './ThemeToggle';
 import { useSidebar } from './SidebarContext';
+import { useFavourites } from './useFavourites';
+import { clearConsent } from '@/lib/consent';
+import type { LucideIcon } from 'lucide-react';
 import {
   PanelLeftClose,
   PanelLeft,
@@ -32,12 +35,28 @@ import {
   Crop,
   Scissors,
   FileText,
+  Star,
+  Timer,
+  Regex,
+  FileDiff,
+  Clock,
+  Braces,
+  FileKey,
+  BadgeCheck,
 } from 'lucide-react';
+
+interface NavItem {
+  name: string;
+  path: string;
+  icon: LucideIcon;
+  badge?: string;
+}
 
 export function Sidebar() {
   const pathname = usePathname();
   const [currentTime, setCurrentTime] = useState('');
   const { isCollapsed, toggleSidebar } = useSidebar();
+  const { isFavourite } = useFavourites();
 
   const isActive = (path: string) => pathname === path;
 
@@ -57,18 +76,21 @@ export function Sidebar() {
     return () => clearInterval(interval);
   }, []);
 
-  const navItems = [
+  const navItems: NavItem[] = [
     { name: 'Dashboard', path: '/', icon: LayoutDashboard },
     { name: 'Saudi Fake Data', path: '/saudi-data-generator', icon: Database },
     { name: 'Feature Toggle Diff', path: '/json-comparator', icon: Diff },
     { name: 'JSON Comparison', path: '/json-comparison', icon: Binary, badge: 'Deprecated' },
     { name: 'JSON Diff v2', path: '/json-diff-v2', icon: Binary },
     { name: 'List Compare', path: '/list-compare', icon: GitCompare },
+    { name: 'Text Diff', path: '/text-diff', icon: FileDiff },
     { name: 'JSON Path & Sum', path: '/json-path-aggregator', icon: Calculator },
     { name: 'JSON Formatter', path: '/json-formatter', icon: FileJson },
     { name: 'HTML Viewer', path: '/html-viewer', icon: Code2 },
     { name: 'Markdown Viewer', path: '/markdown-viewer', icon: FileText },
+    { name: 'YAML / JSON', path: '/yaml-json', icon: Braces },
     { name: 'Screen Permission', path: '/screen-permission-decode', icon: ShieldCheck },
+    { name: 'Certificate Decoder', path: '/cert-decoder', icon: BadgeCheck },
     { name: 'Base64 Media / PDF', path: '/base64-viewer', icon: ImageIcon },
     { name: 'Image Annotator', path: '/image-annotator', icon: Crop },
     { name: 'Video Trimmer', path: '/video-trimmer', icon: Scissors },
@@ -77,11 +99,59 @@ export function Sidebar() {
     { name: 'PKCE Generator', path: '/pkce-generator', icon: Key },
     { name: 'JWT Decoder', path: '/jwt-decoder', icon: KeyRound },
     { name: 'Liquibase Checksum', path: '/liquibase-checksum', icon: DatabaseZap },
+    { name: '.env Parser', path: '/env-parser', icon: FileKey },
+    { name: 'Regex Tester', path: '/regex-tester', icon: Regex },
+    { name: 'Cron Explainer', path: '/cron-explainer', icon: Timer },
+    { name: 'Epoch Converter', path: '/epoch-converter', icon: Clock },
     { name: 'Case Converter', path: '/case-converter', icon: CaseSensitive },
     { name: 'SQL Date Filter', path: '/sql-date-filter', icon: CalendarRange },
     { name: 'Color Inspector', path: '/color-inspector', icon: Palette },
     { name: 'Time Zone', path: '/timezone-converter', icon: Globe },
   ];
+
+  const renderNavItem = (item: NavItem) => {
+    const Active = isActive(item.path);
+    const Icon = item.icon;
+
+    return (
+      <li key={item.path}>
+        <Link
+          href={item.path}
+          className={`flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-xs transition-colors group relative ${
+            Active
+              ? 'bg-neutral-100 dark:bg-neutral-800/90 text-neutral-950 dark:text-white font-medium'
+              : 'text-neutral-600 dark:text-neutral-400 hover:bg-neutral-50 dark:hover:bg-neutral-900 hover:text-neutral-900 dark:hover:text-neutral-200'
+          } ${isCollapsed ? 'justify-center' : ''}`}
+          title={isCollapsed ? `${item.name}${item.badge ? ` (${item.badge})` : ''}` : undefined}
+        >
+          <Icon
+            size={16}
+            strokeWidth={Active ? 2 : 1.75}
+            className={`shrink-0 transition-colors ${
+              Active
+                ? 'text-neutral-950 dark:text-white'
+                : 'text-neutral-500 dark:text-neutral-400 group-hover:text-neutral-800 dark:group-hover:text-neutral-200'
+            }`}
+          />
+          {!isCollapsed && (
+            <span className="truncate flex-1">
+              {item.name}
+            </span>
+          )}
+          {!isCollapsed && item.badge && (
+            <span className="ml-auto text-[9px] font-mono px-1.5 py-0.2 rounded bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-800/60 shrink-0">
+              {item.badge}
+            </span>
+          )}
+          {Active && (
+            <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-3.5 bg-neutral-900 dark:bg-white rounded-r-full" />
+          )}
+        </Link>
+      </li>
+    );
+  };
+
+  const favouriteItems = navItems.filter((item) => isFavourite(item.path));
 
   return (
     <aside
@@ -130,53 +200,30 @@ export function Sidebar() {
 
       {/* Nav Items */}
       <nav className="flex-1 py-3 px-2.5 overflow-y-auto overflow-x-hidden">
+        {favouriteItems.length > 0 && (
+          <>
+            <div
+              className={`flex items-center gap-1.5 pb-2 text-[10px] font-medium tracking-wider uppercase text-neutral-400 dark:text-neutral-500 ${
+                isCollapsed ? 'justify-center' : 'px-2'
+              }`}
+              title={isCollapsed ? 'Favourites' : undefined}
+            >
+              <Star size={10} className="fill-amber-400 text-amber-500 shrink-0" />
+              {!isCollapsed && 'Favourites'}
+            </div>
+            <ul className="space-y-0.5">
+              {favouriteItems.map(renderNavItem)}
+            </ul>
+            <div className="my-2.5 border-t border-neutral-200/70 dark:border-neutral-800/70" />
+          </>
+        )}
         {!isCollapsed && (
           <div className="px-2 pb-2 text-[10px] font-medium tracking-wider uppercase text-neutral-400 dark:text-neutral-500">
             Developer Utilities
           </div>
         )}
         <ul className="space-y-0.5">
-          {navItems.map((item) => {
-            const Active = isActive(item.path);
-            const Icon = item.icon;
-
-            return (
-              <li key={item.path}>
-                <Link
-                  href={item.path}
-                  className={`flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-xs transition-colors group relative ${
-                    Active
-                      ? 'bg-neutral-100 dark:bg-neutral-800/90 text-neutral-950 dark:text-white font-medium'
-                      : 'text-neutral-600 dark:text-neutral-400 hover:bg-neutral-50 dark:hover:bg-neutral-900 hover:text-neutral-900 dark:hover:text-neutral-200'
-                  } ${isCollapsed ? 'justify-center' : ''}`}
-                  title={isCollapsed ? `${item.name}${item.badge ? ` (${item.badge})` : ''}` : undefined}
-                >
-                  <Icon
-                    size={16}
-                    strokeWidth={Active ? 2 : 1.75}
-                    className={`shrink-0 transition-colors ${
-                      Active
-                        ? 'text-neutral-950 dark:text-white'
-                        : 'text-neutral-500 dark:text-neutral-400 group-hover:text-neutral-800 dark:group-hover:text-neutral-200'
-                    }`}
-                  />
-                  {!isCollapsed && (
-                    <span className="truncate flex-1">
-                      {item.name}
-                    </span>
-                  )}
-                  {!isCollapsed && item.badge && (
-                    <span className="ml-auto text-[9px] font-mono px-1.5 py-0.2 rounded bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-800/60 shrink-0">
-                      {item.badge}
-                    </span>
-                  )}
-                  {Active && (
-                    <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-3.5 bg-neutral-900 dark:bg-white rounded-r-full" />
-                  )}
-                </Link>
-              </li>
-            );
-          })}
+          {navItems.map(renderNavItem)}
         </ul>
       </nav>
 
@@ -204,6 +251,15 @@ export function Sidebar() {
                 <Lightbulb size={12} />
                 <span>Request feature</span>
               </a>
+              <span className="text-neutral-300 dark:text-neutral-700">·</span>
+              <button
+                type="button"
+                onClick={clearConsent}
+                className="text-[11px] text-neutral-500 dark:text-neutral-400 hover:text-neutral-800 dark:hover:text-neutral-200 transition-colors"
+                title="Review the analytics choice you made"
+              >
+                Privacy
+              </button>
             </div>
             <div className="flex items-center justify-between gap-2 px-1">
               <div className="flex items-center gap-2 text-[11px] text-neutral-500 dark:text-neutral-400 font-mono">
