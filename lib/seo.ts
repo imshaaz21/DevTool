@@ -45,6 +45,12 @@ export const SITE_CONFIG = {
     'hex color picker contrast checker',
     'liquibase checksum calculator',
     'timezone converter utc ast ist',
+    'regex tester online',
+    'cron expression explainer',
+    'yaml to json converter',
+    'unix timestamp converter',
+    'x509 certificate decoder',
+    'text diff checker',
     'client side developer tools',
     'online engineering utilities',
   ],
@@ -57,6 +63,14 @@ export interface ToolSeoInfo {
   keywords: string[];
   priority: number;
   changeFrequency: 'daily' | 'weekly' | 'monthly';
+  /**
+   * A tool that still works but should not attract new users. It is kept out of
+   * the sitemap and marked noindex, and its canonical points at the replacement,
+   * so existing links keep working while search traffic moves on.
+   */
+  deprecated?: boolean;
+  /** The tool that replaces a deprecated one. */
+  replacedBy?: string;
 }
 
 export const TOOLS_SEO: Record<string, ToolSeoInfo> = {
@@ -316,8 +330,10 @@ export const TOOLS_SEO: Record<string, ToolSeoInfo> = {
       'side by side json diff',
       'json diff viewer',
     ],
-    priority: 0.8,
-    changeFrequency: 'weekly',
+    priority: 0.3,
+    changeFrequency: 'monthly',
+    deprecated: true,
+    replacedBy: '/json-diff-v2',
   },
   '/json-comparator': {
     path: '/json-comparator',
@@ -380,6 +396,184 @@ export const TOOLS_SEO: Record<string, ToolSeoInfo> = {
     priority: 0.8,
     changeFrequency: 'weekly',
   },
+  '/markdown-viewer': {
+    path: '/markdown-viewer',
+    title: 'Markdown Viewer & GFM Live Preview',
+    description:
+      'Free online Markdown viewer with live GitHub Flavored Markdown preview. Render tables, task lists, and code blocks, then export clean HTML entirely in your browser.',
+    keywords: [
+      'markdown viewer',
+      'markdown preview',
+      'gfm preview',
+      'github flavored markdown',
+      'markdown to html',
+      'online markdown editor',
+      'readme preview',
+      'markdown table renderer',
+    ],
+    priority: 0.8,
+    changeFrequency: 'weekly',
+  },
+  '/image-annotator': {
+    path: '/image-annotator',
+    title: 'Image Annotator, Redactor & OCR Text Extractor',
+    description:
+      'Annotate screenshots with arrows, shapes, and text, crop images, pixelate sensitive data, and extract text with client-side OCR. Nothing is uploaded, everything stays in your browser.',
+    keywords: [
+      'image annotator',
+      'screenshot annotation',
+      'redact screenshot',
+      'pixelate image',
+      'blur sensitive data',
+      'image ocr online',
+      'extract text from image',
+      'tesseract ocr browser',
+      'crop screenshot',
+    ],
+    priority: 0.8,
+    changeFrequency: 'weekly',
+  },
+  '/video-trimmer': {
+    path: '/video-trimmer',
+    title: 'Video Trimmer & Aspect Ratio Cropper',
+    description:
+      'Trim screen recordings and crop video to 16:9, 9:16, 1:1, or 4:3 aspect ratios in your browser. Export lightweight clips without uploading files to a server.',
+    keywords: [
+      'video trimmer',
+      'trim video online',
+      'crop video',
+      'video cutter',
+      'screen recording trimmer',
+      'aspect ratio cropper',
+      'webm trimmer',
+      'browser video editor',
+    ],
+    priority: 0.8,
+    changeFrequency: 'weekly',
+  },
+  '/text-diff': {
+    path: '/text-diff',
+    title: 'Text Diff & Unified Diff Generator',
+    description:
+      'Free online text diff. Compare two blocks of text line by line or character by character, ignore case or whitespace, and export a unified diff patch. Runs entirely in your browser.',
+    keywords: [
+      'text diff',
+      'text compare online',
+      'diff checker',
+      'unified diff generator',
+      'compare two texts',
+      'line diff tool',
+      'character diff',
+      'diff patch online',
+    ],
+    priority: 0.8,
+    changeFrequency: 'weekly',
+  },
+  '/yaml-json': {
+    path: '/yaml-json',
+    title: 'YAML to JSON & JSON to YAML Converter',
+    description:
+      'Convert YAML to JSON and JSON to YAML online. Expands anchors, refuses custom tags, sorts keys, and controls indentation. Ideal for Kubernetes, Helm, and CI config, all client-side.',
+    keywords: [
+      'yaml to json',
+      'json to yaml',
+      'yaml converter',
+      'yml to json',
+      'kubernetes yaml converter',
+      'helm values converter',
+      'yaml formatter',
+      'yaml validator online',
+    ],
+    priority: 0.8,
+    changeFrequency: 'weekly',
+  },
+  '/regex-tester': {
+    path: '/regex-tester',
+    title: 'Regex Tester & Capture Group Inspector',
+    description:
+      'Test JavaScript regular expressions live against your own text. Inspect positional and named capture groups, toggle flags, highlight matches, and preview a replacement in the browser.',
+    keywords: [
+      'regex tester',
+      'regular expression tester',
+      'javascript regex online',
+      'regex match highlighter',
+      'named capture groups',
+      'regex replace preview',
+      'regex flags',
+      'test regex online',
+    ],
+    priority: 0.8,
+    changeFrequency: 'weekly',
+  },
+  '/cron-explainer': {
+    path: '/cron-explainer',
+    title: 'Cron Expression Explainer & Next Run Times',
+    description:
+      'Translate a cron expression into plain English, check every field, and list the next run times in UTC. Supports 5 field crontab and 6 field expressions with seconds.',
+    keywords: [
+      'cron expression explainer',
+      'cron parser online',
+      'crontab generator',
+      'cron next run time',
+      'cron to english',
+      'quartz cron expression',
+      'cron schedule checker',
+    ],
+    priority: 0.8,
+    changeFrequency: 'weekly',
+  },
+  '/epoch-converter': {
+    path: '/epoch-converter',
+    title: 'Epoch & Unix Timestamp Converter',
+    description:
+      'Convert Unix timestamps to a readable date and back. Detects seconds, milliseconds, microseconds, and nanoseconds from the value, and shows ISO 8601, UTC, local time, and relative time.',
+    keywords: [
+      'epoch converter',
+      'unix timestamp converter',
+      'timestamp to date',
+      'date to epoch',
+      'milliseconds to date',
+      'iso 8601 converter',
+      'current unix time',
+    ],
+    priority: 0.8,
+    changeFrequency: 'weekly',
+  },
+  '/env-parser': {
+    path: '/env-parser',
+    title: '.env File Parser & Converter',
+    description:
+      'Parse a dotenv file into structured key value pairs, flag duplicate keys and malformed lines, mask secrets, and export as JSON, shell exports, Docker arguments, or YAML env blocks.',
+    keywords: [
+      'env parser',
+      'dotenv parser',
+      'env to json',
+      'env file converter',
+      'environment variables parser',
+      'env to docker args',
+      'env to yaml',
+    ],
+    priority: 0.7,
+    changeFrequency: 'weekly',
+  },
+  '/cert-decoder': {
+    path: '/cert-decoder',
+    title: 'X.509 Certificate Decoder (PEM & DER)',
+    description:
+      'Decode an X.509 certificate in your browser. Read subject, issuer, validity dates, key algorithm and size, subject alternative names, extensions, and SHA-1 and SHA-256 fingerprints.',
+    keywords: [
+      'certificate decoder',
+      'x509 decoder',
+      'ssl certificate decoder',
+      'pem decoder',
+      'der certificate parser',
+      'certificate fingerprint sha256',
+      'read certificate online',
+      'certificate expiry checker',
+    ],
+    priority: 0.8,
+    changeFrequency: 'weekly',
+  },
 };
 
 export function getSiteUrl(): string {
@@ -395,7 +589,8 @@ export function createToolMetadata(slug: string): Metadata {
     };
   }
 
-  const canonicalUrl = `${SITE_CONFIG.url}${tool.path}`;
+  // A deprecated tool points search engines at its replacement instead of itself.
+  const canonicalUrl = `${SITE_CONFIG.url}${tool.replacedBy ?? tool.path}`;
 
   return {
     title: tool.title,
@@ -404,6 +599,7 @@ export function createToolMetadata(slug: string): Metadata {
     alternates: {
       canonical: canonicalUrl,
     },
+    ...(tool.deprecated ? { robots: { index: false, follow: true } } : {}),
     openGraph: {
       title: `${tool.title} | ${SITE_CONFIG.name}`,
       description: tool.description,
@@ -432,6 +628,7 @@ export function generateSitemapEntries(): MetadataRoute.Sitemap {
   ];
 
   for (const tool of Object.values(TOOLS_SEO)) {
+    if (tool.deprecated) continue;
     entries.push({
       url: `${SITE_CONFIG.url}${tool.path}`,
       lastModified: now,
@@ -496,6 +693,8 @@ export function getJsonLdWebApplication() {
       priceCurrency: 'USD',
     },
     description: SITE_CONFIG.description,
-    featureList: Object.values(TOOLS_SEO).map((t) => t.title),
+    featureList: Object.values(TOOLS_SEO)
+      .filter((t) => !t.deprecated)
+      .map((t) => t.title),
   };
 }

@@ -46,11 +46,12 @@ describe('SEO Utilities and Metadata Configuration', () => {
   });
 
   describe('generateSitemapEntries', () => {
-    it('includes home page and all 19 tools in sitemap', () => {
+    it('includes home page and every live tool in TOOLS_SEO in sitemap', () => {
       const sitemap = generateSitemapEntries();
-      const toolSlugs = Object.keys(TOOLS_SEO);
+      const toolSlugs = Object.entries(TOOLS_SEO)
+        .filter(([, tool]) => !tool.deprecated)
+        .map(([slug]) => slug);
 
-      // Home page + 19 tools = 20 entries
       expect(sitemap.length).toBe(1 + toolSlugs.length);
 
       const homeEntry = sitemap.find((entry) => entry.url === SITE_CONFIG.url);
@@ -104,7 +105,58 @@ describe('SEO Utilities and Metadata Configuration', () => {
       expect(app['@type']).toBe('WebApplication');
       expect(app.applicationCategory).toBe('DeveloperApplication');
       expect(app.offers.price).toBe('0');
-      expect(app.featureList.length).toBe(Object.keys(TOOLS_SEO).length);
+      expect(app.featureList.length).toBe(
+        Object.values(TOOLS_SEO).filter((tool) => !tool.deprecated).length
+      );
     });
+  });
+
+  describe('deprecated tools', () => {
+    const deprecated = Object.entries(TOOLS_SEO).filter(([, tool]) => tool.deprecated);
+
+    it('keeps /json-comparison deprecated and pointed at its replacement', () => {
+      expect(TOOLS_SEO['/json-comparison'].deprecated).toBe(true);
+      expect(TOOLS_SEO['/json-comparison'].replacedBy).toBe('/json-diff-v2');
+    });
+
+    it.each(deprecated)('leaves %s out of the sitemap', (slug) => {
+      const sitemap = generateSitemapEntries();
+      expect(sitemap.find((entry) => entry.url === `${SITE_CONFIG.url}${slug}`)).toBeUndefined();
+    });
+
+    it.each(deprecated)('marks %s noindex but still followable', (slug) => {
+      const metadata = createToolMetadata(slug);
+      expect(metadata.robots).toEqual({ index: false, follow: true });
+    });
+
+    it.each(deprecated)('points the canonical of %s at the replacement', (slug, tool) => {
+      const metadata = createToolMetadata(slug);
+      expect(metadata.alternates?.canonical).toBe(`${SITE_CONFIG.url}${tool.replacedBy}`);
+    });
+
+    it('leaves a live tool indexable with its own canonical', () => {
+      const metadata = createToolMetadata('/json-diff-v2');
+      expect(metadata.robots).toBeUndefined();
+      expect(metadata.alternates?.canonical).toBe(`${SITE_CONFIG.url}/json-diff-v2`);
+    });
+  });
+});
+
+describe('tool route metadata', () => {
+  const RECENT_TOOLS = ['/markdown-viewer', '/image-annotator', '/video-trimmer'];
+
+  it.each(RECENT_TOOLS)('registers %s for search indexing', (slug) => {
+    const entry = TOOLS_SEO[slug];
+    expect(entry).toBeDefined();
+    expect(entry.path).toBe(slug);
+    expect(entry.title.length).toBeGreaterThan(10);
+    expect(entry.description.length).toBeGreaterThan(50);
+    expect(entry.keywords.length).toBeGreaterThan(3);
+  });
+
+  it.each(RECENT_TOOLS)('builds canonical metadata for %s', (slug) => {
+    const metadata = createToolMetadata(slug);
+    expect(metadata.title).toBe(TOOLS_SEO[slug].title);
+    expect(metadata.alternates?.canonical).toBe(`${SITE_CONFIG.url}${slug}`);
   });
 });
